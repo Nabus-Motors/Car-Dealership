@@ -1,20 +1,21 @@
-import React from 'react';
 import { AdminHeader } from './AdminHeader';
 import { StatsCard } from './StatsCard';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Button } from '../ui/button';
-import { Badge } from '../ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Car, DollarSign, CheckCircle, Clock, Plus, List, BarChart3, ShoppingCart, Edit, Trash2 } from 'lucide-react';
 
 interface AdminDashboardProps {
   onNavigate: (page: string) => void;
+  onToggleMobileMenu?: () => void;
 }
 
-export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
+export function AdminDashboard({ onNavigate, onToggleMobileMenu }: AdminDashboardProps) {
   const statsData = [
     {
       title: 'Total Cars Listed',
       value: 24,
-      icon: '🚗',
+      icon: Car,
       change: {
         value: '+3 this week',
         trend: 'up' as const
@@ -24,7 +25,7 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
     {
       title: 'Cars Sold',
       value: 127,
-      icon: '💰',
+      icon: DollarSign,
       change: {
         value: '+12 this month',
         trend: 'up' as const
@@ -34,7 +35,7 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
     {
       title: 'Active Listings',
       value: 18,
-      icon: '✅',
+      icon: CheckCircle,
       change: {
         value: 'No change',
         trend: 'neutral' as const
@@ -44,7 +45,7 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
     {
       title: 'Pending Approvals',
       value: 3,
-      icon: '⏳',
+      icon: Clock,
       change: {
         value: '+1 today',
         trend: 'up' as const
@@ -59,47 +60,42 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
       type: 'added',
       message: 'New 2024 BMW M5 Sedan listing added',
       time: '2 hours ago',
-      status: 'success'
+      status: 'success',
+      icon: Plus
     },
     {
       id: 2,
       type: 'sold',
       message: '2023 Ferrari 488 GTB marked as sold',
       time: '4 hours ago',
-      status: 'success'
+      status: 'success',
+      icon: ShoppingCart
     },
     {
       id: 3,
       type: 'edited',
       message: 'Tesla Model S listing price updated',
       time: '6 hours ago',
-      status: 'info'
+      status: 'info',
+      icon: Edit
     },
     {
       id: 4,
       type: 'deleted',
       message: '2022 Audi Q7 listing removed',
       time: '1 day ago',
-      status: 'warning'
+      status: 'warning',
+      icon: Trash2
     },
     {
       id: 5,
       type: 'added',
       message: 'New 2024 Mercedes S-Class listing added',
       time: '2 days ago',
-      status: 'success'
+      status: 'success',
+      icon: Plus
     }
   ];
-
-  const getActivityIcon = (type: string) => {
-    switch (type) {
-      case 'added': return '➕';
-      case 'sold': return '💰';
-      case 'edited': return '✏️';
-      case 'deleted': return '🗑️';
-      default: return '📝';
-    }
-  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -112,7 +108,7 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
 
   return (
     <div className="flex-1 bg-gray-50">
-      <AdminHeader title="Dashboard" />
+      <AdminHeader title="Dashboard" onToggleMobileMenu={onToggleMobileMenu} />
       
       <div className="p-6 space-y-6">
         {/* Overview Cards */}
@@ -145,7 +141,9 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
                 <div className="space-y-4">
                   {recentActivities.map((activity) => (
                     <div key={activity.id} className="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                      <div className="text-lg">{getActivityIcon(activity.type)}</div>
+                      <div className="flex-shrink-0 mt-1">
+                        <activity.icon className="h-4 w-4 text-gray-500" />
+                      </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-gray-900 mb-1">
                           {activity.message}
@@ -179,7 +177,7 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
                   className="w-full bg-red-600 hover:bg-red-700"
                   onClick={() => onNavigate('add-listing')}
                 >
-                  <span className="mr-2">➕</span>
+                  <Plus className="mr-2 h-4 w-4" />
                   Add New Car
                 </Button>
                 
@@ -188,7 +186,7 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
                   className="w-full"
                   onClick={() => onNavigate('listings')}
                 >
-                  <span className="mr-2">📋</span>
+                  <List className="mr-2 h-4 w-4" />
                   View All Listings
                 </Button>
                 
@@ -197,7 +195,7 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
                   className="w-full"
                   disabled
                 >
-                  <span className="mr-2">📊</span>
+                  <BarChart3 className="mr-2 h-4 w-4" />
                   Generate Report
                   <Badge className="ml-2 bg-gray-100 text-gray-500 text-xs">Soon</Badge>
                 </Button>

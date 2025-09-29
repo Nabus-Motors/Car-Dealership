@@ -1,15 +1,16 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import { Label } from '../ui/label';
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useAuth } from '@/context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface AdminLoginProps {
-  onLogin: () => void;
   onBack: () => void;
 }
 
-export function AdminLogin({ onLogin, onBack }: AdminLoginProps) {
+export function AdminLogin({ onBack }: AdminLoginProps) {
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -51,6 +52,15 @@ export function AdminLogin({ onLogin, onBack }: AdminLoginProps) {
     return Object.keys(newErrors).length === 0;
   };
 
+  const navigate = useNavigate();
+  const { login, isAdmin, user } = useAuth();
+
+  useEffect(() => {
+    if (user && isAdmin) {
+      navigate('/admin');
+    }
+  }, [user, isAdmin, navigate]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -58,16 +68,16 @@ export function AdminLogin({ onLogin, onBack }: AdminLoginProps) {
     
     setIsLoading(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      // For demo purposes, accept any valid email/password
-      if (formData.email && formData.password) {
-        onLogin();
-      } else {
-        setErrors({ general: 'Invalid credentials' });
-      }
+    try {
+      await login(formData.email, formData.password);
+      // Navigation will be handled by the useEffect above
+    } catch (error) {
+      setErrors({ 
+        general: (error as Error).message || 'Invalid credentials'
+      });
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (

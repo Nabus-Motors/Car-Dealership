@@ -1,5 +1,3 @@
-import React from 'react';
-
 interface FooterProps {
   onNavigate: (page: string) => void;
 }

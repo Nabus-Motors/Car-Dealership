@@ -1,10 +1,11 @@
 import React from 'react';
-import { Card, CardContent } from '../ui/card';
+import { Card, CardContent } from '@/components/ui/card';
+import { LucideIcon } from 'lucide-react';
 
 interface StatsCardProps {
   title: string;
   value: string | number;
-  icon: string;
+  icon: LucideIcon;
   change?: {
     value: string;
     trend: 'up' | 'down' | 'neutral';
@@ -55,8 +56,8 @@ export function StatsCard({ title, value, icon, change, description }: StatsCard
             )}
           </div>
           
-          <div className="text-3xl opacity-80">
-            {icon}
+          <div className="bg-gray-50 p-3 rounded-lg">
+            {React.createElement(icon, { className: "h-6 w-6 text-gray-600" })}
           </div>
         </div>
       </CardContent>

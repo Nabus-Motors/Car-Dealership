@@ -1,13 +1,20 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { AdminHeader } from './AdminHeader';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import { Textarea } from '../ui/textarea';
-import { Label } from '../ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { Switch } from '../ui/switch';
-import { ImageWithFallback } from '../figma/ImageWithFallback';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { ImageWithFallback } from '@/components/figma/ImageWithFallback';
+import { addCarListing } from '@/services/firestoreService';
+import { uploadImages, deleteImageByUrl } from '@/services/storageService';
+import { updateDoc, doc, serverTimestamp, getDoc } from 'firebase/firestore';
+import { db } from '@/firebase/firebase';
+import { Loader2 } from 'lucide-react';
+import { useParams } from 'react-router-dom';
+import type { Car } from '@/types/car';
 
 interface AddEditListingProps {
   onNavigate: (page: string) => void;
@@ -20,7 +27,7 @@ interface CarFormData {
   year: string;
   price: string;
   mileage: string;
-  condition: string;
+  condition: 'New' | 'Used' | '';
   fuelType: string;
   transmission: string;
   description: string;
@@ -28,7 +35,11 @@ interface CarFormData {
 }
 
 export function AddEditListing({ onNavigate, carId }: AddEditListingProps) {
-  const isEditing = Boolean(carId);
+  // Support both prop and route param
+  const params = useParams();
+  const routeId = params.id;
+  const effectiveCarId = carId || routeId;
+  const isEditing = Boolean(effectiveCarId);
   
   const [formData, setFormData] = useState<CarFormData>({
     brand: isEditing ? 'BMW' : '',
@@ -36,20 +47,53 @@ export function AddEditListing({ onNavigate, carId }: AddEditListingProps) {
     year: isEditing ? '2024' : '',
     price: isEditing ? '105000' : '',
     mileage: isEditing ? '500' : '',
-    condition: isEditing ? 'new' : '',
+    condition: isEditing ? 'New' : '',
     fuelType: isEditing ? 'gasoline' : '',
     transmission: isEditing ? 'automatic' : '',
     description: isEditing ? 'Luxury sports sedan with exceptional performance and comfort features.' : '',
     isActive: isEditing ? true : true
   });
 
-  const [uploadedImages, setUploadedImages] = useState<string[]>(
-    isEditing 
-      ? ['https://images.unsplash.com/photo-1734299388217-2ebc605ef43f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxibXclMjBzZWRhbiUyMGJsYWNrfGVufDF8fHx8MTc1ODYyNjczMXww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral']
-      : []
-  );
+  // Keep previews and the actual files separately
+  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  const [existingImageUrls, setExistingImageUrls] = useState<string[]>([]);
+  const [removedImageUrls, setRemovedImageUrls] = useState<string[]>([]);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
   
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitting, setSubmitting] = useState(false);
+
+  // Load existing car if editing
+  useEffect(() => {
+    const loadCar = async () => {
+      if (!isEditing || !effectiveCarId) return;
+      try {
+        const snap = await getDoc(doc(db, 'cars', effectiveCarId));
+        if (snap.exists()) {
+          const data = snap.data() as Car;
+          setFormData({
+            brand: data.brand || '',
+            model: data.model || '',
+            year: String(data.year ?? ''),
+            price: String(data.price ?? ''),
+            mileage: String(data.mileage ?? ''),
+            condition: (data.condition as 'New' | 'Used') ?? '',
+            fuelType: data.fuelType || '',
+            transmission: data.transmission || '',
+            description: data.description || '',
+            isActive: (data as any).status ? (data as any).status === 'active' : true,
+          });
+          const imgs = Array.isArray(data.imageUrls) ? data.imageUrls : [];
+          setExistingImageUrls(imgs);
+          setUploadedImages(imgs); // show existing as previews
+        }
+      } catch (e) {
+        console.error('Error loading car', e);
+      }
+    };
+    loadCar();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [effectiveCarId, isEditing]);
 
   const handleInputChange = (field: keyof CarFormData, value: string | boolean) => {
     setFormData(prev => ({
@@ -87,25 +131,84 @@ export function AddEditListing({ onNavigate, carId }: AddEditListingProps) {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (validateForm()) {
-      // In a real application, you would send this data to a server
-      alert(`Car listing ${isEditing ? 'updated' : 'created'} successfully!`);
-      onNavigate('listings');
+    if (!validateForm()) return;
+
+    try {
+      setSubmitting(true);
+      if (isEditing && effectiveCarId) {
+        // If editing, optionally delete removed images
+        if (removedImageUrls.length > 0) {
+          await Promise.all(removedImageUrls.map((url) => deleteImageByUrl(url)));
+        }
+
+        // Upload any new images and merge with existing (minus removed)
+        const uploadedUrls = imageFiles.length > 0
+          ? await uploadImages(imageFiles, effectiveCarId)
+          : [];
+        const remainingExisting = existingImageUrls.filter((url) => !removedImageUrls.includes(url));
+        const finalImageUrls = [...remainingExisting, ...uploadedUrls];
+
+        await updateDoc(doc(db, 'cars', effectiveCarId), {
+          brand: formData.brand,
+          model: formData.model,
+          year: Number(formData.year),
+          price: Number(formData.price),
+          mileage: formData.mileage,
+          fuelType: formData.fuelType,
+          transmission: formData.transmission,
+          description: formData.description,
+          condition: formData.condition || 'Used',
+          imageUrls: finalImageUrls,
+          updatedAt: serverTimestamp(),
+          status: formData.isActive ? 'active' : 'inactive',
+        });
+
+        onNavigate('listings');
+      } else {
+        // Create initial Firestore document to obtain the carId
+        const newCarId = await addCarListing({
+          brand: formData.brand,
+          model: formData.model,
+          year: Number(formData.year),
+          price: Number(formData.price),
+          mileage: formData.mileage,
+          fuelType: formData.fuelType,
+          description: formData.description,
+          condition: formData.condition || 'Used',
+          imageUrls: [],
+        });
+
+        // Upload images to Storage under this carId
+        const urls = await uploadImages(imageFiles, newCarId);
+
+        // Update the Firestore document with the image URLs and updatedAt
+        await updateDoc(doc(db, 'cars', newCarId), {
+          imageUrls: urls,
+          updatedAt: serverTimestamp(),
+          // Optional: maintain a status field based on isActive
+          status: formData.isActive ? 'active' : 'inactive',
+        });
+        onNavigate('listings');
+      }
+    } catch (err) {
+      console.error('Error saving listing:', err);
+      alert('Failed to save the listing. Please try again.');
+    } finally {
+      setSubmitting(false);
     }
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
-      // In a real application, you would upload these to a server
-      // For demo purposes, we'll add placeholder images
-      const newImages = Array.from(files).map((_, index) => 
-        `https://images.unsplash.com/photo-1653047256226-5abbfa82f1d7?w=400&h=300&fit=crop&crop=center&auto=format&q=80&ixid=${index}`
-      );
-      setUploadedImages(prev => [...prev, ...newImages]);
+      const fileArray = Array.from(files);
+      setImageFiles(prev => [...prev, ...fileArray]);
+      // Generate local previews
+      const newPreviews = fileArray.map(file => URL.createObjectURL(file));
+      setUploadedImages(prev => [...prev, ...newPreviews]);
       
       // Clear image error
       if (errors.images) {
@@ -118,8 +221,28 @@ export function AddEditListing({ onNavigate, carId }: AddEditListingProps) {
   };
 
   const removeImage = (index: number) => {
+    const url = uploadedImages[index];
+    // If the removed url is one of the existing images, mark it for deletion
+    if (existingImageUrls.includes(url)) {
+      setRemovedImageUrls((prev) => [...prev, url]);
+      setExistingImageUrls((prev) => prev.filter((u) => u !== url));
+    } else {
+      // Otherwise it belongs to newly added files; remove the corresponding file
+      setImageFiles(prev => prev.filter((_, i) => i !== index - existingImageUrls.length));
+    }
     setUploadedImages(prev => prev.filter((_, i) => i !== index));
   };
+
+  // Clean up blob URLs on unmount
+  useEffect(() => {
+    return () => {
+      uploadedImages.forEach(url => {
+        if (url && url.startsWith('blob:')) URL.revokeObjectURL(url);
+      });
+    };
+    // We only want this to run on unmount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="flex-1 bg-gray-50">
@@ -136,7 +259,7 @@ export function AddEditListing({ onNavigate, carId }: AddEditListingProps) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="brand">Brand *</Label>
-                  <Select value={formData.brand} onValueChange={(value) => handleInputChange('brand', value)}>
+                  <Select value={formData.brand} onValueChange={(value: string) => handleInputChange('brand', value)}>
                     <SelectTrigger className={errors.brand ? 'border-red-500' : ''}>
                       <SelectValue placeholder="Select brand" />
                     </SelectTrigger>
@@ -208,16 +331,13 @@ export function AddEditListing({ onNavigate, carId }: AddEditListingProps) {
 
                 <div className="space-y-2">
                   <Label htmlFor="condition">Condition *</Label>
-                  <Select value={formData.condition} onValueChange={(value) => handleInputChange('condition', value)}>
+                  <Select value={formData.condition} onValueChange={(value: 'New' | 'Used') => handleInputChange('condition', value)}>
                     <SelectTrigger className={errors.condition ? 'border-red-500' : ''}>
                       <SelectValue placeholder="Select condition" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="new">New</SelectItem>
-                      <SelectItem value="excellent">Excellent</SelectItem>
-                      <SelectItem value="good">Good</SelectItem>
-                      <SelectItem value="fair">Fair</SelectItem>
-                      <SelectItem value="poor">Poor</SelectItem>
+                      <SelectItem value="New">New</SelectItem>
+                      <SelectItem value="Used">Used</SelectItem>
                     </SelectContent>
                   </Select>
                   {errors.condition && <p className="text-sm text-red-600">{errors.condition}</p>}
@@ -235,7 +355,7 @@ export function AddEditListing({ onNavigate, carId }: AddEditListingProps) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="fuelType">Fuel Type *</Label>
-                  <Select value={formData.fuelType} onValueChange={(value) => handleInputChange('fuelType', value)}>
+                  <Select value={formData.fuelType} onValueChange={(value: string) => handleInputChange('fuelType', value)}>
                     <SelectTrigger className={errors.fuelType ? 'border-red-500' : ''}>
                       <SelectValue placeholder="Select fuel type" />
                     </SelectTrigger>
@@ -252,7 +372,7 @@ export function AddEditListing({ onNavigate, carId }: AddEditListingProps) {
 
                 <div className="space-y-2">
                   <Label htmlFor="transmission">Transmission *</Label>
-                  <Select value={formData.transmission} onValueChange={(value) => handleInputChange('transmission', value)}>
+                  <Select value={formData.transmission} onValueChange={(value: string) => handleInputChange('transmission', value)}>
                     <SelectTrigger className={errors.transmission ? 'border-red-500' : ''}>
                       <SelectValue placeholder="Select transmission" />
                     </SelectTrigger>
@@ -308,7 +428,7 @@ export function AddEditListing({ onNavigate, carId }: AddEditListingProps) {
                   id="image-upload"
                 />
                 <label htmlFor="image-upload" className="cursor-pointer">
-                  <div className="text-4xl mb-4">📸</div>
+                  <div className="text-4xl mb-4">�</div>
                   <p className="text-lg font-medium mb-2">Upload Car Images</p>
                   <p className="text-gray-600 mb-4">Drag and drop images here, or click to select files</p>
                   <Button type="button" variant="outline">
@@ -359,7 +479,7 @@ export function AddEditListing({ onNavigate, carId }: AddEditListingProps) {
                 <Switch
                   id="active"
                   checked={formData.isActive}
-                  onCheckedChange={(checked) => handleInputChange('isActive', checked)}
+                  onCheckedChange={(checked: boolean) => handleInputChange('isActive', checked)}
                 />
                 <Label htmlFor="active" className="cursor-pointer">
                   Make this listing active and visible to customers
@@ -382,7 +502,7 @@ export function AddEditListing({ onNavigate, carId }: AddEditListingProps) {
               <Button
                 type="submit"
                 variant="outline"
-                onClick={(e) => {
+                onClick={(e: React.MouseEvent) => {
                   e.preventDefault();
                   handleInputChange('isActive', false);
                   setTimeout(() => handleSubmit(e), 0);
@@ -393,8 +513,16 @@ export function AddEditListing({ onNavigate, carId }: AddEditListingProps) {
               <Button
                 type="submit"
                 className="bg-red-600 hover:bg-red-700"
+                disabled={submitting}
               >
-                {isEditing ? 'Update Listing' : 'Publish Listing'}
+                {submitting ? (
+                  <span className="inline-flex items-center">
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </span>
+                ) : (
+                  isEditing ? 'Update Listing' : 'Publish Listing'
+                )}
               </Button>
             </div>
           </div>
