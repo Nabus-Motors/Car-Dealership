@@ -11,6 +11,7 @@ export interface Car {
   description: string;
   imageUrls: string[];
   features: string[];
+  status: 'draft' | 'published' | 'sold' | 'new'; // Add all status options
   createdAt: any; // Firestore Timestamp or Date
   updatedAt: any; // Firestore Timestamp or Date
 }

@@ -1,3 +1,24 @@
+import { compressImages } from '../utils/imageStorage';
+
+// Mock function to replace Firebase Storage upload with base64 encoding
+export const uploadImages = async (files: File[], carId: string): Promise<string[]> => {
+  try {
+    console.log(`Starting base64 conversion of ${files.length} images for car ${carId}`);
+    
+    // Compress images to base64 with reasonable quality
+    const base64Images = await compressImages(files, 800, 0.7);
+    
+    console.log(`Successfully converted ${base64Images.length} images to base64`);
+    console.log('Base64 images ready for storage in Firestore');
+    
+    return base64Images;
+  } catch (error) {
+    console.error("Error converting images to base64:", error);
+    throw error;
+  }
+};
+
+// Keep the original Firebase Storage functions for future use
 import { ref, uploadBytes, getDownloadURL, deleteObject, listAll } from "firebase/storage";
 import { storage } from "../firebase/firebase";
 
@@ -9,8 +30,8 @@ const generateUniqueFileName = (originalName: string): string => {
   return `${timestamp}-${randomString}.${extension}`;
 };
 
-// Function to upload a single image
-export const uploadImage = async (file: File, carId: string): Promise<string> => {
+// Original Firebase Storage upload function (disabled for now)
+export const uploadImageToFirebase = async (file: File, carId: string): Promise<string> => {
   try {
     const uniqueFileName = generateUniqueFileName(file.name);
     const storageRef = ref(storage, `cars/${carId}/${uniqueFileName}`);
@@ -20,16 +41,21 @@ export const uploadImage = async (file: File, carId: string): Promise<string> =>
     
     return downloadURL;
   } catch (error) {
-    console.error("Error uploading image:", error);
+    console.error("Error uploading image to Firebase:", error);
     throw error;
   }
 };
 
-// Function to upload multiple images
-export const uploadImages = async (files: File[], carId: string): Promise<string[]> => {
+// Original Firebase Storage upload function (backup)
+export const uploadImagesToFirebase = async (files: File[], carId: string): Promise<string[]> => {
   try {
-    const uploadPromises = files.map((file: File) => uploadImage(file, carId));
+    console.log(`Starting upload of ${files.length} images for car ${carId}`);
+    const uploadPromises = files.map((file: File, index: number) => {
+      console.log(`Uploading file ${index + 1}: ${file.name} (${file.size} bytes)`);
+      return uploadImageToFirebase(file, carId);
+    });
     const urls = await Promise.all(uploadPromises);
+    console.log(`Successfully uploaded ${urls.length} images:`, urls);
     return urls;
   } catch (error) {
     console.error("Error uploading images:", error);

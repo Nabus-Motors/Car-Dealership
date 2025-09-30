@@ -2,7 +2,7 @@ import { Button } from './ui/button';
 
 // Curated high-quality background image (Unsplash) suitable for a car dealership hero
 // Attribution: https://unsplash.com/photos/red-coupe-on-road-7e6692767b70 (license-free via Unsplash)
-const heroBackgroundImage =
+const defaultHeroBackgroundImage =
   "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1920&h=1080&q=80";
 
 interface HeroSectionProps {
@@ -12,6 +12,7 @@ interface HeroSectionProps {
   onButtonClick?: () => void;
   height?: string;
   overlayOpacity?: number; // 0 to 1, controls darkness of the image overlay
+  backgroundImage?: string; // optional override for background image
 }
 
 export function HeroSection({
@@ -21,13 +22,14 @@ export function HeroSection({
   onButtonClick,
   height = 'min-h-screen',
   overlayOpacity = 0.6,
+  backgroundImage,
 }: HeroSectionProps) {
   return (
     <div className={`relative ${height} w-full flex items-center justify-center overflow-hidden bg-background`}>
       {/* Background Image */}
       {/* Use an <img> with object-cover so the photo fills the area without stretching */}
       <img
-        src={heroBackgroundImage}
+        src={backgroundImage || defaultHeroBackgroundImage}
         alt="Hero background"
         className="absolute inset-0 w-full h-full object-cover"
       />

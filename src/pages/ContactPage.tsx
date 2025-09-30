@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import emailjs from '@emailjs/browser';
+import { MapPin, Phone, Mail } from 'lucide-react';
 import { HeroSection } from '../components/HeroSection';
-import { Card, CardContent } from '../components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
@@ -13,6 +15,7 @@ export function ContactPage() {
     phone: '',
     message: ''
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -22,30 +25,97 @@ export function ContactPage() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real application, you would send this data to a server
-    alert('Thank you for your message! We will get back to you soon.');
-    setFormData({ name: '', email: '', phone: '', message: '' });
+    setIsSubmitting(true);
+
+    try {
+      // EmailJS configuration - Replace these with your actual EmailJS values
+      // Get these from https://www.emailjs.com/ after setting up your account
+      const serviceId = 'service_e17xo1o'; // Your EmailJS service ID
+      const templateId = 'template_g9aoik7'; // Your EmailJS template ID  
+      const publicKey = 'a4rvke1LTexlS43s3'; // Your EmailJS public key
+
+      // Check if EmailJS is properly configured
+      if (serviceId.includes('your_') || templateId.includes('your_') || publicKey.includes('your_')) {
+        // Fallback to mailto if EmailJS is not configured
+        console.log('EmailJS not configured, falling back to mailto');
+        const subject = `New Contact Message from ${formData.name || 'Website Visitor'}`;
+        const bodyLines = [
+          'You have a new contact message from the website:',
+          '',
+          `Name: ${formData.name}`,
+          `Email: ${formData.email}`,
+          formData.phone ? `Phone: ${formData.phone}` : undefined,
+          '',
+          'Message:',
+          formData.message,
+        ].filter(Boolean);
+
+        const mailtoUrl = `mailto:kelvindespartan@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyLines.join('\n'))}`;
+        window.open(mailtoUrl, '_blank');
+        
+        alert('Your email client has been opened. Please send the pre-filled email to complete your message.');
+        setFormData({ name: '', email: '', phone: '', message: '' });
+        return;
+      }
+
+      const templateParams = {
+        from_name: formData.name,
+        from_email: formData.email,
+        phone: formData.phone || 'Not provided',
+        message: formData.message,
+        to_email: 'kelvindespartan@gmail.com',
+        reply_to: formData.email,
+      };
+
+      await emailjs.send(serviceId, templateId, templateParams, publicKey);
+      
+      alert('Thank you for your message! We will get back to you soon.');
+      setFormData({ name: '', email: '', phone: '', message: '' });
+    } catch (error) {
+      console.error('Error sending email:', error);
+      
+      // Fallback to mailto on any error
+      const subject = `New Contact Message from ${formData.name || 'Website Visitor'}`;
+      const bodyLines = [
+        'You have a new contact message from the website:',
+        '',
+        `Name: ${formData.name}`,
+        `Email: ${formData.email}`,
+        formData.phone ? `Phone: ${formData.phone}` : undefined,
+        '',
+        'Message:',
+        formData.message,
+      ].filter(Boolean);
+
+      const mailtoUrl = `mailto:kelvindespartan@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyLines.join('\n'))}`;
+      window.open(mailtoUrl, '_blank');
+      
+      alert('There was an issue with direct sending. Your email client has been opened with a pre-filled message. Please send it to complete your contact request.');
+      setFormData({ name: '', email: '', phone: '', message: '' });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const contactInfo = [
     {
-      icon: "📍",
+      icon: MapPin,
       title: "Visit Our Showroom",
       details: ["123 Auto Street", "Car City, CC 12345"],
       action: "Get Directions"
     },
     {
-      icon: "📞",
-      title: "Call Us",
+      icon: Phone,
+      title: "Call Us", 
       details: ["(555) 123-4567", "Mon-Fri: 9AM-8PM"],
       action: "Call Now"
     },
     {
-      icon: "✉️",
+      icon: Mail,
       title: "Email Us",
-      details: ["info@automax.com", "sales@automax.com"],
+      details: ["kelvindespartan@gmail.com", "sales@nabusmotors.com"],
       action: "Send Email"
     }
   ];
@@ -64,71 +134,96 @@ export function ContactPage() {
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            {/* Contact Form */}
-            <Card>
-              <CardContent className="p-8">
-                <h2 className="text-2xl font-bold text-slate-900 mb-6">
-                  Send Us a Message
-                </h2>
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Left Column: Contact Form and Map */}
+            <div className="space-y-8">
+              {/* Contact Form */}
+              <Card>
+                <CardContent className="p-8">
+                  <h2 className="text-2xl font-bold text-slate-900 mb-6">
+                    Send Us a Message
+                  </h2>
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="name">Full Name *</Label>
+                        <Input
+                          id="name"
+                          name="name"
+                          type="text"
+                          required
+                          value={formData.name}
+                          onChange={handleInputChange}
+                          placeholder="Your full name"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="phone">Phone Number</Label>
+                        <Input
+                          id="phone"
+                          name="phone"
+                          type="tel"
+                          value={formData.phone}
+                          onChange={handleInputChange}
+                          placeholder="(555) 123-4567"
+                        />
+                      </div>
+                    </div>
+                    
                     <div className="space-y-2">
-                      <Label htmlFor="name">Full Name *</Label>
+                      <Label htmlFor="email">Email Address *</Label>
                       <Input
-                        id="name"
-                        name="name"
-                        type="text"
+                        id="email"
+                        name="email"
+                        type="email"
                         required
-                        value={formData.name}
+                        value={formData.email}
                         onChange={handleInputChange}
-                        placeholder="Your full name"
+                        placeholder="you@example.com"
                       />
                     </div>
+                    
                     <div className="space-y-2">
-                      <Label htmlFor="phone">Phone Number</Label>
-                      <Input
-                        id="phone"
-                        name="phone"
-                        type="tel"
-                        value={formData.phone}
+                      <Label htmlFor="message">Message *</Label>
+                      <Textarea
+                        id="message"
+                        name="message"
+                        required
+                        value={formData.message}
                         onChange={handleInputChange}
-                        placeholder="(555) 123-4567"
+                        placeholder="How can we help you?"
+                        rows={5}
                       />
                     </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email Address *</Label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      required
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      placeholder="you@example.com"
+                    
+                    <Button type="submit" className="w-full" disabled={isSubmitting}>
+                      {isSubmitting ? 'Sending...' : 'Send Message'}
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+
+              {/* Map Location */}
+              <Card className="overflow-hidden mt-6">
+                <CardHeader className="pb-0">
+                  <CardTitle className="text-2xl font-bold text-slate-900">Location</CardTitle>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <div className="h-80 relative">
+                    <iframe
+                      src="https://www.google.com/maps?q=NABUS%20MOTORS&z=16&output=embed"
+                      width="100%"
+                      height="100%"
+                      style={{ border: 0 }}
+                      allowFullScreen={true}
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                      title="Nabus Motors Location"
+                      className="w-full h-full"
                     />
                   </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="message">Message *</Label>
-                    <Textarea
-                      id="message"
-                      name="message"
-                      required
-                      value={formData.message}
-                      onChange={handleInputChange}
-                      placeholder="How can we help you?"
-                      rows={5}
-                    />
-                  </div>
-                  
-                  <Button type="submit" className="w-full">
-                    Send Message
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </div>
 
             {/* Contact Information */}
             <div className="space-y-6">
@@ -145,7 +240,9 @@ export function ContactPage() {
                   <Card key={index}>
                     <CardContent className="p-6">
                       <div className="flex items-start space-x-4">
-                        <span className="text-2xl">{info.icon}</span>
+                        <div className="p-2 bg-blue-50 rounded-lg">
+                          <info.icon className="w-6 h-6 text-blue-600" />
+                        </div>
                         <div>
                           <h3 className="font-semibold text-slate-900">
                             {info.title}

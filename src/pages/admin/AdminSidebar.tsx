@@ -65,7 +65,7 @@ export function AdminSidebar({ currentPage, onNavigate, collapsed, mobileOpen, o
   return (
     <>
       {/* Desktop Sidebar */}
-      <div className={`hidden lg:flex flex-col bg-white border-r border-gray-200 h-full transition-all duration-300 ease-in-out ${
+      <div aria-label="Admin sidebar" className={`hidden lg:flex flex-col bg-white border-r border-gray-200 h-full transition-all duration-300 ease-in-out ${
         collapsed ? 'w-16' : 'w-64'
       } shadow-sm`}>
         {/* Admin Logo */}
@@ -98,7 +98,7 @@ export function AdminSidebar({ currentPage, onNavigate, collapsed, mobileOpen, o
         </div>
 
         {/* Desktop Navigation */}
-        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+  <nav aria-label="Admin primary navigation" className="flex-1 p-3 space-y-1 overflow-y-auto">
           {navigationItems.map((item) => (
             <div key={item.id} className="relative group">
               <Button
@@ -183,7 +183,7 @@ export function AdminSidebar({ currentPage, onNavigate, collapsed, mobileOpen, o
       </div>
 
       {/* Mobile Sidebar Overlay */}
-      <div className={`lg:hidden fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out ${
+      <div aria-label="Admin mobile sidebar" className={`lg:hidden fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out ${
         mobileOpen ? 'translate-x-0' : '-translate-x-full'
       } shadow-xl`}>
         {/* Mobile Admin Logo */}

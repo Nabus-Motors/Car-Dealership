@@ -1,4 +1,4 @@
-
+import { Calendar, Car, Star, Trophy } from 'lucide-react';
 import { HeroSection } from '../components/HeroSection';
 import { Card, CardContent } from '../components/ui/card';
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
@@ -6,22 +6,22 @@ import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 export function AboutPage() {
   const highlights = [
     {
-      icon: "📅",
+      icon: Calendar,
       title: "20+ Years",
       subtitle: "Of Experience"
     },
     {
-      icon: "🚗",
+      icon: Car,
       title: "1000+",
       subtitle: "Cars Sold"
     },
     {
-      icon: "⭐",
+      icon: Star,
       title: "4.9/5",
       subtitle: "Customer Rating"
     },
     {
-      icon: "🏆",
+      icon: Trophy,
       title: "Award",
       subtitle: "Winning Service"
     }
@@ -148,7 +148,11 @@ export function AboutPage() {
             {highlights.map((highlight, index) => (
               <Card key={index} className="text-center">
                 <CardContent className="p-6">
-                  <div className="text-4xl mb-4">{highlight.icon}</div>
+                  <div className="flex justify-center mb-4">
+                    <div className="p-3 bg-blue-50 rounded-full">
+                      <highlight.icon className="w-8 h-8 text-blue-600" />
+                    </div>
+                  </div>
                   <h3 className="text-2xl font-bold text-slate-900 mb-2">
                     {highlight.title}
                   </h3>

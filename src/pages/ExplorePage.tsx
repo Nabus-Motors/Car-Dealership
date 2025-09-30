@@ -10,6 +10,7 @@ import { useIsMobile } from '@/components/ui/use-mobile';
 import { collection, query, orderBy, limit, startAfter, getDocs, DocumentSnapshot } from 'firebase/firestore';
 import { db, COLLECTIONS } from '@/firebase/firebase';
 import type { Car } from '@/types/car';
+import { normalizeImageUrls } from '@/utils/images';
 // import { useNavigate } from 'react-router-dom';
 
 // Filter types
@@ -148,6 +149,8 @@ export function ExplorePage() {
         id: doc.id,
         ...doc.data()
       })) as Car[];
+      // ensure imageUrls is present
+      carList = carList.map(c => ({ ...c, imageUrls: normalizeImageUrls(c) }));
 
   // Apply all filters client-side to avoid composite index requirements
       
@@ -699,7 +702,7 @@ export function ExplorePage() {
 
       {/* Loading State */}
       {loading && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
           {Array(8).fill(null).map((_, index) => (
             <div key={index} className="animate-pulse">
               <div className="h-48 bg-gray-200 rounded-lg mb-4" />
@@ -736,7 +739,7 @@ export function ExplorePage() {
       {/* Cars Grid */}
       {!loading && !error && cars.length > 0 && (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
             {cars.map((car) => (
               <div key={car.id} className="cursor-default">
                 <CarCard {...car} />

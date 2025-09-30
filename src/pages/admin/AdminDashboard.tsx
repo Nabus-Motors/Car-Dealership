@@ -1,101 +1,169 @@
-import { AdminHeader } from './AdminHeader';
+import { useState, useEffect } from 'react';
 import { StatsCard } from './StatsCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Car, DollarSign, CheckCircle, Clock, Plus, List, BarChart3, ShoppingCart, Edit, Trash2 } from 'lucide-react';
+import { Car, DollarSign, CheckCircle, Plus, List, BarChart3, ShoppingCart, Edit, RefreshCw } from 'lucide-react';
+import { collection, query, onSnapshot, orderBy } from 'firebase/firestore';
+import { db, COLLECTIONS } from '@/firebase/firebase';
+import type { Car as CarType } from '@/types/car';
+import { normalizeImageUrls } from '@/utils/images';
 
 interface AdminDashboardProps {
   onNavigate: (page: string) => void;
-  onToggleMobileMenu?: () => void;
 }
 
-export function AdminDashboard({ onNavigate, onToggleMobileMenu }: AdminDashboardProps) {
+export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
+  const [cars, setCars] = useState<CarType[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Fetch cars from Firebase
+  useEffect(() => {
+    const carsQuery = query(
+      collection(db, COLLECTIONS.CARS),
+      orderBy('createdAt', 'desc')
+    );
+
+    const unsubscribe = onSnapshot(carsQuery, (snapshot) => {
+      const carsData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as CarType[];
+      carsData.forEach(c => { (c as any).imageUrls = normalizeImageUrls(c); });
+      setCars(carsData);
+      setLoading(false);
+    }, (error) => {
+      console.error('Error fetching cars:', error);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // Calculate dynamic stats
+  const totalCars = cars.length;
+  const publishedCars = cars.filter(car => car.status === 'published').length;
+  const soldCars = cars.filter(car => car.status === 'sold').length;
+  const draftCars = cars.filter(car => car.status === 'draft').length;
+  const newCars = cars.filter(car => car.status === 'new').length;
+  const totalValue = cars
+    .filter(car => car.status === 'published' || car.status === 'new')
+    .reduce((sum, car) => sum + car.price, 0);
+
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    setTimeout(() => setIsRefreshing(false), 1000);
+  };
+
   const statsData = [
     {
-      title: 'Total Cars Listed',
-      value: 24,
+      title: 'Total Inventory',
+      value: totalCars,
       icon: Car,
       change: {
-        value: '+3 this week',
+        value: `${publishedCars} published`,
         trend: 'up' as const
       },
-      description: 'Active inventory'
+      description: 'All cars in system'
     },
     {
-      title: 'Cars Sold',
-      value: 127,
+      title: 'Inventory Value',
+      value: `$${(totalValue / 1000).toFixed(0)}K`,
       icon: DollarSign,
       change: {
-        value: '+12 this month',
+        value: `${cars.filter(car => car.status === 'published' || car.status === 'new').length} available`,
         trend: 'up' as const
       },
-      description: 'Total sales'
+      description: 'Total active value'
     },
     {
-      title: 'Active Listings',
-      value: 18,
+      title: 'Published Listings',
+      value: publishedCars,
       icon: CheckCircle,
       change: {
-        value: 'No change',
-        trend: 'neutral' as const
+        value: `${newCars} new listings`,
+        trend: newCars > 0 ? 'up' as const : 'neutral' as const
       },
-      description: 'Currently available'
+      description: 'Live on website'
     },
     {
-      title: 'Pending Approvals',
-      value: 3,
-      icon: Clock,
+      title: 'Sold Cars',
+      value: soldCars,
+      icon: ShoppingCart,
       change: {
-        value: '+1 today',
-        trend: 'up' as const
+        value: `${draftCars} drafts`,
+        trend: soldCars > 0 ? 'up' as const : 'neutral' as const
       },
-      description: 'Awaiting review'
+      description: 'Completed sales'
     }
   ];
 
-  const recentActivities = [
-    {
-      id: 1,
-      type: 'added',
-      message: 'New 2024 BMW M5 Sedan listing added',
-      time: '2 hours ago',
-      status: 'success',
-      icon: Plus
-    },
-    {
-      id: 2,
-      type: 'sold',
-      message: '2023 Ferrari 488 GTB marked as sold',
-      time: '4 hours ago',
-      status: 'success',
-      icon: ShoppingCart
-    },
-    {
-      id: 3,
-      type: 'edited',
-      message: 'Tesla Model S listing price updated',
-      time: '6 hours ago',
-      status: 'info',
-      icon: Edit
-    },
-    {
-      id: 4,
-      type: 'deleted',
-      message: '2022 Audi Q7 listing removed',
-      time: '1 day ago',
-      status: 'warning',
-      icon: Trash2
-    },
-    {
-      id: 5,
-      type: 'added',
-      message: 'New 2024 Mercedes S-Class listing added',
-      time: '2 days ago',
-      status: 'success',
-      icon: Plus
+  // Generate recent activities from car data
+  const generateRecentActivities = () => {
+    const activities: Array<{
+      id: number;
+      type: string;
+      message: string;
+      time: string;
+      status: string;
+      icon: any;
+    }> = [];
+    const sortedCars = [...cars]
+      .sort((a, b) => {
+        const aTime = a.updatedAt?.toDate ? a.updatedAt.toDate() : new Date(a.updatedAt);
+        const bTime = b.updatedAt?.toDate ? b.updatedAt.toDate() : new Date(b.updatedAt);
+        return bTime.getTime() - aTime.getTime();
+      })
+      .slice(0, 5);
+
+    sortedCars.forEach((car, index) => {
+      const timeAgo = getTimeAgo(car.updatedAt);
+      const isNew = car.createdAt?.toString() === car.updatedAt?.toString();
+      
+      activities.push({
+        id: index + 1,
+        type: car.status === 'sold' ? 'sold' : (isNew ? 'added' : 'edited'),
+        message: car.status === 'sold' 
+          ? `${car.year} ${car.brand} ${car.model} marked as sold`
+          : isNew 
+            ? `New ${car.year} ${car.brand} ${car.model} listing added`
+            : `${car.year} ${car.brand} ${car.model} listing updated`,
+        time: timeAgo,
+        status: car.status === 'sold' ? 'success' : (isNew ? 'success' : 'info'),
+        icon: car.status === 'sold' ? ShoppingCart : (isNew ? Plus : Edit)
+      });
+    });
+
+    // If no activities, show placeholder
+    if (activities.length === 0) {
+      activities.push({
+        id: 1,
+        type: 'info',
+        message: 'No recent activity. Add your first car listing to get started!',
+        time: 'Welcome',
+        status: 'info',
+        icon: Plus
+      });
     }
-  ];
+
+    return activities;
+  };
+
+  const getTimeAgo = (timestamp: any) => {
+    if (!timestamp) return 'Unknown';
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffHours / 24);
+    
+    if (diffDays > 0) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+    if (diffHours > 0) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    return 'Just now';
+  };
+
+  const recentActivities = generateRecentActivities();
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -106,13 +174,40 @@ export function AdminDashboard({ onNavigate, onToggleMobileMenu }: AdminDashboar
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex-1 p-6">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading dashboard...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex-1 bg-gray-50">
-      <AdminHeader title="Dashboard" onToggleMobileMenu={onToggleMobileMenu} />
-      
-      <div className="p-6 space-y-6">
-        {/* Overview Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="flex-1 p-6 space-y-6">
+      {/* Header with Refresh */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-gray-600 mt-1">Overview of your car dealership</p>
+        </div>
+        <Button
+          variant="outline"
+          onClick={handleRefresh}
+          disabled={isRefreshing}
+          className="flex items-center space-x-2"
+        >
+          <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+          <span>Refresh</span>
+        </Button>
+      </div>
+
+      {/* Overview Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {statsData.map((stat, index) => (
             <StatsCard
               key={index}
@@ -228,7 +323,6 @@ export function AdminDashboard({ onNavigate, onToggleMobileMenu }: AdminDashboar
             </Card>
           </div>
         </div>
-      </div>
     </div>
   );
 }
