@@ -1,4 +1,4 @@
-import { Trophy, DollarSign, Car as CarIcon } from 'lucide-react';
+import { Shield, CreditCard, Headphones, ChevronRight, Star } from 'lucide-react';
 import { HeroSection } from '../components/HeroSection';
 import { CarCard } from '../components/CarCard';
 import { Card, CardContent } from '../components/ui/card';
@@ -12,20 +12,36 @@ import { normalizeImageUrls } from '@/utils/images';
 
 const whyChooseUsFeatures = [
   {
-    icon: Trophy,
-    title: "Trusted Dealers",
+    icon: Shield,
+    title: "Trusted Brand",
     description: "Over 20 years of experience in the automotive industry with thousands of satisfied customers."
   },
   {
-    icon: DollarSign,
-    title: "Affordable Pricing",
-    description: "Competitive prices and flexible financing options to help you get your dream car."
+    icon: Star,
+    title: "Verified Listings",
+    description: "All our vehicles are thoroughly inspected and verified for quality and authenticity."
   },
   {
-    icon: CarIcon,
-    title: "Wide Selection",
-    description: "Extensive inventory of luxury, sports, and family vehicles from top manufacturers."
+    icon: CreditCard,
+    title: "Easy Financing",
+    description: "Flexible financing options and competitive rates to help you get your dream car."
+  },
+  {
+    icon: Headphones,
+    title: "24/7 Support",
+    description: "Round-the-clock customer support to assist you throughout your car buying journey."
   }
+] as const;
+
+const popularBrands = [
+  { name: 'Toyota', logo: '🚗', slug: 'toyota' },
+  { name: 'BMW', logo: '🏎️', slug: 'bmw' },
+  { name: 'Mercedes', logo: '🚙', slug: 'mercedes' },
+  { name: 'Audi', logo: '🚘', slug: 'audi' },
+  { name: 'Honda', logo: '🚗', slug: 'honda' },
+  { name: 'Ford', logo: '🚐', slug: 'ford' },
+  { name: 'Nissan', logo: '🚕', slug: 'nissan' },
+  { name: 'Hyundai', logo: '🚗', slug: 'hyundai' }
 ] as const;
 
 export function HomePage() {
@@ -307,24 +323,133 @@ export function HomePage() {
           )}
         </div>
       </section>
-      {/* Why Choose Us Section */}
-      <section className="py-16 bg-gray-100">
+
+      {/* Browse by Brand Section */}
+      <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">Why Choose Us</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">Browse by Brand</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Explore vehicles from your favorite manufacturers
+            </p>
+          </div>
+          
+          <div className="overflow-x-auto">
+            <div className="flex gap-6 pb-4" style={{ minWidth: 'max-content' }}>
+              {popularBrands.map((brand) => (
+                <button
+                  key={brand.slug}
+                  onClick={() => navigate(`/explore?brand=${brand.slug}`)}
+                  className="flex flex-col items-center p-6 bg-gray-50 rounded-xl hover:bg-gray-100 hover:shadow-md transition-all duration-200 min-w-[120px] group"
+                >
+                  <div className="text-4xl mb-3 group-hover:scale-110 transition-transform duration-200">
+                    {brand.logo}
+                  </div>
+                  <span className="font-medium text-gray-800">{brand.name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Recommendations Section */}
+      <section className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">Recommended for You</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Handpicked vehicles based on popular choices and trending models
+            </p>
+          </div>
+
+          {/* Mobile carousel */}
+          <div className="md:hidden -mx-4 px-4">
+            <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide">
+              {featuredCars.slice(0, 6).map((car: Car) => (
+                <div key={`rec-${car.id}`} className="snap-center shrink-0 w-[85%]">
+                  <div className="relative">
+                    <CarCard {...car} />
+                    <div className="absolute top-3 left-3 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+                      Recommended
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Desktop carousel */}
+          <div className="hidden md:block">
+            <div className="overflow-x-auto">
+              <div className="flex gap-6 pb-4" style={{ minWidth: 'max-content' }}>
+                {featuredCars.slice(0, 6).map((car: Car) => (
+                  <div key={`rec-${car.id}`} className="shrink-0 w-80">
+                    <div className="relative">
+                      <CarCard {...car} />
+                      <div className="absolute top-3 left-3 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                        Recommended
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Why Choose Us Section */}
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">Why Choose Us</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              We're committed to providing you with the best car buying experience
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {whyChooseUsFeatures.map((feature, index) => (
-              <Card key={index}>
-                <CardContent className="p-6">
+              <Card key={index} className="border-none shadow-md hover:shadow-lg transition-shadow duration-200">
+                <CardContent className="p-6 text-center">
                   <div className="flex justify-center mb-4">
-                    <div className="p-3 bg-blue-50 rounded-full">
+                    <div className="p-3 bg-blue-50 rounded-full group-hover:bg-blue-100 transition-colors">
                       <feature.icon className="w-8 h-8 text-blue-600" />
                     </div>
                   </div>
-                  <h3 className="text-xl font-semibold mb-2 text-center">{feature.title}</h3>
-                  <p className="text-gray-600 text-center">{feature.description}</p>
+                  <h3 className="text-lg font-semibold mb-3">{feature.title}</h3>
+                  <p className="text-gray-600 text-sm leading-relaxed">{feature.description}</p>
                 </CardContent>
               </Card>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Call-to-Action Section */}
+      <section className="py-20 bg-gradient-to-r from-slate-900 to-slate-800 text-white">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-4xl font-bold mb-4">Ready to Find Your Perfect Car?</h2>
+          <p className="text-xl text-slate-300 mb-8 max-w-2xl mx-auto">
+            Explore our extensive collection of premium vehicles and find the car that matches your lifestyle and budget.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button
+              onClick={() => navigate('/explore')}
+              size="lg"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 text-lg font-medium rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
+            >
+              Explore Cars
+              <ChevronRight className="ml-2 w-5 h-5" />
+            </Button>
+            <Button
+              onClick={() => navigate('/contact')}
+              variant="outline"
+              size="lg"
+              className="border-white text-white hover:bg-white hover:text-slate-900 px-8 py-4 text-lg font-medium rounded-full transition-all duration-200"
+            >
+              Contact Us
+            </Button>
           </div>
         </div>
       </section>
