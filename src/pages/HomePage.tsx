@@ -1,9 +1,9 @@
-import { Shield, CreditCard, Headphones, ChevronRight, Star } from 'lucide-react';
+import { Trophy, DollarSign, Car as CarIcon, BadgeCheck } from 'lucide-react';
 import { HeroSection } from '../components/HeroSection';
 import { CarCard } from '../components/CarCard';
 import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
-import { collection, query, onSnapshot, orderBy, limit, where, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, orderBy, limit, where, addDoc, serverTimestamp, getDocs, getDoc, doc } from 'firebase/firestore';
 import { db, COLLECTIONS } from '../firebase/firebase';
 import type { Car } from '@/types/car';
 import { useEffect, useState } from 'react';
@@ -12,43 +12,48 @@ import { normalizeImageUrls } from '@/utils/images';
 
 const whyChooseUsFeatures = [
   {
-    icon: Shield,
-    title: "Trusted Brand",
+    icon: Trophy,
+    title: "Trusted Dealers",
     description: "Over 20 years of experience in the automotive industry with thousands of satisfied customers."
   },
   {
-    icon: Star,
+    icon: DollarSign,
+    title: "Affordable Pricing",
+    description: "Competitive prices and flexible financing options to help you get your dream car."
+  },
+  {
+    icon: BadgeCheck,
     title: "Verified Listings",
-    description: "All our vehicles are thoroughly inspected and verified for quality and authenticity."
+    description: "Every listing is reviewed for accuracy so you can shop with confidence."
   },
   {
-    icon: CreditCard,
+    icon: CarIcon,
     title: "Easy Financing",
-    description: "Flexible financing options and competitive rates to help you get your dream car."
-  },
-  {
-    icon: Headphones,
-    title: "24/7 Support",
-    description: "Round-the-clock customer support to assist you throughout your car buying journey."
+    description: "We connect you with flexible financing options tailored to your needs."
   }
 ] as const;
 
-const popularBrands = [
-  { name: 'Toyota', logo: '🚗', slug: 'toyota' },
-  { name: 'BMW', logo: '🏎️', slug: 'bmw' },
-  { name: 'Mercedes', logo: '🚙', slug: 'mercedes' },
-  { name: 'Audi', logo: '🚘', slug: 'audi' },
-  { name: 'Honda', logo: '🚗', slug: 'honda' },
-  { name: 'Ford', logo: '🚐', slug: 'ford' },
-  { name: 'Nissan', logo: '🚕', slug: 'nissan' },
-  { name: 'Hyundai', logo: '🚗', slug: 'hyundai' }
-] as const;
+// Fallback list used when Firestore doesn't return any brands
+const fallbackBrands = [
+  'Toyota',
+  'BMW',
+  'Mercedes',
+  'Audi',
+  'Honda',
+  'Nissan',
+  'Kia',
+  'Hyundai',
+  'Tesla',
+  'Ford'
+]
 
 export function HomePage() {
   const navigate = useNavigate();
   const [featuredCars, setFeaturedCars] = useState<Car[]>([]);
   const [loading, setLoading] = useState(true);
   const [addingTestData, setAddingTestData] = useState(false);
+  const [brands, setBrands] = useState<string[]>([]);
+  const [brandsLoading, setBrandsLoading] = useState<boolean>(true);
 
   const addTestCars = async () => {
     setAddingTestData(true);
@@ -124,91 +129,166 @@ export function HomePage() {
   };
 
   useEffect(() => {
-    console.log('HomePage: Setting up featured cars query...');
-    console.log('HomePage: Using collection:', COLLECTIONS.CARS);
-    
-    // First try to get featured cars marked as such
-    const featuredQuery = query(
-      collection(db, COLLECTIONS.CARS),
-      where('status', '==', 'published'),
-      orderBy('createdAt', 'desc'),
-      limit(8)
-    );
+    console.log('HomePage: Initializing featured cars...');
+  let unsub: (() => void) | undefined;
 
-    const unsub = onSnapshot(featuredQuery, (snapshot) => {
-      console.log('HomePage: Firestore query result:', snapshot.docs.length, 'documents');
-      console.log('HomePage: Snapshot metadata:', snapshot.metadata);
-      
-      if (snapshot.docs.length === 0) {
-        console.log('HomePage: No published cars found, trying fallback query...');
-        // Fallback: get any cars in the database
-        const fallbackQuery = query(
-          collection(db, COLLECTIONS.CARS),
-          orderBy('createdAt', 'desc'),
-          limit(8)
-        );
-        
-        onSnapshot(fallbackQuery, (fallbackSnapshot) => {
-          console.log('HomePage: Fallback query result:', fallbackSnapshot.docs.length, 'documents');
-          
-          if (fallbackSnapshot.docs.length === 0) {
-            console.log('HomePage: No cars found even in fallback. Trying without orderBy...');
-            // Second fallback: just get any cars without ordering
-            const simpleQuery = query(
-              collection(db, COLLECTIONS.CARS),
-              limit(8)
-            );
-            
-            onSnapshot(simpleQuery, (simpleSnapshot) => {
-              console.log('HomePage: Simple query result:', simpleSnapshot.docs.length, 'documents');
-              const cars = simpleSnapshot.docs.map((d) => {
-                const data = d.data();
-                console.log('HomePage: Raw car data:', data);
-                const car = { id: d.id, ...data } as Car;
-                // Normalize image URLs
-                car.imageUrls = normalizeImageUrls(car);
-                console.log('HomePage: Processed car:', { id: car.id, imageCount: car.imageUrls.length });
-                return car;
-              });
-              setFeaturedCars(cars);
-              setLoading(false);
-            });
-          } else {
-            const cars = fallbackSnapshot.docs.map((d) => {
-              const data = d.data();
-              console.log('HomePage: Fallback car data:', data);
-              const car = { id: d.id, ...data } as Car;
-              // Normalize image URLs
-              car.imageUrls = normalizeImageUrls(car);
-              console.log('HomePage: Fallback car processed:', { id: car.id, imageCount: car.imageUrls.length });
-              return car;
-            });
-            console.log('HomePage: Fallback cars loaded:', cars.length);
-            setFeaturedCars(cars);
+    (async () => {
+      // Attempt 1: dedicated FEATURED collection
+      try {
+        console.log('HomePage: Trying FEATURED collection first...');
+        const featSnap = await getDocs(query(collection(db, COLLECTIONS.FEATURED), limit(8)));
+        if (!featSnap.empty) {
+          const cars = await Promise.all(featSnap.docs.map(async (d) => {
+            const data = d.data() as any;
+            try {
+              // Supported shapes: { carId }, or the doc.id is the carId, or inline car fields
+              const carId: string | undefined = data?.carId || d.id;
+              if (data && data.brand && data.model && data.price) {
+                const inlineCar = { id: d.id, ...data } as Car;
+                inlineCar.imageUrls = normalizeImageUrls(inlineCar);
+                return inlineCar;
+              }
+              if (carId) {
+                const ref = doc(db as any, COLLECTIONS.CARS, carId);
+                const carDoc = await getDoc(ref);
+                if (carDoc.exists()) {
+                  const car = { id: carDoc.id, ...carDoc.data() } as Car;
+                  car.imageUrls = normalizeImageUrls(car);
+                  return car;
+                }
+              }
+            } catch (e) {
+              console.warn('HomePage: Error resolving featured car reference:', e);
+            }
+            return null;
+          }));
+          const resolved = cars.filter(Boolean) as Car[];
+          if (resolved.length > 0) {
+            console.log('HomePage: Loaded featured cars from FEATURED collection:', resolved.length);
+            setFeaturedCars(resolved);
             setLoading(false);
+            return; // Success, don't set up fallbacks
           }
-        });
-      } else {
-        const cars = snapshot.docs.map((d) => {
+        }
+      } catch (e) {
+        console.warn('HomePage: FEATURED collection unavailable or error:', e);
+      }
+
+      console.log('HomePage: Falling back to cars collection queries...');
+      const baseCol = collection(db, COLLECTIONS.CARS);
+
+      // Try published + createdAt desc first with getDocs; if index is required, gracefully retry
+      try {
+        const publishedOrdered = await getDocs(
+          query(baseCol, where('status', '==', 'published'), orderBy('createdAt', 'desc'), limit(8))
+        );
+        if (!publishedOrdered.empty) {
+          const cars = publishedOrdered.docs.map((d) => {
+            const data = d.data();
+            const car = { id: d.id, ...data } as Car;
+            car.imageUrls = normalizeImageUrls(car);
+            return car;
+          });
+          setFeaturedCars(cars);
+          setLoading(false);
+          return;
+        }
+      } catch (err: any) {
+        console.warn('HomePage: Published+ordered query failed (likely missing index). Retrying without orderBy...', err?.message || err);
+      }
+
+      // Retry: published only, no orderBy (no index required)
+      try {
+        console.log('HomePage: Trying published-only query (no orderBy)...');
+        const publishedOnly = await getDocs(query(baseCol, where('status', '==', 'published'), limit(8)));
+        console.log('HomePage: Published-only query result:', publishedOnly.docs.length, 'documents');
+        if (!publishedOnly.empty) {
+          const cars = publishedOnly.docs.map((d) => {
+            const data = d.data();
+            const car = { id: d.id, ...data } as Car;
+            car.imageUrls = normalizeImageUrls(car);
+            return car;
+          });
+          setFeaturedCars(cars);
+          setLoading(false);
+          return;
+        }
+        console.log('HomePage: No published cars found, trying next fallback...');
+      } catch (err) {
+        console.warn('HomePage: Published-only query failed, proceeding to general fallbacks...', err);
+      }
+
+      // Fallback: any cars ordered by createdAt desc
+      try {
+        console.log('HomePage: Trying recent cars with orderBy...');
+        const recent = await getDocs(query(baseCol, orderBy('createdAt', 'desc'), limit(8)));
+        console.log('HomePage: Recent cars query result:', recent.docs.length, 'documents');
+        if (!recent.empty) {
+          const cars = recent.docs.map((d) => {
+            const data = d.data();
+            const car = { id: d.id, ...data } as Car;
+            car.imageUrls = normalizeImageUrls(car);
+            return car;
+          });
+          console.log('HomePage: Successfully loaded recent cars:', cars.length);
+          setFeaturedCars(cars);
+          setLoading(false);
+          return;
+        }
+        console.log('HomePage: No recent cars found, trying final fallback...');
+      } catch (err) {
+        console.warn('HomePage: Recent cars ordered query failed, trying simple limit...', err);
+      }
+
+      // Last resort: any cars, no order
+      try {
+        console.log('HomePage: Trying any cars (no filters, no order)...');
+        const anyDocs = await getDocs(query(baseCol, limit(8)));
+        console.log('HomePage: Any cars query result:', anyDocs.docs.length, 'documents');
+        const cars = anyDocs.docs.map((d) => {
           const data = d.data();
-          console.log('HomePage: Published car data:', data);
           const car = { id: d.id, ...data } as Car;
-          // Normalize image URLs
           car.imageUrls = normalizeImageUrls(car);
-          console.log('HomePage: Featured car processed:', { id: car.id, imageCount: car.imageUrls.length });
           return car;
         });
-        console.log('HomePage: Featured cars loaded:', cars.length);
+        console.log('HomePage: Final fallback loaded cars:', cars.length);
         setFeaturedCars(cars);
         setLoading(false);
+      } catch (err) {
+        console.error('HomePage: Final fallback failed:', err);
+        setLoading(false);
       }
-    }, (err) => {
-      console.error('HomePage: Error fetching featured cars:', err);
-      console.error('HomePage: Error details:', err.message);
-      setLoading(false);
-    });
+    })();
 
-    return () => unsub();
+    return () => {
+      if (typeof unsub === 'function') unsub();
+    };
+  }, []);
+
+  // Load distinct brands for Browse by Brand
+  useEffect(() => {
+    const loadBrands = async () => {
+      try {
+        setBrandsLoading(true);
+        const snap = await getDocs(
+          query(collection(db, COLLECTIONS.CARS), where('status', '==', 'published'), limit(200))
+        );
+        const brandSet = new Set<string>();
+        snap.forEach((d) => {
+          const data = d.data() as any;
+          const b: string | undefined = data?.brand || data?.Brand || data?.make;
+          if (b && typeof b === 'string') brandSet.add(b.trim());
+        });
+        const list = Array.from(brandSet).sort((a, b) => a.localeCompare(b));
+        setBrands(list.length ? list : fallbackBrands);
+      } catch (e) {
+        console.warn('HomePage: Failed to load brands, using fallback.', e);
+        setBrands(fallbackBrands);
+      } finally {
+        setBrandsLoading(false);
+      }
+    };
+    loadBrands();
   }, []);
 
   const handleExploreClick = () => {
@@ -233,6 +313,7 @@ export function HomePage() {
             <p className="text-gray-600 max-w-2xl mx-auto">
               Discover our handpicked selection of premium vehicles, featuring the latest models and best deals.
             </p>
+
           </div>
 
           {loading ? (
@@ -290,27 +371,17 @@ export function HomePage() {
           ) : (
             // Cars available
             <>
-              {/* Mobile carousel */}
-              <div className="md:hidden -mx-4 px-4">
-                <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide">
-                  {featuredCars.slice(0, 8).map((car: Car) => (
-                    <div key={car.id} className="snap-center shrink-0 w-[80%]">
-                      <CarCard {...car} />
-                    </div>
-                  ))}
-                </div>
-              </div>
-
               {/* Desktop grid 4x2 */}
-              <div className="hidden md:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {featuredCars.slice(0, 8).map((car: Car) => (
                   <CarCard key={car.id} {...car} />
                 ))}
               </div>
 
+
               {/* Show More button */}
               {featuredCars.length > 0 && (
-                <div className="mt-10 flex justify-center">
+                <div className="mt-8 flex justify-center">
                   <button
                     onClick={() => navigate('/explore')}
                     className="inline-flex items-center rounded-full bg-slate-900 text-white px-6 py-3 text-sm font-medium shadow hover:bg-slate-800 transition-colors"
@@ -324,101 +395,54 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* Browse by Brand Section */}
-      <section className="py-16 bg-white">
+      {/* Browse by Brand */}
+      <section id="browse-by-brand" className="py-14 border-t border-gray-100">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Browse by Brand</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Explore vehicles from your favorite manufacturers
-            </p>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl md:text-3xl font-bold">Browse by Brand</h2>
+            <Button variant="ghost" onClick={() => navigate('/explore')} className="hidden md:inline-flex">View all</Button>
           </div>
-          
-          <div className="overflow-x-auto">
-            <div className="flex gap-6 pb-4" style={{ minWidth: 'max-content' }}>
-              {popularBrands.map((brand) => (
-                <button
-                  key={brand.slug}
-                  onClick={() => navigate(`/explore?brand=${brand.slug}`)}
-                  className="flex flex-col items-center p-6 bg-gray-50 rounded-xl hover:bg-gray-100 hover:shadow-md transition-all duration-200 min-w-[120px] group"
-                >
-                  <div className="text-4xl mb-3 group-hover:scale-110 transition-transform duration-200">
-                    {brand.logo}
-                  </div>
-                  <span className="font-medium text-gray-800">{brand.name}</span>
-                </button>
-              ))}
+          <div className="-mx-4 px-4">
+            <div className="flex gap-3 overflow-x-auto scrollbar-hide py-2">
+              {brandsLoading ? (
+                Array(8).fill(null).map((_, i) => (
+                  <div key={i} className="shrink-0 h-10 w-28 rounded-full bg-gray-200 animate-pulse" />
+                ))
+              ) : (
+                brands.map((brand: string) => (
+                  <button
+                    key={brand}
+                    onClick={() => navigate(`/explore?brand=${encodeURIComponent(brand)}`)}
+                    className="shrink-0 inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:border-gray-300 hover:bg-gray-50 transition-colors"
+                    aria-label={`Filter by ${brand}`}
+                  >
+                    <span className="inline-block h-6 w-6 rounded-full bg-gray-100 text-gray-500 grid place-items-center text-[10px]">{brand[0]}</span>
+                    {brand}
+                  </button>
+                ))
+              )}
             </div>
           </div>
         </div>
       </section>
 
-      {/* Recommendations Section */}
-      <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Recommended for You</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Handpicked vehicles based on popular choices and trending models
-            </p>
-          </div>
-
-          {/* Mobile carousel */}
-          <div className="md:hidden -mx-4 px-4">
-            <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide">
-              {featuredCars.slice(0, 6).map((car: Car) => (
-                <div key={`rec-${car.id}`} className="snap-center shrink-0 w-[85%]">
-                  <div className="relative">
-                    <CarCard {...car} />
-                    <div className="absolute top-3 left-3 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-medium">
-                      Recommended
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Desktop carousel */}
-          <div className="hidden md:block">
-            <div className="overflow-x-auto">
-              <div className="flex gap-6 pb-4" style={{ minWidth: 'max-content' }}>
-                {featuredCars.slice(0, 6).map((car: Car) => (
-                  <div key={`rec-${car.id}`} className="shrink-0 w-80">
-                    <div className="relative">
-                      <CarCard {...car} />
-                      <div className="absolute top-3 left-3 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                        Recommended
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
+      {/* Recommendations */}
+      {/* Removed Best Value/Recommendations section */}
       {/* Why Choose Us Section */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-gray-100">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Why Choose Us</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              We're committed to providing you with the best car buying experience
-            </p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <h2 className="text-3xl font-bold text-center mb-12">Why Choose Us</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
             {whyChooseUsFeatures.map((feature, index) => (
-              <Card key={index} className="border-none shadow-md hover:shadow-lg transition-shadow duration-200">
-                <CardContent className="p-6 text-center">
+              <Card key={index}>
+                <CardContent className="p-6">
                   <div className="flex justify-center mb-4">
-                    <div className="p-3 bg-blue-50 rounded-full group-hover:bg-blue-100 transition-colors">
-                      <feature.icon className="w-8 h-8 text-blue-600" />
+                    <div className="p-3 bg-blue-50 rounded-full group">
+                      <feature.icon className="w-8 h-8 text-blue-600 group-hover:scale-105 transition-transform" />
                     </div>
                   </div>
-                  <h3 className="text-lg font-semibold mb-3">{feature.title}</h3>
-                  <p className="text-gray-600 text-sm leading-relaxed">{feature.description}</p>
+                  <h3 className="text-xl font-semibold mb-2 text-center">{feature.title}</h3>
+                  <p className="text-gray-600 text-center">{feature.description}</p>
                 </CardContent>
               </Card>
             ))}
@@ -426,30 +450,18 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* Call-to-Action Section */}
-      <section className="py-20 bg-gradient-to-r from-slate-900 to-slate-800 text-white">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl font-bold mb-4">Ready to Find Your Perfect Car?</h2>
-          <p className="text-xl text-slate-300 mb-8 max-w-2xl mx-auto">
-            Explore our extensive collection of premium vehicles and find the car that matches your lifestyle and budget.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button
-              onClick={() => navigate('/explore')}
-              size="lg"
-              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 text-lg font-medium rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
-            >
-              Explore Cars
-              <ChevronRight className="ml-2 w-5 h-5" />
-            </Button>
-            <Button
-              onClick={() => navigate('/contact')}
-              variant="outline"
-              size="lg"
-              className="border-white text-white hover:bg-white hover:text-slate-900 px-8 py-4 text-lg font-medium rounded-full transition-all duration-200"
-            >
-              Contact Us
-            </Button>
+      {/* Call to Action Banner */}
+      <section className="py-16">
+        <div className="container mx-auto px-4">
+          <div className="relative overflow-hidden rounded-2xl bg-slate-900 text-white">
+            <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_top_right,_#60a5fa,_transparent_40%),_radial-gradient(circle_at_bottom_left,_#34d399,_transparent_40%)]" />
+            <div className="relative px-6 py-12 md:px-12 md:py-16 flex flex-col md:flex-row items-center justify-between gap-6">
+              <div>
+                <h3 className="text-2xl md:text-3xl font-bold mb-2">Ready to Find Your Perfect Car?</h3>
+                <p className="text-slate-200/90 max-w-2xl">Browse our full inventory, compare options, and connect with trusted sellers in minutes.</p>
+              </div>
+              <Button onClick={() => navigate('/explore')} className="bg-white text-slate-900 hover:bg-slate-100 px-6 py-6 rounded-full font-semibold">Explore Cars</Button>
+            </div>
           </div>
         </div>
       </section>

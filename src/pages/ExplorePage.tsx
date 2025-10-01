@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import { CarCard } from '@/components/CarCard';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -49,6 +50,7 @@ function useDebounce<T>(value: T, delay: number): T {
 
 export function ExplorePage() {
   // const navigate = useNavigate();
+  const location = useLocation();
   const isMobile = useIsMobile();
   const pageSize = isMobile ? 12 : 16;
   
@@ -65,15 +67,28 @@ export function ExplorePage() {
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   
   // Filter state
-  const [filters, setFilters] = useState<Filters>({
-    search: '',
-    brands: [],
-    priceRange: [0, 500000],
-    condition: [],
-    yearRange: [2015, new Date().getFullYear()],
-    transmission: [],
-    fuelType: []
+  const [filters, setFilters] = useState<Filters>(() => {
+    const params = new URLSearchParams(location.search);
+    const brandParam = params.get('brand');
+    return {
+      search: '',
+      brands: brandParam ? [brandParam] : [],
+      priceRange: [0, 500000],
+      condition: [],
+      yearRange: [2015, new Date().getFullYear()],
+      transmission: [],
+      fuelType: []
+    };
   });
+
+  // Update when URL changes (e.g., navigating from Home brand chips)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const brandParam = params.get('brand');
+    if (brandParam) {
+      setFilters(prev => ({ ...prev, brands: [brandParam] }));
+    }
+  }, [location.search]);
 
   // Temporary filter state for modal (only applied when "Apply" is clicked)
   const [tempFilters, setTempFilters] = useState<Filters>({
