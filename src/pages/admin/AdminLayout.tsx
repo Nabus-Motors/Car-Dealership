@@ -44,7 +44,7 @@ export function AdminLayout({ children, currentPage, onNavigate }: AdminLayoutPr
         searchPlaceholder="Search car listings..."
       />
       
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1 overflow-auto pb-16 md:pb-0">
         {childrenWithProps}
       </main>
     </div>

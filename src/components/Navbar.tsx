@@ -53,7 +53,7 @@ export function Navbar() {
       </div>
 
       {/* Mobile Drawer (left like admin) */}
-      <div className={`md:hidden fixed inset-0 z-50 ${mobileOpen ? '' : 'pointer-events-none'}`}>
+      <div className={`md:hidden fixed inset-0 z-40 ${mobileOpen ? '' : 'pointer-events-none'}`}>
         {/* Backdrop */}
         <div className={`absolute inset-0 bg-black/50 transition-opacity ${mobileOpen ? 'opacity-100' : 'opacity-0'}`} onClick={() => setMobileOpen(false)} />
         {/* Panel */}

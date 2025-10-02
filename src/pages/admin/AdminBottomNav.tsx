@@ -25,7 +25,7 @@ export function AdminBottomNav({ currentPage, onNavigate }: AdminBottomNavProps)
   return (
     <nav
       aria-label="Admin bottom navigation"
-      className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 border-t border-gray-200"
+      className="md:hidden fixed bottom-0 inset-x-0 z-50 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 border-t border-gray-200"
       style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0px)' }}
     >
       <ul className="grid grid-cols-4">

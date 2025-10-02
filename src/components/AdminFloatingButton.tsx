@@ -67,8 +67,8 @@ export function AdminFloatingButton() {
 
   return (
     <>
-      {/* Floating Button */}
-      <div className="fixed bottom-6 left-6 z-[99998]">
+  {/* Floating Button - hidden on small screens to avoid overlapping mobile bottom nav */}
+  <div className="hidden md:block fixed bottom-6 left-6 z-[99998]">
         <Button
           onClick={() => setIsOpen(!isOpen)}
           size="icon"
