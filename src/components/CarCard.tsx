@@ -152,24 +152,25 @@ export function CarCard(props: Car) {
 
       {/* Dialog modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="p-0">
-          <DialogHeader className="border-b border-gray-200 px-4 sm:px-6 py-4 sm:py-5">
-            <DialogTitle>
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1">
-                  <h2 className="text-lg sm:text-xl font-semibold text-gray-900 pr-12">{year} {brand} {model}</h2>
+  <DialogContent className="max-w-[95vw] sm:max-w-[90vw] lg:max-w-4xl xl:max-w-5xl max-h-[90vh] p-0 overflow-hidden" style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
+          <div className="flex flex-col h-full max-h-[90vh]">
+            <DialogHeader className="border-b border-gray-200 px-4 sm:px-6 py-4 sm:py-5 flex-shrink-0">
+              <DialogTitle>
+                <div className="flex items-start justify-between gap-4 pr-8">
+                  <div className="flex-1">
+                    <h2 className="text-lg sm:text-xl font-semibold text-gray-900">{year} {brand} {model}</h2>
+                  </div>
+                  <div className="flex-shrink-0">
+                    <span className="text-xl sm:text-2xl font-bold text-gray-900">{formatPrice(price)}</span>
+                  </div>
                 </div>
-                <div className="flex-shrink-0">
-                  <span className="text-xl sm:text-2xl font-bold text-gray-900">{formatPrice(price)}</span>
-                </div>
-              </div>
-            </DialogTitle>
-          </DialogHeader>
+              </DialogTitle>
+            </DialogHeader>
 
-          <div className="overflow-y-auto max-h-[70vh] px-4 sm:px-6 py-4 sm:py-6">
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="overflow-y-auto flex-1 px-4 sm:px-6 py-4 sm:py-6">
+            <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
               {/* Left: Gallery */}
-              <div className="space-y-3">
+              <div className="space-y-3 order-1 lg:order-1">
                 <h3 className="text-base font-semibold text-gray-900">Gallery</h3>
                 <div className="relative w-full rounded-xl overflow-hidden bg-gray-100" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
                   {!modalImageLoaded && <div className="absolute inset-0 bg-gray-200 animate-pulse" />}
@@ -229,33 +230,33 @@ export function CarCard(props: Car) {
               </div>
 
               {/* Right: Details */}
-              <div className="space-y-4">
+              <div className="space-y-4 order-2 lg:order-2">
                 <h3 className="text-base font-semibold text-gray-900">Vehicle Details</h3>
-                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <div className="bg-white rounded-xl p-4 border border-gray-200">
-                    <div className="text-sm text-gray-500 mb-2">Brand</div>
-                    <div className="font-semibold text-gray-900">{brand}</div>
+                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                  <div className="bg-white rounded-xl p-3 sm:p-4 border border-gray-200">
+                    <div className="text-xs sm:text-sm text-gray-500 mb-1 sm:mb-2">Brand</div>
+                    <div className="text-sm sm:text-base font-semibold text-gray-900">{brand}</div>
                   </div>
-                  <div className="bg-white rounded-xl p-4 border border-gray-200">
-                    <div className="text-sm text-gray-500 mb-2">Model</div>
-                    <div className="font-semibold text-gray-900">{model}</div>
+                  <div className="bg-white rounded-xl p-3 sm:p-4 border border-gray-200">
+                    <div className="text-xs sm:text-sm text-gray-500 mb-1 sm:mb-2">Model</div>
+                    <div className="text-sm sm:text-base font-semibold text-gray-900">{model}</div>
                   </div>
-                  <div className="bg-white rounded-xl p-4 border border-gray-200">
-                    <div className="text-sm text-gray-500 mb-2">Year</div>
-                    <div className="font-semibold text-gray-900">{year}</div>
+                  <div className="bg-white rounded-xl p-3 sm:p-4 border border-gray-200">
+                    <div className="text-xs sm:text-sm text-gray-500 mb-1 sm:mb-2">Year</div>
+                    <div className="text-sm sm:text-base font-semibold text-gray-900">{year}</div>
                   </div>
-                  <div className="bg-white rounded-xl p-4 border border-gray-200">
-                    <div className="text-sm text-gray-500 mb-2">Mileage</div>
-                    <div className="font-semibold text-gray-900">{formatMileage(mileage)}</div>
+                  <div className="bg-white rounded-xl p-3 sm:p-4 border border-gray-200">
+                    <div className="text-xs sm:text-sm text-gray-500 mb-1 sm:mb-2">Mileage</div>
+                    <div className="text-sm sm:text-base font-semibold text-gray-900">{formatMileage(mileage)}</div>
                   </div>
-                  <div className="bg-white rounded-xl p-4 border border-gray-200">
-                    <div className="text-sm text-gray-500 mb-2">Fuel Type</div>
-                    <div className="font-semibold text-gray-900">{fuelType || 'N/A'}</div>
+                  <div className="bg-white rounded-xl p-3 sm:p-4 border border-gray-200">
+                    <div className="text-xs sm:text-sm text-gray-500 mb-1 sm:mb-2">Fuel Type</div>
+                    <div className="text-sm sm:text-base font-semibold text-gray-900">{fuelType || 'N/A'}</div>
                   </div>
                   {transmission && (
-                    <div className="bg-white rounded-xl p-4 border border-gray-200">
-                      <div className="text-sm text-gray-500 mb-2">Transmission</div>
-                      <div className="font-semibold text-gray-900">{transmission}</div>
+                    <div className="bg-white rounded-xl p-3 sm:p-4 border border-gray-200">
+                      <div className="text-xs sm:text-sm text-gray-500 mb-1 sm:mb-2">Transmission</div>
+                      <div className="text-sm sm:text-base font-semibold text-gray-900">{transmission}</div>
                     </div>
                   )}
                 </div>
@@ -263,7 +264,7 @@ export function CarCard(props: Car) {
                 {description && (
                   <div className="space-y-3">
                     <h3 className="text-base font-semibold text-gray-900">Description</h3>
-                    <div className="bg-white rounded-xl p-4 border border-gray-200">
+                    <div className="bg-white rounded-xl p-3 sm:p-4 border border-gray-200">
                       <p className="text-gray-700 leading-relaxed text-sm sm:text-base">{description}</p>
                     </div>
                   </div>
@@ -272,8 +273,8 @@ export function CarCard(props: Car) {
                 {features && features.length > 0 && (
                   <div className="space-y-3">
                     <h3 className="text-base font-semibold text-gray-900">Features</h3>
-                    <div className="bg-white rounded-xl p-4 border border-gray-200">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div className="bg-white rounded-xl p-3 sm:p-4 border border-gray-200">
+                      <div className="grid grid-cols-1 gap-2">
                         {features.map((feature, idx) => (
                           <div key={idx} className="flex items-center gap-2">
                             <div className="w-1.5 h-1.5 bg-slate-900 rounded-full flex-shrink-0"></div>
@@ -286,17 +287,18 @@ export function CarCard(props: Car) {
                 )}
               </div>
             </div>
-          </div>
+            </div>
 
-          {/* Footer */}
-          <div className="px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-200 bg-white">
-            <Button
-              size="lg"
-              className="w-full bg-slate-900 hover:bg-slate-800 text-white font-medium"
-              onClick={() => { setIsModalOpen(false); navigate('/contact'); }}
-            >
-              Contact Seller
-            </Button>
+            {/* Footer */}
+            <div className="px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-200 bg-white flex-shrink-0">
+              <Button
+                size="lg"
+                className="w-full bg-slate-900 hover:bg-slate-800 text-white font-medium"
+                onClick={() => { setIsModalOpen(false); navigate('/contact'); }}
+              >
+                Contact Seller
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
