@@ -30,8 +30,13 @@ export function HeroSection({
       {/* Use an <img> with object-cover so the photo fills the area without stretching */}
       <img
         src={backgroundImage || defaultHeroBackgroundImage}
+        srcSet={`${(backgroundImage || defaultHeroBackgroundImage)}&w=640 640w, ${(backgroundImage || defaultHeroBackgroundImage)}&w=1024 1024w, ${(backgroundImage || defaultHeroBackgroundImage)}&w=1440 1440w, ${(backgroundImage || defaultHeroBackgroundImage)}&w=1920 1920w`}
+        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 100vw"
         alt="Hero background"
         className="absolute inset-0 w-full h-full object-cover"
+        loading="lazy"
+        decoding="async"
+        fetchPriority={height.includes('min-h-screen') ? 'high' as any : 'auto' as any}
       />
       {/* Image-only overlay to darken the background photo */}
       <div

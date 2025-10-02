@@ -146,7 +146,7 @@ export function ExplorePage() {
       setError(null);
 
       // Start with basic query - order by creation date; use database pagination
-      let q = query(collection(db, COLLECTIONS.CARS), orderBy('createdAt', 'desc'));
+  let q = query(collection(db, COLLECTIONS.CARS), orderBy('createdAt', 'desc'));
 
       // Determine cursor to start after for the requested page
       if (!resetPagination && page > 1) {
@@ -166,6 +166,9 @@ export function ExplorePage() {
       })) as Car[];
       // ensure imageUrls is present
       carList = carList.map(c => ({ ...c, imageUrls: normalizeImageUrls(c) }));
+
+      // Only expose published/new/sold to users
+      carList = carList.filter(c => ['published','new','sold'].includes((c.status || 'draft') as string));
 
   // Apply all filters client-side to avoid composite index requirements
       
@@ -354,6 +357,22 @@ export function ExplorePage() {
             </DialogTrigger>
             
             <DialogContent onOpenAutoFocus={(e) => e.preventDefault()} className="max-w-4xl max-h-[85vh] overflow-y-auto">
+              {/* Close button - positioned relative to DialogContent */}
+              <button
+                aria-label="Close modal"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsFilterModalOpen(false);
+                }}
+                className="absolute right-4 top-4 inline-flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 shadow-lg hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 z-[100] cursor-pointer"
+                type="button"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+              
               <DialogHeader className="relative pr-10">
                 <DialogTitle className="text-xl font-semibold">
                   Filter Cars

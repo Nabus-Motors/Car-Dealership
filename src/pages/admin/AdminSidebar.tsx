@@ -183,6 +183,10 @@ export function AdminSidebar({ currentPage, onNavigate, collapsed, mobileOpen, o
       </div>
 
       {/* Mobile Sidebar Overlay */}
+      {/* Backdrop for outside-click close */}
+      {mobileOpen && (
+        <div className="lg:hidden fixed inset-0 z-40 bg-black/50" onClick={onToggleMobile} />
+      )}
       <div aria-label="Admin mobile sidebar" className={`lg:hidden fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out ${
         mobileOpen ? 'translate-x-0' : '-translate-x-full'
       } shadow-xl`}>

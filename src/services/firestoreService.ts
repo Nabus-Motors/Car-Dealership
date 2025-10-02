@@ -9,7 +9,6 @@ import {
   // Remove unused DocumentReference import 
 } from "firebase/firestore";
 import { db } from "../firebase/firebase";
-import { deleteCarFolder } from "./storageService";
 import { Car } from "../types/car";
 
 type CarInput = Omit<Car, 'id' | 'createdAt' | 'updatedAt'>;
@@ -32,13 +31,12 @@ export const addCarListing = async (carData: CarInput): Promise<string> => {
 // Function to delete a car listing and its images
 export const deleteCar = async (carId: string): Promise<void> => {
   try {
-    // Delete images first
-    await deleteCarFolder(carId);
-    
-    // Then delete the Firestore document
+    // Since we're using base64 images stored in Firestore,
+    // we only need to delete the Firestore document
+    // The images are part of the document and will be deleted automatically
     await deleteDoc(doc(db, "cars", carId));
     
-    console.log("Car and associated images deleted successfully");
+    console.log("Car deleted successfully");
   } catch (error) {
     console.error("Error deleting car: ", error);
     throw error;

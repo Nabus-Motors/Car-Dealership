@@ -31,6 +31,7 @@ interface FormData {
   images: File[];
   existingImages: string[];
   status: 'draft' | 'published' | 'sold' | 'new';
+  category?: 'Registered' | 'Unregistered';
 }
 
 interface ValidationErrors {
@@ -55,7 +56,8 @@ export const AddEditListing: React.FC = () => {
     features: [],
     images: [],
     existingImages: [],
-    status: 'draft'
+    status: 'draft',
+    category: undefined
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -88,7 +90,8 @@ export const AddEditListing: React.FC = () => {
           features: car.features || [],
           images: [],
           existingImages: existing,
-          status: car.status || 'draft'
+          status: car.status || 'draft',
+          category: (car as any).category
         });
       }
     } catch (error) {
@@ -212,6 +215,7 @@ export const AddEditListing: React.FC = () => {
           features: formData.features,
           imageUrls: [],
           status: formData.status,
+          category: formData.category,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp()
         };
@@ -245,6 +249,7 @@ export const AddEditListing: React.FC = () => {
         features: formData.features,
         imageUrls: imageUrls,
         status: formData.status,
+        category: formData.category,
         updatedAt: serverTimestamp()
       };
 
@@ -301,7 +306,7 @@ export const AddEditListing: React.FC = () => {
           <CardTitle>Car Details</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <Label htmlFor="make">Make *</Label>
               <Input
@@ -439,6 +444,22 @@ export const AddEditListing: React.FC = () => {
                 </SelectContent>
               </Select>
               {errors.status && <p className="text-sm text-red-500 mt-1">{errors.status}</p>}
+            </div>
+
+            <div>
+              <Label htmlFor="category">Category</Label>
+              <Select
+                value={formData.category}
+                onValueChange={(value) => handleInputChange('category', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Registered">Registered</SelectItem>
+                  <SelectItem value="Unregistered">Unregistered</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
@@ -579,19 +600,22 @@ export const AddEditListing: React.FC = () => {
             </Alert>
           )}
 
-          <div className="flex gap-4 pt-4">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-6">
             <Button 
               variant="outline" 
               onClick={() => navigate('/admin/listings')}
               disabled={isSaving}
-              className="flex-1"
+              className="sm:flex-1"
             >
               Cancel
             </Button>
             <Button
-              onClick={handleSave}
+              onClick={async () => { 
+                setFormData(prev => ({ ...prev, status: 'draft' })); 
+                await handleSave(); 
+              }}
               disabled={isSaving}
-              className="flex-1 bg-red-600 hover:bg-red-700"
+              className="sm:flex-1 bg-gray-900 hover:bg-gray-800"
             >
               {isSaving ? (
                 <div className="flex items-center">
@@ -601,11 +625,20 @@ export const AddEditListing: React.FC = () => {
               ) : (
                 <div className="flex items-center">
                   <Save className="w-4 h-4 mr-2" />
-                  {formData.status === 'published' ? 'Publish' :
-                   formData.status === 'sold' ? 'Mark as Sold' :
-                   formData.status === 'new' ? 'Mark as New' : 'Save Draft'}
+                  Save Draft
                 </div>
               )}
+            </Button>
+            <Button
+              type="button"
+              onClick={async () => { 
+                setFormData(prev => ({ ...prev, status: 'published' })); 
+                await handleSave(); 
+              }}
+              disabled={isSaving}
+              className="sm:flex-1 bg-red-600 hover:bg-red-700"
+            >
+              Publish
             </Button>
           </div>
         </CardContent>

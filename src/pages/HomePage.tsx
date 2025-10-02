@@ -251,8 +251,9 @@ export function HomePage() {
           car.imageUrls = normalizeImageUrls(car);
           return car;
         });
-        console.log('HomePage: Final fallback loaded cars:', cars.length);
-        setFeaturedCars(cars);
+        const visible = cars.filter(c => ['published','new','sold'].includes((c.status || 'draft') as string));
+        console.log('HomePage: Final fallback loaded cars:', visible.length);
+        setFeaturedCars(visible);
         setLoading(false);
       } catch (err) {
         console.error('HomePage: Final fallback failed:', err);
@@ -386,7 +387,7 @@ export function HomePage() {
                     onClick={() => navigate('/explore')}
                     className="inline-flex items-center rounded-full bg-slate-900 text-white px-6 py-3 text-sm font-medium shadow hover:bg-slate-800 transition-colors"
                   >
-                    View All Cars ({featuredCars.length > 8 ? `${featuredCars.length - 8}+ more` : 'Show More'})
+                    Show More
                   </button>
                 </div>
               )}

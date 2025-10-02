@@ -3,14 +3,16 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { StorageImage } from '@/components/figma/StorageImage';
 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { collection, query, onSnapshot, orderBy } from 'firebase/firestore';
 import { db, COLLECTIONS } from '@/firebase/firebase';
-import { Edit, Trash2, Plus, RefreshCw } from 'lucide-react';
+import { RefreshCw, Plus, Edit, Trash2, ChevronDown } from 'lucide-react';
 import { formatPrice, formatMileage } from '@/utils/format';
 import type { Car } from '@/types/car';
 import { normalizeImageUrls } from '@/utils/images';
@@ -23,8 +25,16 @@ interface ListingsManagementProps {
 
 export function ListingsManagement({ onNavigate }: ListingsManagementProps) {
   const [selectedCars, setSelectedCars] = useState<string[]>([]);
-  const [filterBrand, setFilterBrand] = useState('all');
-  const [filterStatus, setFilterStatus] = useState('all');
+  const [filterBrands, setFilterBrands] = useState<string[]>([]);
+  const [filterConditions, setFilterConditions] = useState<string[]>([]);
+  const [filterStatuses, setFilterStatuses] = useState<string[]>([]);
+  const [availableBrands, setAvailableBrands] = useState<string[]>([]);
+  const [brandSearchOpen, setBrandSearchOpen] = useState(false);
+  const [brandSearch, setBrandSearch] = useState('');
+  
+  // Predefined form-based options
+  const formConditions = ['New', 'Used', 'Certified Pre-Owned'];
+  const formStatuses = ['draft', 'new', 'published', 'sold'];
   const [cars, setCars] = useState<Car[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteCarIds, setDeleteCarIds] = useState<string[]>([]);
@@ -44,7 +54,11 @@ export function ListingsManagement({ onNavigate }: ListingsManagementProps) {
       })) as Car[];
       // normalize imageUrls
       carsData.forEach(c => { (c as any).imageUrls = normalizeImageUrls(c); });
-      setCars(carsData);
+  setCars(carsData);
+  // compute distinct filters
+  const brands = Array.from(new Set(carsData.map(c => (c.brand || '').toString()).filter(Boolean))).sort((a,b)=>a.localeCompare(b));
+  setAvailableBrands(brands);
+  // Using predefined form-based options for consistency
       setLoading(false);
     }, (error) => {
       console.error('Error fetching cars:', error);
@@ -58,15 +72,24 @@ export function ListingsManagement({ onNavigate }: ListingsManagementProps) {
     const toastId = toast.loading(`Deleting ${carIds.length} car listing(s)...`);
     
     try {
+      console.log('Starting delete operation for cars:', carIds);
+      
       // Delete all selected cars
-      await Promise.all(carIds.map(carId => deleteCar(carId)));
+      await Promise.all(carIds.map(async (carId) => {
+        console.log(`Deleting car: ${carId}`);
+        await deleteCar(carId);
+        console.log(`Successfully deleted car: ${carId}`);
+      }));
+      
       toast.success(`${carIds.length} car listing(s) deleted successfully`, { id: toastId });
       setShowDeleteDialog(false);
       setDeleteCarIds([]);
       setSelectedCars([]);
+      
+      console.log('Delete operation completed successfully');
     } catch (error) {
       console.error('Error deleting cars:', error);
-      toast.error('Failed to delete car(s). Please try again.', { id: toastId });
+      toast.error(`Failed to delete car(s). Error: ${error instanceof Error ? error.message : 'Unknown error'}`, { id: toastId });
     }
   };
 
@@ -81,33 +104,17 @@ export function ListingsManagement({ onNavigate }: ListingsManagementProps) {
     }
   };
 
-  const handleRowClick = (carId: string, event: React.MouseEvent) => {
-    // Don't trigger if clicking on checkbox
-    if ((event.target as HTMLElement).closest('input[type="checkbox"]')) {
-      return;
-    }
-    
-    if (event.ctrlKey || event.metaKey) {
-      // Multi-select with Ctrl/Cmd - toggle selection
-      handleSelectCar(carId, !selectedCars.includes(carId));
-    } else {
-      // Single select - clear others and select this one, or deselect if already selected alone
-      if (selectedCars.length === 1 && selectedCars.includes(carId)) {
-        setSelectedCars([]); // Deselect if it's the only selected item
-      } else {
-        setSelectedCars([carId]); // Select only this item
-      }
-    }
-  };
-
   const clearSelection = () => {
     setSelectedCars([]);
   };
 
   const handleRefresh = () => {
     setLoading(true);
+    // Clear current selections since items might be deleted
+    setSelectedCars([]);
+    setDeleteCarIds([]);
     // The onSnapshot listener will automatically update when data changes
-    // We just show a loading state briefly
+    // We just show a loading state briefly to provide visual feedback
     setTimeout(() => setLoading(false), 500);
     toast.success('Listings refreshed!');
   };
@@ -131,10 +138,10 @@ export function ListingsManagement({ onNavigate }: ListingsManagementProps) {
 
   // Filter cars based on filters only
   const filteredCars = cars.filter(car => {
-    const matchesBrand = filterBrand === 'all' || car.brand.toLowerCase() === filterBrand;
-    const matchesStatus = filterStatus === 'all' || car.condition.toLowerCase() === filterStatus;
-    
-    return matchesBrand && matchesStatus;
+    const matchesBrands = filterBrands.length === 0 || filterBrands.includes((car.brand || '').toString());
+    const matchesConditions = filterConditions.length === 0 || filterConditions.includes((car.condition || '').toString());
+    const matchesStatuses = filterStatuses.length === 0 || filterStatuses.includes(((car.status || 'draft') as string));
+    return matchesBrands && matchesConditions && matchesStatuses;
   });
 
   const getStatusBadge = (condition: string) => {
@@ -189,7 +196,7 @@ export function ListingsManagement({ onNavigate }: ListingsManagementProps) {
 
   return (
     <div className="flex-1 p-6 space-y-6">
-      {/* Header and Actions */}
+      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Car Listings</h1>
@@ -200,7 +207,145 @@ export function ListingsManagement({ onNavigate }: ListingsManagementProps) {
             }
           </p>
         </div>
-        {/* Actions cluster: always visible, adapts by selection */}
+      </div>
+
+      {/* Filters */}
+      <Card className="shadow-sm">
+        <CardContent className="p-6">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div className="flex flex-col sm:flex-row gap-4">
+              {/* Brands Dropdown with Search */}
+              <Popover open={brandSearchOpen} onOpenChange={setBrandSearchOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="w-full sm:w-48 justify-between">
+                    <span>Brands {filterBrands.length > 0 && `(${filterBrands.length})`}</span>
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-56 p-0">
+                  <Command>
+                    <CommandInput placeholder="Search brands..." value={brandSearch} onValueChange={setBrandSearch} />
+                    <CommandList>
+                      <CommandEmpty>No brands found.</CommandEmpty>
+                      <CommandGroup>
+                        {availableBrands
+                          .filter(brand => brand.toLowerCase().includes(brandSearch.toLowerCase()))
+                          .map(brand => (
+                          <CommandItem
+                            key={brand}
+                            onSelect={() => {
+                              const isSelected = filterBrands.includes(brand);
+                              if (isSelected) {
+                                setFilterBrands(prev => prev.filter(b => b !== brand));
+                              } else {
+                                setFilterBrands(prev => [...prev, brand]);
+                              }
+                            }}
+                            className="flex items-center space-x-2 cursor-pointer"
+                          >
+                            <div className={`w-4 h-4 border rounded flex items-center justify-center ${
+                              filterBrands.includes(brand) ? 'bg-blue-600 border-blue-600' : 'border-gray-300'
+                            }`}>
+                              {filterBrands.includes(brand) && (
+                                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                </svg>
+                              )}
+                            </div>
+                            <span>{brand}</span>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+
+              {/* Conditions Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="w-full sm:w-48 justify-between">
+                    <span>Conditions {filterConditions.length > 0 && `(${filterConditions.length})`}</span>
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56">
+                  {formConditions.map(condition => (
+                    <DropdownMenuCheckboxItem
+                      key={condition}
+                      checked={filterConditions.includes(condition)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setFilterConditions(prev => [...prev, condition]);
+                        } else {
+                          setFilterConditions(prev => prev.filter(c => c !== condition));
+                        }
+                      }}
+                    >
+                      {condition}
+                    </DropdownMenuCheckboxItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* Statuses Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="w-full sm:w-48 justify-between">
+                    <span>Statuses {filterStatuses.length > 0 && `(${filterStatuses.length})`}</span>
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56">
+                  {formStatuses.map(status => (
+                    <DropdownMenuCheckboxItem
+                      key={status}
+                      checked={filterStatuses.includes(status)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setFilterStatuses(prev => [...prev, status]);
+                        } else {
+                          setFilterStatuses(prev => prev.filter(s => s !== status));
+                        }
+                      }}
+                    >
+                      {status.charAt(0).toUpperCase() + status.slice(1)}
+                    </DropdownMenuCheckboxItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+
+            {/* Action buttons on right */}
+            <div className="flex gap-2">
+              {(filterBrands.length > 0 || filterConditions.length > 0 || filterStatuses.length > 0) && (
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setFilterBrands([]);
+                    setFilterConditions([]);
+                    setFilterStatuses([]);
+                    clearSelection();
+                  }}
+                  className="text-gray-600"
+                >
+                  Clear Filters
+                </Button>
+              )}
+              <Button
+                onClick={() => onNavigate('add-listing')}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add New Car
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Actions Row */}
+      <div className="flex items-center justify-between gap-4">
         <div className="flex items-center space-x-3">
           <Button
             variant="outline"
@@ -221,77 +366,17 @@ export function ListingsManagement({ onNavigate }: ListingsManagementProps) {
             </Button>
           )}
           {selectedCars.length > 0 && (
-            <>
-              <Button
-                variant="outline"
-                onClick={clearSelection}
-                className="text-gray-600"
-              >
-                Clear
-              </Button>
-              <Button
-                onClick={handleDeleteSelected}
-                variant="destructive"
-                className="bg-red-600 hover:bg-red-700"
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete {selectedCars.length > 1 ? `(${selectedCars.length})` : ''}
-              </Button>
-            </>
+            <Button
+              onClick={handleDeleteSelected}
+              variant="destructive"
+              className="bg-red-600 hover:bg-red-700"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete {selectedCars.length > 1 ? `(${selectedCars.length})` : ''}
+            </Button>
           )}
-          <Button
-            onClick={() => onNavigate('add-listing')}
-            className="bg-red-600 hover:bg-red-700"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add New Car
-          </Button>
         </div>
       </div>
-
-      {/* Filters and Actions */}
-        <Card className="shadow-sm">
-          <CardContent className="p-6">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Select value={filterBrand} onValueChange={setFilterBrand}>
-                  <SelectTrigger className="w-full sm:w-48">
-                    <SelectValue placeholder="Filter by Brand" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Brands</SelectItem>
-                    <SelectItem value="bmw">BMW</SelectItem>
-                    <SelectItem value="mercedes">Mercedes</SelectItem>
-                    <SelectItem value="audi">Audi</SelectItem>
-                    <SelectItem value="tesla">Tesla</SelectItem>
-                    <SelectItem value="ferrari">Ferrari</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <Select value={filterStatus} onValueChange={setFilterStatus}>
-                  <SelectTrigger className="w-full sm:w-48">
-                    <SelectValue placeholder="Filter by Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Conditions</SelectItem>
-                    <SelectItem value="new">New</SelectItem>
-                    <SelectItem value="used">Used</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex gap-2">
-                <Button 
-                  className="bg-red-600 hover:bg-red-700"
-                  onClick={() => onNavigate('add-listing')}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add New Car
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Cars Table */}
         <Card className="shadow-sm">
@@ -305,7 +390,7 @@ export function ListingsManagement({ onNavigate }: ListingsManagementProps) {
                 </div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No cars found</h3>
                 <p className="text-gray-600 mb-4">
-                  {filterBrand !== 'all' || filterStatus !== 'all'
+                  {filterBrands.length > 0 || filterConditions.length > 0 || filterStatuses.length > 0
                     ? 'No cars match your current filters.'
                     : 'Get started by adding your first car listing.'}
                 </p>
@@ -333,6 +418,7 @@ export function ListingsManagement({ onNavigate }: ListingsManagementProps) {
                       <TableHead className="min-w-[120px]">Price</TableHead>
                       <TableHead className="min-w-[130px]">Condition</TableHead>
                       <TableHead className="min-w-[130px]">Status</TableHead>
+                      <TableHead className="min-w-[130px]">Category</TableHead>
                       <TableHead className="min-w-[130px]">Date Added</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -343,9 +429,9 @@ export function ListingsManagement({ onNavigate }: ListingsManagementProps) {
                         className={`cursor-pointer transition-colors hover:bg-gray-50 ${
                           selectedCars.includes(car.id) ? 'bg-blue-50 border-blue-200' : ''
                         }`}
-                        onClick={(e) => handleRowClick(car.id, e)}
+                        onClick={() => handleSelectCar(car.id, !selectedCars.includes(car.id))}
                       >
-                        <TableCell onClick={(e) => e.stopPropagation()}>
+                        <TableCell>
                           <Checkbox
                             checked={selectedCars.includes(car.id)}
                             onCheckedChange={(checked) => handleSelectCar(car.id, !!checked)}
@@ -394,6 +480,11 @@ export function ListingsManagement({ onNavigate }: ListingsManagementProps) {
                         </TableCell>
                         <TableCell>
                           {getListingStatusBadge(car.status || 'draft')}
+                        </TableCell>
+                        <TableCell>
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            {car.category || 'Unregistered'}
+                          </span>
                         </TableCell>
                         <TableCell>
                           <span className="text-sm text-gray-600">

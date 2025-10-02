@@ -26,41 +26,61 @@ export function CarCard(props: Car) {
     features,
     imageUrls = [],
     status = 'published',
+    category,
   } = props;
 
   const images = imageUrls ?? [];
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [index, setIndex] = useState(0);
+  const [cardIndex, setCardIndex] = useState(0);
+  const [modalIndex, setModalIndex] = useState(0);
   const [modalImageLoaded, setModalImageLoaded] = useState(false);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const navigate = useNavigate();
 
-  const next = () => setIndex((i) => (i + 1) % Math.max(images.length || 1, 1));
-  const prev = () => setIndex((i) => (i - 1 + Math.max(images.length || 1, 1)) % Math.max(images.length || 1, 1));
+  const nextCard = () => setCardIndex((i) => (i + 1) % Math.max(images.length || 1, 1));
+  const prevCard = () => setCardIndex((i) => (i - 1 + Math.max(images.length || 1, 1)) % Math.max(images.length || 1, 1));
+  
+  const nextModal = () => setModalIndex((i) => (i + 1) % Math.max(images.length || 1, 1));
+  const prevModal = () => setModalIndex((i) => (i - 1 + Math.max(images.length || 1, 1)) % Math.max(images.length || 1, 1));
 
-  const onTouchStart = (e: React.TouchEvent) => {
+  const onTouchStartCard = (e: React.TouchEvent) => {
     setTouchStartX(e.changedTouches[0].clientX);
   };
 
-  const onTouchEnd = (e: React.TouchEvent) => {
+  const onTouchEndCard = (e: React.TouchEvent) => {
     if (touchStartX === null) return;
     const dx = e.changedTouches[0].clientX - touchStartX;
     if (Math.abs(dx) > 40) {
-      dx < 0 ? next() : prev();
+      dx < 0 ? nextCard() : prevCard();
+    }
+    setTouchStartX(null);
+  };
+
+  const onTouchStartModal = (e: React.TouchEvent) => {
+    setTouchStartX(e.changedTouches[0].clientX);
+  };
+
+  const onTouchEndModal = (e: React.TouchEvent) => {
+    if (touchStartX === null) return;
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    if (Math.abs(dx) > 40) {
+      dx < 0 ? nextModal() : prevModal();
     }
     setTouchStartX(null);
   };
 
   return (
     <Card className="group overflow-hidden h-80 sm:h-96 flex flex-col rounded-xl border shadow-sm hover:shadow-md transition-shadow"
-          onClick={() => setIsModalOpen(true)}>
+          onClick={() => { setModalIndex(cardIndex); setIsModalOpen(true); }}
+          onTouchStart={onTouchStartCard}
+          onTouchEnd={onTouchEndCard}>
       {/* Card media */}
       <div className="w-full bg-gray-100 relative flex-shrink-0 overflow-hidden">
         <AspectRatio ratio={16 / 9} className="overflow-hidden">
           {images.length > 0 ? (
             <>
               <StorageImage
-                src={images[index]}
+                src={images[cardIndex]}
                 alt={`${year} ${brand} ${model}`}
                 className="w-full h-full object-center car-image-mobile"
               />
@@ -68,20 +88,20 @@ export function CarCard(props: Car) {
                 <>
                   <button
                     aria-label="Previous image"
-                    onClick={(e) => { e.stopPropagation(); prev(); }}
+                    onClick={(e) => { e.stopPropagation(); prevCard(); }}
                     className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/55 hover:bg-black/70 text-white p-2 sm:p-2 rounded-full shadow-lg backdrop-blur-sm transition-opacity opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
                   >
                     <ChevronLeft className="h-5 w-5 sm:h-5 sm:w-5" />
                   </button>
                   <button
                     aria-label="Next image"
-                    onClick={(e) => { e.stopPropagation(); next(); }}
+                    onClick={(e) => { e.stopPropagation(); nextCard(); }}
                     className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/55 hover:bg-black/70 text-white p-2 sm:p-2 rounded-full shadow-lg backdrop-blur-sm transition-opacity opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
                   >
                     <ChevronRight className="h-5 w-5 sm:h-5 sm:w-5" />
                   </button>
                   <div className="absolute bottom-2 right-2 bg-black/60 text-white px-2 py-0.5 rounded text-[10px] sm:text-xs shadow-md">
-                    {index + 1} / {images.length}
+                    {cardIndex + 1} / {images.length}
                   </div>
                 </>
               )}
@@ -97,14 +117,19 @@ export function CarCard(props: Car) {
             </div>
           )}
         </AspectRatio>
-        {/* Overlays: condition and sold status */}
-        {condition && (
-          <div className="absolute top-2 left-2">
-            <span className="px-2 py-1 rounded-md text-xs font-semibold badge-gray">
+        {/* Overlays: condition, category, and sold status */}
+        <div className="absolute top-2 left-2 flex gap-1">
+          {condition && (
+            <span className="px-2 py-1 rounded-md text-xs font-semibold bg-gray-100 text-gray-800">
               {condition}
             </span>
-          </div>
-        )}
+          )}
+          {category && (
+            <span className="px-2 py-1 rounded-md text-xs font-semibold bg-gray-100 text-gray-800">
+              {category}
+            </span>
+          )}
+        </div>
         {status && status.toLowerCase() === 'sold' && (
           <div className="absolute top-2 right-2">
             <span className="px-2 py-1 rounded-md text-xs font-semibold bg-red-600 text-white">SOLD</span>
@@ -142,7 +167,7 @@ export function CarCard(props: Car) {
         <div className="mt-auto">
           <Button 
             className="w-full bg-slate-900 hover:bg-slate-800"
-            onClick={() => setIsModalOpen(true)}
+            onClick={(e) => { e.stopPropagation(); setModalIndex(cardIndex); setIsModalOpen(true); }}
           >
             <span className="mr-1.5">Show Details</span>
             <ChevronRight className="h-4 w-4" />
@@ -189,23 +214,43 @@ export function CarCard(props: Car) {
               {/* Left: Gallery */}
               <div className="space-y-3 order-1 lg:order-1">
                 <h3 className="text-base font-semibold text-gray-900">Gallery</h3>
-                <div className="relative w-full rounded-xl overflow-hidden bg-gray-100" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-                  {!modalImageLoaded && <div className="absolute inset-0 bg-gray-200 animate-pulse" />}
+                <div className="relative w-full rounded-xl overflow-hidden bg-gray-100" onTouchStart={onTouchStartModal} onTouchEnd={onTouchEndModal}>
                   <AspectRatio ratio={16 / 9}>
-                    <ImageWithFallback
-                      src={images[index]}
-                      alt={`${year} ${brand} ${model} - Main view`}
-                      className="w-full h-full object-cover"
-                      onLoad={() => setModalImageLoaded(true)}
-                    />
+                    {images.length > 0 ? (
+                      <>
+                        {!modalImageLoaded && <div className="absolute inset-0 bg-gray-200 animate-pulse" />}
+                        <ImageWithFallback
+                          src={images[modalIndex]}
+                          alt={`${year} ${brand} ${model} - Main view`}
+                          className="w-full h-full object-cover"
+                          onLoad={() => setModalImageLoaded(true)}
+                        />
+                      </>
+                    ) : (
+                      <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500">
+                        <div className="text-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-12 h-12 mx-auto mb-2">
+                            <path fillRule="evenodd" d="M1.5 6A2.25 2.25 0 013.75 3.75h16.5A2.25 2.25 0 0122.5 6v12a.75.75 0 01-2.25 2.25H3.75A2.25 2.25 0 011.5 18V6zm3 .75a.75.75 0 000 1.5h14.25a.75.75 0 000-1.5H4.5zm4.28 5.47a.75.75 0 011.06 0l2.22 2.22 1.22-1.22a.75.75 0 011.06 0l2.72 2.72a.75.75 0 01-1.06 1.06l-2.19-2.19-1.25 1.25a.75.75 0 01-1.06 0l-2.75-2.75a.75.75 0 010-1.06z" clipRule="evenodd" />
+                          </svg>
+                          <p className="text-sm">No Image</p>
+                        </div>
+                      </div>
+                    )}
                   </AspectRatio>
 
-                  {/* Overlays: condition badge and SOLD status */}
-                  {condition && (
-                    <div className="absolute top-2 left-2">
-                      <span className="px-2 py-1 rounded-md text-xs font-semibold badge-gray">
-                        {condition}
-                      </span>
+                  {/* Overlays: condition, category badge and SOLD status */}
+                  {images.length > 0 && (
+                    <div className="absolute top-2 left-2 flex gap-1">
+                      {condition && (
+                        <span className="px-2 py-1 rounded-md text-xs font-semibold bg-gray-100 text-gray-800">
+                          {condition}
+                        </span>
+                      )}
+                      {category && (
+                        <span className="px-2 py-1 rounded-md text-xs font-semibold bg-gray-100 text-gray-800">
+                          {category}
+                        </span>
+                      )}
                     </div>
                   )}
                   {status && status.toLowerCase() === 'sold' && (
@@ -217,14 +262,14 @@ export function CarCard(props: Car) {
                   {/* Arrows and index */}
                   {images.length > 1 && (
                     <>
-                      <button onClick={(e) => { e.stopPropagation(); prev(); }} className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 bg-black/55 hover:bg-black/70 text-white p-2 sm:p-2 rounded-full shadow-lg backdrop-blur-sm transition-all">
+                      <button onClick={(e) => { e.stopPropagation(); prevModal(); }} className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 bg-black/55 hover:bg-black/70 text-white p-2 sm:p-2 rounded-full shadow-lg backdrop-blur-sm transition-all">
                         <ChevronLeft className="h-5 w-5 sm:h-5 sm:w-5" />
                       </button>
-                      <button onClick={(e) => { e.stopPropagation(); next(); }} className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 bg-black/55 hover:bg-black/70 text-white p-2 sm:p-2 rounded-full shadow-lg backdrop-blur-sm transition-all">
+                      <button onClick={(e) => { e.stopPropagation(); nextModal(); }} className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 bg-black/55 hover:bg-black/70 text-white p-2 sm:p-2 rounded-full shadow-lg backdrop-blur-sm transition-all">
                         <ChevronRight className="h-5 w-5 sm:h-5 sm:w-5" />
                       </button>
                       <div className="absolute bottom-2 right-2 bg-black/60 text-white px-2 py-0.5 rounded text-[10px] sm:text-xs shadow-md">
-                        {index + 1} / {images.length}
+                        {modalIndex + 1} / {images.length}
                       </div>
                       <div className="absolute bottom-2 left-2 text-[10px] sm:text-xs text-white bg-black/40 px-2 py-0.5 rounded md:hidden">Swipe</div>
                     </>
@@ -233,7 +278,7 @@ export function CarCard(props: Car) {
                 {images.length > 1 && (
                   <div className="flex gap-2 overflow-x-auto pb-2">
                     {images.slice(0, 6).map((image, i) => (
-                      <button key={i} onClick={(e) => { e.stopPropagation(); setIndex(i); }} className={`flex-shrink-0 w-16 sm:w-20 h-12 sm:h-16 rounded-lg overflow-hidden border-2 transition-all ${i === index ? 'border-slate-900' : 'border-gray-300 hover:border-gray-400'}`}>
+                      <button key={i} onClick={(e) => { e.stopPropagation(); setModalIndex(i); }} className={`flex-shrink-0 w-16 sm:w-20 h-12 sm:h-16 rounded-lg overflow-hidden border-2 transition-all ${i === modalIndex ? 'border-slate-900' : 'border-gray-300 hover:border-gray-400'}`}>
                         <ImageWithFallback src={image} alt={`Thumbnail ${i + 1}`} className="w-full h-full object-cover" />
                       </button>
                     ))}
@@ -274,6 +319,12 @@ export function CarCard(props: Car) {
                     <div className="bg-white rounded-xl p-3 sm:p-4 border border-gray-200">
                       <div className="text-xs sm:text-sm text-gray-500 mb-1 sm:mb-2">Transmission</div>
                       <div className="text-sm sm:text-base font-semibold text-gray-900">{transmission}</div>
+                    </div>
+                  )}
+                  {category && (
+                    <div className="bg-white rounded-xl p-3 sm:p-4 border border-gray-200">
+                      <div className="text-xs sm:text-sm text-gray-500 mb-1 sm:mb-2">Category</div>
+                      <div className="text-sm sm:text-base font-semibold text-gray-900">{category}</div>
                     </div>
                   )}
                 </div>

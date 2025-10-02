@@ -12,6 +12,7 @@ export interface Car {
   imageUrls: string[];
   features: string[];
   status: 'draft' | 'published' | 'sold' | 'new'; // Add all status options
+  category?: 'Registered' | 'Unregistered';
   createdAt: any; // Firestore Timestamp or Date
   updatedAt: any; // Firestore Timestamp or Date
 }

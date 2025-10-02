@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Menu, Search, Car, PlusCircle, ArrowLeft, LayoutDashboard, X } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 interface AdminHeaderProps {
   title: string;
@@ -16,6 +17,7 @@ interface AdminHeaderProps {
 export function AdminHeader({ title, showSearch = false, searchPlaceholder = "Search...", onSearch, currentPage, onNavigate }: AdminHeaderProps) {
   const [searchValue, setSearchValue] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user } = useAuth();
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
@@ -99,9 +101,9 @@ export function AdminHeader({ title, showSearch = false, searchPlaceholder = "Se
             <Avatar className="w-8 h-8">
               <AvatarFallback className="bg-red-100 text-red-700 text-sm font-medium">AM</AvatarFallback>
             </Avatar>
-            <div className="hidden xl:block text-left">
-              <p className="text-sm font-medium text-gray-900">Admin Manager</p>
-              <p className="text-xs text-gray-500">admin@automax.com</p>
+            <div className="hidden xl:block text-left max-w-[180px] truncate">
+              <p className="text-sm font-medium text-gray-900 truncate">{user?.displayName || 'Admin'}</p>
+              <p className="text-xs text-gray-500 truncate">{user?.email || '—'}</p>
             </div>
           </div>
 
@@ -119,8 +121,12 @@ export function AdminHeader({ title, showSearch = false, searchPlaceholder = "Se
 
       {/* Mobile Menu Dropdown */}
       {isMobileMenuOpen && (
-        <div className="md:hidden absolute top-full left-0 right-0 bg-white border-b border-gray-200 shadow-lg z-50">
-          <div className="px-4 py-3 space-y-2">
+        <>
+          {/* Backdrop */}
+          <div className="fixed inset-0 z-40 bg-black/50 md:hidden" onClick={closeMobileMenu} />
+          {/* Panel */}
+          <div className="md:hidden absolute top-full left-0 right-0 bg-white border-b border-gray-200 shadow-lg z-50">
+            <div className="px-4 py-3 space-y-2">
             <Button
               variant="ghost"
               size="sm"
@@ -163,7 +169,7 @@ export function AdminHeader({ title, showSearch = false, searchPlaceholder = "Se
               <PlusCircle className="w-4 h-4 mr-3" />
               Add New Car
             </Button>
-            <div className="border-t border-gray-200 my-2 pt-2">
+              <div className="border-t border-gray-200 my-2 pt-2">
               <Button
                 variant="ghost"
                 size="sm"
@@ -176,9 +182,10 @@ export function AdminHeader({ title, showSearch = false, searchPlaceholder = "Se
                 <ArrowLeft className="w-4 h-4 mr-3" />
                 Back to Main Site
               </Button>
+              </div>
             </div>
           </div>
-        </div>
+        </>
       )}
 
       {/* Mobile Search Bar */}
