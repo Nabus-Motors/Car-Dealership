@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { XIcon } from "lucide-react";
 
 import { cn } from "./utils";
 
@@ -38,7 +37,7 @@ function DialogOverlay({
     <DialogPrimitive.Overlay
       data-slot="dialog-overlay"
       className={cn(
-        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/50",
+        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-40 bg-black/50",
         className,
       )}
       {...props}
@@ -64,13 +63,6 @@ function DialogContent({
         {...props}
       >
         {children}
-        <DialogPrimitive.Close
-          className="absolute right-4 top-4 inline-flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 shadow-sm transition-colors hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-          aria-label="Close"
-        >
-          <XIcon className="h-4 w-4" />
-          <span className="sr-only">Close dialog</span>
-        </DialogPrimitive.Close>
       </DialogPrimitive.Content>
     </DialogPortal>
   );

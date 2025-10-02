@@ -152,7 +152,24 @@ export function CarCard(props: Car) {
 
       {/* Dialog modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-  <DialogContent className="max-w-[95vw] sm:max-w-[90vw] lg:max-w-4xl xl:max-w-5xl max-h-[90vh] p-0 overflow-hidden" style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
+        <DialogContent className="max-w-[95vw] sm:max-w-[90vw] lg:max-w-4xl xl:max-w-5xl max-h-[90vh] p-0 overflow-hidden" style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
+          {/* Close button - positioned relative to DialogContent */}
+          <button
+            aria-label="Close modal"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('Close button clicked');
+              setIsModalOpen(false);
+            }}
+            className="absolute right-4 top-4 inline-flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 shadow-lg hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 z-[100] cursor-pointer"
+            type="button"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          
           <div className="flex flex-col h-full max-h-[90vh]">
             <DialogHeader className="border-b border-gray-200 px-4 sm:px-6 py-4 sm:py-5 flex-shrink-0">
               <DialogTitle>
@@ -291,13 +308,26 @@ export function CarCard(props: Car) {
 
             {/* Footer */}
             <div className="px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-200 bg-white flex-shrink-0">
-              <Button
-                size="lg"
-                className="w-full bg-slate-900 hover:bg-slate-800 text-white font-medium"
-                onClick={() => { setIsModalOpen(false); navigate('/contact'); }}
-              >
-                Contact Seller
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => {
+                    console.log('Close button in footer clicked');
+                    setIsModalOpen(false);
+                  }}
+                >
+                  Close
+                </Button>
+                <Button
+                  size="lg"
+                  className="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-medium"
+                  onClick={() => { setIsModalOpen(false); navigate('/contact'); }}
+                >
+                  Contact Seller
+                </Button>
+              </div>
             </div>
           </div>
         </DialogContent>
