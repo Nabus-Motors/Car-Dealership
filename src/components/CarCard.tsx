@@ -52,8 +52,8 @@ export function CarCard(props: Car) {
   };
 
   return (
-    <Card className="group overflow-hidden h-80 sm:h-96 flex flex-col rounded-xl border shadow-sm hover:shadow-md transition-shadow"
-          onClick={() => setIsModalOpen(true)}>
+    <Card className="group overflow-hidden flex flex-col rounded-xl border shadow-sm hover:shadow-md transition-shadow h-full"
+      onClick={() => setIsModalOpen(true)}>
       {/* Card media */}
       <div className="w-full bg-gray-100 relative flex-shrink-0 overflow-hidden">
         <AspectRatio ratio={16 / 9} className="overflow-hidden">
