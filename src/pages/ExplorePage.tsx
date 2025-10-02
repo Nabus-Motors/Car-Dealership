@@ -736,9 +736,9 @@ export function ExplorePage() {
 
       {/* Loading State */}
       {loading && (
-  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
+  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8 auto-rows-fr">
           {Array(8).fill(null).map((_, index) => (
-            <div key={index} className="animate-pulse">
+            <div key={index} className="animate-pulse h-full">
               <div className="h-48 bg-gray-200 rounded-lg mb-4" />
               <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
               <div className="h-4 bg-gray-200 rounded w-1/2" />
@@ -773,9 +773,9 @@ export function ExplorePage() {
       {/* Cars Grid */}
       {!loading && !error && cars.length > 0 && (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8 auto-rows-fr">
             {cars.map((car) => (
-              <div key={car.id} className="cursor-default">
+              <div key={car.id} className="cursor-default h-full">
                 <CarCard {...car} />
               </div>
             ))}
