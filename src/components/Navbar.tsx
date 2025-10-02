@@ -53,13 +53,13 @@ export function Navbar() {
       </div>
 
       {/* Mobile Drawer (left like admin) */}
-      <div className={`md:hidden fixed inset-0 z-40 ${mobileOpen ? '' : 'pointer-events-none'}`}>
+      <div className={`md:hidden fixed inset-0 z-40 ${mobileOpen ? '' : 'pointer-events-none invisible'}`}>
         {/* Backdrop */}
-        <div className={`absolute inset-0 bg-black/50 transition-opacity ${mobileOpen ? 'opacity-100' : 'opacity-0'}`} onClick={() => setMobileOpen(false)} />
+        <div className={`absolute inset-0 bg-black/50 transition-opacity duration-300 ${mobileOpen ? 'opacity-100' : 'opacity-0'}`} onClick={() => setMobileOpen(false)} />
         {/* Panel */}
         <div
           ref={mobileMenuRef}
-          className={`absolute left-0 top-0 h-full w-72 max-w-[85%] bg-white border-r border-gray-200 shadow-xl transform transition-transform duration-300 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}
+          className={`absolute left-0 top-0 h-full w-72 max-w-[85%] bg-white border-r border-gray-200 shadow-xl transform transition-transform duration-300 ease-in-out ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}
         >
           <div className="p-4 border-b border-gray-200 flex items-center justify-between">
             <div className="flex items-center space-x-2">
