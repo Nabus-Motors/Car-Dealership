@@ -198,7 +198,7 @@ export function CarCard(props: Car) {
           <div className="flex flex-col h-full max-h-[90vh]">
             <DialogHeader className="border-b border-gray-200 px-4 sm:px-6 py-4 sm:py-5 flex-shrink-0">
               <DialogTitle>
-                <div className="flex items-start justify-between gap-4 pr-8">
+                <div className="flex items-start justify-between gap-4 pr-12 sm:pr-16">
                   <div className="flex-1">
                     <h2 className="text-lg sm:text-xl font-semibold text-gray-900">{year} {brand} {model}</h2>
                   </div>
