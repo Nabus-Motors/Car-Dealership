@@ -2884,6 +2884,25 @@ html {
   font-size: var(--font-size);
 }
 
+@layer utilities {
+  /* Solid dark gray badge background that doesn't depend on Tailwind color utilities being generated */
+  .badge-gray {
+    background-color: var(--color-gray-800);
+    color: var(--color-white);
+  }
+
+  /* Ensure object-fit works properly on mobile for car images */
+  .car-image-mobile {
+    object-fit: contain !important;
+  }
+  
+  @media (min-width: 640px) {
+    .car-image-mobile {
+      object-fit: cover !important;
+    }
+  }
+}
+
 @property --tw-translate-x {
   syntax: "*";
   inherits: false;

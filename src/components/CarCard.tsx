@@ -62,25 +62,25 @@ export function CarCard(props: Car) {
               <StorageImage
                 src={images[index]}
                 alt={`${year} ${brand} ${model}`}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-center car-image-mobile"
               />
               {images.length > 1 && (
                 <>
                   <button
                     aria-label="Previous image"
                     onClick={(e) => { e.stopPropagation(); prev(); }}
-                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-1.5 sm:p-2 rounded-full transition-opacity opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
+                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/55 hover:bg-black/70 text-white p-2 sm:p-2 rounded-full shadow-lg backdrop-blur-sm transition-opacity opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
                   >
-                    <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
+                    <ChevronLeft className="h-5 w-5 sm:h-5 sm:w-5" />
                   </button>
                   <button
                     aria-label="Next image"
                     onClick={(e) => { e.stopPropagation(); next(); }}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-1.5 sm:p-2 rounded-full transition-opacity opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/55 hover:bg-black/70 text-white p-2 sm:p-2 rounded-full shadow-lg backdrop-blur-sm transition-opacity opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
                   >
-                    <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
+                    <ChevronRight className="h-5 w-5 sm:h-5 sm:w-5" />
                   </button>
-                  <div className="absolute bottom-2 right-2 bg-black/60 text-white px-2 py-0.5 rounded text-[10px] sm:text-xs">
+                  <div className="absolute bottom-2 right-2 bg-black/60 text-white px-2 py-0.5 rounded text-[10px] sm:text-xs shadow-md">
                     {index + 1} / {images.length}
                   </div>
                 </>
@@ -100,9 +100,7 @@ export function CarCard(props: Car) {
         {/* Overlays: condition and sold status */}
         {condition && (
           <div className="absolute top-2 left-2">
-            <span className={`px-2 py-1 rounded-md text-xs font-semibold text-white ${
-              condition.toLowerCase() === 'new' ? 'bg-green-600' : 'bg-gray-700'
-            }`}>
+            <span className="px-2 py-1 rounded-md text-xs font-semibold badge-gray">
               {condition}
             </span>
           </div>
@@ -187,9 +185,7 @@ export function CarCard(props: Car) {
                   {/* Overlays: condition badge and SOLD status */}
                   {condition && (
                     <div className="absolute top-2 left-2">
-                      <span className={`px-2 py-1 rounded-md text-xs font-semibold text-white ${
-                        condition.toLowerCase() === 'new' ? 'bg-emerald-600' : 'bg-slate-700'
-                      }`}>
+                      <span className="px-2 py-1 rounded-md text-xs font-semibold badge-gray">
                         {condition}
                       </span>
                     </div>
@@ -203,13 +199,13 @@ export function CarCard(props: Car) {
                   {/* Arrows and index */}
                   {images.length > 1 && (
                     <>
-                      <button onClick={(e) => { e.stopPropagation(); prev(); }} className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-1.5 sm:p-2 rounded-full transition-all">
-                        <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
+                      <button onClick={(e) => { e.stopPropagation(); prev(); }} className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 bg-black/55 hover:bg-black/70 text-white p-2 sm:p-2 rounded-full shadow-lg backdrop-blur-sm transition-all">
+                        <ChevronLeft className="h-5 w-5 sm:h-5 sm:w-5" />
                       </button>
-                      <button onClick={(e) => { e.stopPropagation(); next(); }} className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-1.5 sm:p-2 rounded-full transition-all">
-                        <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
+                      <button onClick={(e) => { e.stopPropagation(); next(); }} className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 bg-black/55 hover:bg-black/70 text-white p-2 sm:p-2 rounded-full shadow-lg backdrop-blur-sm transition-all">
+                        <ChevronRight className="h-5 w-5 sm:h-5 sm:w-5" />
                       </button>
-                      <div className="absolute bottom-2 right-2 bg-black/60 text-white px-2 py-0.5 rounded text-[10px] sm:text-xs">
+                      <div className="absolute bottom-2 right-2 bg-black/60 text-white px-2 py-0.5 rounded text-[10px] sm:text-xs shadow-md">
                         {index + 1} / {images.length}
                       </div>
                       <div className="absolute bottom-2 left-2 text-[10px] sm:text-xs text-white bg-black/40 px-2 py-0.5 rounded md:hidden">Swipe</div>

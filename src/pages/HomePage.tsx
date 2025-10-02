@@ -402,21 +402,45 @@ export function HomePage() {
             <h2 className="text-2xl md:text-3xl font-bold">Browse by Brand</h2>
             <Button variant="ghost" onClick={() => navigate('/explore')} className="hidden md:inline-flex">View all</Button>
           </div>
-          <div className="-mx-4 px-4">
-            <div className="flex gap-3 overflow-x-auto scrollbar-hide py-2">
+          {/* Mobile: horizontal scroller with snap */}
+          <div className="md:hidden -mx-4 px-4">
+            <div className="flex gap-3.5 overflow-x-auto snap-x snap-mandatory scrollbar-hide py-2">
               {brandsLoading ? (
-                Array(8).fill(null).map((_, i) => (
-                  <div key={i} className="shrink-0 h-10 w-28 rounded-full bg-gray-200 animate-pulse" />
+                Array(10).fill(null).map((_, i) => (
+                  <div key={i} className="snap-start shrink-0 h-10 w-28 rounded-full bg-gray-200 animate-pulse" />
                 ))
               ) : (
                 brands.map((brand: string) => (
                   <button
                     key={brand}
                     onClick={() => navigate(`/explore?brand=${encodeURIComponent(brand)}`)}
-                    className="shrink-0 inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:border-gray-300 hover:bg-gray-50 transition-colors"
+                    className="snap-start shrink-0 inline-flex items-center gap-2 rounded-full ring-1 ring-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:ring-gray-300 hover:bg-gray-50 shadow-sm transition-colors"
                     aria-label={`Filter by ${brand}`}
                   >
-                    <span className="inline-block h-6 w-6 rounded-full bg-gray-100 text-gray-500 grid place-items-center text-[10px]">{brand[0]}</span>
+                    <span className="inline-grid place-items-center h-6 w-6 rounded-full bg-gray-100 text-gray-500 text-[10px] font-semibold">{brand[0]}</span>
+                    {brand}
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
+
+          {/* Desktop: wrap into multiple rows */}
+          <div className="hidden md:block">
+            <div className="flex flex-wrap gap-3.5">
+              {brandsLoading ? (
+                Array(14).fill(null).map((_, i) => (
+                  <div key={i} className="h-10 w-28 rounded-full bg-gray-200 animate-pulse" />
+                ))
+              ) : (
+                brands.map((brand: string) => (
+                  <button
+                    key={brand}
+                    onClick={() => navigate(`/explore?brand=${encodeURIComponent(brand)}`)}
+                    className="inline-flex items-center gap-2 rounded-full ring-1 ring-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:ring-gray-300 hover:bg-gray-50 shadow-sm transition-colors"
+                    aria-label={`Filter by ${brand}`}
+                  >
+                    <span className="inline-grid place-items-center h-6 w-6 rounded-full bg-gray-100 text-gray-500 text-[10px] font-semibold">{brand[0]}</span>
                     {brand}
                   </button>
                 ))
