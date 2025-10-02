@@ -70,7 +70,7 @@ export function CarCard(props: Car) {
   };
 
   return (
-    <Card className="group overflow-hidden h-80 sm:h-96 flex flex-col rounded-xl border shadow-sm hover:shadow-md transition-shadow"
+    <Card className="group overflow-hidden flex flex-col rounded-xl border shadow-sm hover:shadow-md transition-shadow h-full"
           onClick={() => { setModalIndex(cardIndex); setIsModalOpen(true); }}
           onTouchStart={onTouchStartCard}
           onTouchEnd={onTouchEndCard}>

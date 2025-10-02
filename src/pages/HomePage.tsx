@@ -334,10 +334,10 @@ export function HomePage() {
               </div>
 
               {/* Desktop grid loading */}
-              <div className="hidden md:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="hidden md:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 auto-rows-fr">
                 {Array(8).fill(null).map((_, index) => (
-                  <div key={index} className="animate-pulse">
-                    <div className="h-80 bg-gray-200 rounded-lg" />
+                  <div key={index} className="animate-pulse h-80">
+                    <div className="h-full bg-gray-200 rounded-lg" />
                   </div>
                 ))}
               </div>
@@ -373,9 +373,11 @@ export function HomePage() {
             // Cars available
             <>
               {/* Desktop grid 4x2 */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 auto-rows-fr">
                 {featuredCars.slice(0, 8).map((car: Car) => (
-                  <CarCard key={car.id} {...car} />
+                  <div key={car.id} className="h-full">
+                    <CarCard {...car} />
+                  </div>
                 ))}
               </div>
 
