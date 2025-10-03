@@ -8,6 +8,7 @@ import { Textarea } from '../../components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import { Badge } from '../../components/ui/badge';
 import { Alert, AlertDescription } from '../../components/ui/alert';
+import { AddEditListingSkeleton } from '../../components/ui/skeleton';
 import { Upload, X, Save, ArrowLeft } from 'lucide-react';
 import { StorageImage } from '@/components/figma/StorageImage';
 import { Car } from '../../types/car';
@@ -277,11 +278,7 @@ export const AddEditListing: React.FC = () => {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg">Loading...</div>
-      </div>
-    );
+    return <AddEditListingSkeleton />;
   }
 
   return (

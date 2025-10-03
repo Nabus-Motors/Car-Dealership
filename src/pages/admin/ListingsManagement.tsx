@@ -1,22 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { StorageImage } from '@/components/figma/StorageImage';
-
+import { ListingsManagementSkeleton } from '@/components/ui/skeleton';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { collection, query, onSnapshot, orderBy } from 'firebase/firestore';
 import { db, COLLECTIONS } from '@/firebase/firebase';
-import { RefreshCw, Plus, Edit, Trash2, ChevronDown } from 'lucide-react';
-import { formatPrice, formatMileage } from '@/utils/format';
+import { RefreshCw, Plus, Edit, Trash2, Search, Filter } from 'lucide-react';
+import { formatPrice, formatMileage, formatDate } from '@/utils/format';
 import type { Car } from '@/types/car';
-import { normalizeImageUrls } from '@/utils/images';
 import { deleteCar } from '@/services/firestoreService';
+import { useAuth } from '@/hooks/useAuth';
 import toast from 'react-hot-toast';
 
 interface ListingsManagementProps {
@@ -24,21 +21,27 @@ interface ListingsManagementProps {
 }
 
 export function ListingsManagement({ onNavigate }: ListingsManagementProps) {
-  const [selectedCars, setSelectedCars] = useState<string[]>([]);
-  const [filterBrands, setFilterBrands] = useState<string[]>([]);
-  const [filterConditions, setFilterConditions] = useState<string[]>([]);
-  const [filterStatuses, setFilterStatuses] = useState<string[]>([]);
-  const [availableBrands, setAvailableBrands] = useState<string[]>([]);
-  const [brandSearchOpen, setBrandSearchOpen] = useState(false);
-  const [brandSearch, setBrandSearch] = useState('');
-  
-  // Predefined form-based options
-  const formConditions = ['New', 'Used', 'Certified Pre-Owned'];
-  const formStatuses = ['draft', 'new', 'published', 'sold'];
+  const { user } = useAuth();
   const [cars, setCars] = useState<Car[]>([]);
   const [loading, setLoading] = useState(true);
-  const [deleteCarIds, setDeleteCarIds] = useState<string[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [carToDelete, setCarToDelete] = useState<string | null>(null);
+  
+  // Selection state for bulk operations
+  const [selectedCars, setSelectedCars] = useState<Set<string>>(new Set());
+  const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
+  
+  // Filter state
+  const [showFilters, setShowFilters] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [conditionFilter, setConditionFilter] = useState<string>('all');
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [priceRangeFilter, setPriceRangeFilter] = useState<string>('all');
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 15;
 
   // Fetch cars from Firebase
   useEffect(() => {
@@ -52,13 +55,8 @@ export function ListingsManagement({ onNavigate }: ListingsManagementProps) {
         id: doc.id,
         ...doc.data()
       })) as Car[];
-      // normalize imageUrls
-      carsData.forEach(c => { (c as any).imageUrls = normalizeImageUrls(c); });
-  setCars(carsData);
-  // compute distinct filters
-  const brands = Array.from(new Set(carsData.map(c => (c.brand || '').toString()).filter(Boolean))).sort((a,b)=>a.localeCompare(b));
-  setAvailableBrands(brands);
-  // Using predefined form-based options for consistency
+      
+      setCars(carsData);
       setLoading(false);
     }, (error) => {
       console.error('Error fetching cars:', error);
@@ -68,130 +66,183 @@ export function ListingsManagement({ onNavigate }: ListingsManagementProps) {
     return () => unsubscribe();
   }, []);
 
-  const handleDeleteCar = async (carIds: string[]) => {
-    const toastId = toast.loading(`Deleting ${carIds.length} car listing(s)...`);
+  // Filter cars based on search term and filters
+  const filteredCars = cars.filter(car => {
+    // Search functionality
+    const matchesSearch = searchTerm === '' || [
+      car.brand,
+      car.model,
+      car.year?.toString(),
+      car.condition,
+      car.status,
+      car.price?.toString(),
+      car.mileage?.toString(),
+      (car as any).category
+    ].some(field => 
+      field?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
     
-    try {
-      console.log('Starting delete operation for cars:', carIds);
-      
-      // Delete all selected cars
-      await Promise.all(carIds.map(async (carId) => {
-        console.log(`Deleting car: ${carId}`);
-        await deleteCar(carId);
-        console.log(`Successfully deleted car: ${carId}`);
-      }));
-      
-      toast.success(`${carIds.length} car listing(s) deleted successfully`, { id: toastId });
-      setShowDeleteDialog(false);
-      setDeleteCarIds([]);
-      setSelectedCars([]);
-      
-      console.log('Delete operation completed successfully');
-    } catch (error) {
-      console.error('Error deleting cars:', error);
-      toast.error(`Failed to delete car(s). Error: ${error instanceof Error ? error.message : 'Unknown error'}`, { id: toastId });
+    // Status filter
+    const matchesStatus = statusFilter === 'all' || car.status === statusFilter;
+    
+    // Condition filter
+    const matchesCondition = conditionFilter === 'all' || car.condition === conditionFilter;
+    
+    // Category filter
+    const matchesCategory = categoryFilter === 'all' || (car as any).category === categoryFilter;
+    
+    // Price range filter
+    const matchesPriceRange = (() => {
+      if (priceRangeFilter === 'all') return true;
+      const price = car.price || 0;
+      switch (priceRangeFilter) {
+        case 'under-20k': return price < 20000;
+        case '20k-50k': return price >= 20000 && price < 50000;
+        case '50k-100k': return price >= 50000 && price < 100000;
+        case 'over-100k': return price >= 100000;
+        default: return true;
+      }
+    })();
+    
+    return matchesSearch && matchesStatus && matchesCondition && matchesCategory && matchesPriceRange;
+  });
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredCars.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedCars = filteredCars.slice(startIndex, endIndex);
+
+  // Reset to first page when search changes
+  const prevSearchTerm = useRef(searchTerm);
+  useEffect(() => {
+    if (prevSearchTerm.current !== searchTerm) {
+      setCurrentPage(1);
+      prevSearchTerm.current = searchTerm;
+    }
+  }, [searchTerm]);
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
     }
   };
 
-  const handleDeleteSelected = () => {
-    setDeleteCarIds(selectedCars);
-    setShowDeleteDialog(true);
-  };
-
-  const handleEditSelected = () => {
-    if (selectedCars.length === 1) {
-      onNavigate(`edit-listing/${selectedCars[0]}`);
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
     }
-  };
-
-  const clearSelection = () => {
-    setSelectedCars([]);
   };
 
   const handleRefresh = () => {
     setLoading(true);
-    // Clear current selections since items might be deleted
-    setSelectedCars([]);
-    setDeleteCarIds([]);
-    // The onSnapshot listener will automatically update when data changes
-    // We just show a loading state briefly to provide visual feedback
-    setTimeout(() => setLoading(false), 500);
-    toast.success('Listings refreshed!');
+    setTimeout(() => setLoading(false), 1000);
   };
 
+  const clearFilters = () => {
+    setStatusFilter('all');
+    setConditionFilter('all');
+    setCategoryFilter('all');
+    setPriceRangeFilter('all');
+    setSearchTerm('');
+  };
 
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelectedCars(filteredCars.map(car => car.id));
+  const hasActiveFilters = () => {
+    return statusFilter !== 'all' || 
+           conditionFilter !== 'all' || 
+           categoryFilter !== 'all' || 
+           priceRangeFilter !== 'all' || 
+           searchTerm !== '';
+  };
+
+  // Selection helpers
+  const toggleCarSelection = (carId: string) => {
+    const newSelected = new Set(selectedCars);
+    if (newSelected.has(carId)) {
+      newSelected.delete(carId);
     } else {
-      setSelectedCars([]);
+      newSelected.add(carId);
+    }
+    setSelectedCars(newSelected);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedCars.size === paginatedCars.length) {
+      setSelectedCars(new Set());
+    } else {
+      setSelectedCars(new Set(paginatedCars.map(car => car.id)));
     }
   };
 
-  const handleSelectCar = (carId: string, checked: boolean) => {
-    if (checked) {
-      setSelectedCars(prev => [...prev, carId]);
-    } else {
-      setSelectedCars(prev => prev.filter(id => id !== carId));
+  const isAllSelected = selectedCars.size === paginatedCars.length && paginatedCars.length > 0;
+  const isIndeterminate = selectedCars.size > 0 && selectedCars.size < paginatedCars.length;
+
+  const handleDeleteCar = async (carId: string) => {
+    const car = cars.find(c => c.id === carId);
+    const carDetails = car ? {
+      brand: car.brand,
+      model: car.model,
+      year: car.year
+    } : undefined;
+
+    try {
+      await deleteCar(
+        carId, 
+        user?.uid, 
+        user?.displayName || user?.email || 'Admin',
+        carDetails
+      );
+      toast.success('Car deleted successfully');
+      setShowDeleteDialog(false);
+      setCarToDelete(null);
+    } catch (error) {
+      console.error('Error deleting car:', error);
+      toast.error('Failed to delete car');
     }
   };
 
-  // Filter cars based on filters only
-  const filteredCars = cars.filter(car => {
-    const matchesBrands = filterBrands.length === 0 || filterBrands.includes((car.brand || '').toString());
-    const matchesConditions = filterConditions.length === 0 || filterConditions.includes((car.condition || '').toString());
-    const matchesStatuses = filterStatuses.length === 0 || filterStatuses.includes(((car.status || 'draft') as string));
-    return matchesBrands && matchesConditions && matchesStatuses;
-  });
+  const handleBulkDelete = async () => {
+    if (selectedCars.size === 0) return;
 
-  const getStatusBadge = (condition: string) => {
-    const badgeClass = condition === 'New' 
-      ? 'bg-green-100 text-green-800' 
-      : 'bg-blue-100 text-blue-800';
-    
-    return <Badge className={`text-xs ${badgeClass}`}>{condition}</Badge>;
+    try {
+      const deletePromises = Array.from(selectedCars).map(carId => {
+        const car = cars.find(c => c.id === carId);
+        const carDetails = car ? {
+          brand: car.brand,
+          model: car.model,
+          year: car.year
+        } : undefined;
+
+        return deleteCar(
+          carId,
+          user?.uid,
+          user?.displayName || user?.email || 'Admin',
+          carDetails
+        );
+      });
+
+      await Promise.all(deletePromises);
+      toast.success(`Successfully deleted ${selectedCars.size} car(s)`);
+      setSelectedCars(new Set());
+      setShowBulkDeleteDialog(false);
+    } catch (error) {
+      console.error('Error deleting cars:', error);
+      toast.error('Failed to delete some cars');
+    }
   };
 
-  const getListingStatusBadge = (status: string) => {
-    let badgeClass = '';
+  const getStatusColor = (status: string) => {
     switch (status) {
-      case 'published':
-        badgeClass = 'bg-green-100 text-green-800';
-        break;
-      case 'draft':
-        badgeClass = 'bg-gray-100 text-gray-800';
-        break;
-      case 'sold':
-        badgeClass = 'bg-red-100 text-red-800';
-        break;
-      case 'new':
-        badgeClass = 'bg-blue-100 text-blue-800';
-        break;
-      default:
-        badgeClass = 'bg-gray-100 text-gray-800';
+      case 'published': return 'bg-green-100 text-green-800';
+      case 'sold': return 'bg-blue-100 text-blue-800';
+      case 'new': return 'bg-yellow-100 text-yellow-800';
+      case 'draft': return 'bg-gray-100 text-gray-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
-    
-    return <Badge className={`text-xs ${badgeClass}`}>{status.charAt(0).toUpperCase() + status.slice(1)}</Badge>;
-  };
-
-  const formatDate = (timestamp: any) => {
-    if (!timestamp) return 'N/A';
-    
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-    return date.toLocaleDateString();
   };
 
   if (loading) {
-    return (
-      <div className="flex-1 p-6">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading cars...</p>
-          </div>
-        </div>
-      </div>
-    );
+    return <ListingsManagementSkeleton />;
   }
 
   return (
@@ -201,363 +252,372 @@ export function ListingsManagement({ onNavigate }: ListingsManagementProps) {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Car Listings</h1>
           <p className="text-gray-600 mt-1">
-            {selectedCars.length > 0 
-              ? `${selectedCars.length} item(s) selected`
-              : `${cars.length} total listings`
-            }
+            {filteredCars.length} cars found
+            {totalPages > 1 && ` • Page ${currentPage} of ${totalPages}`}
+            {selectedCars.size > 0 && ` • ${selectedCars.size} selected`}
           </p>
         </div>
-      </div>
-
-      {/* Filters */}
-      <Card className="shadow-sm">
-        <CardContent className="p-6">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <div className="flex flex-col sm:flex-row gap-4">
-              {/* Brands Dropdown with Search */}
-              <Popover open={brandSearchOpen} onOpenChange={setBrandSearchOpen}>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full sm:w-48 justify-between">
-                    <span>Brands {filterBrands.length > 0 && `(${filterBrands.length})`}</span>
-                    <ChevronDown className="h-4 w-4" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-56 p-0">
-                  <Command>
-                    <CommandInput placeholder="Search brands..." value={brandSearch} onValueChange={setBrandSearch} />
-                    <CommandList>
-                      <CommandEmpty>No brands found.</CommandEmpty>
-                      <CommandGroup>
-                        {availableBrands
-                          .filter(brand => brand.toLowerCase().includes(brandSearch.toLowerCase()))
-                          .map(brand => (
-                          <CommandItem
-                            key={brand}
-                            onSelect={() => {
-                              const isSelected = filterBrands.includes(brand);
-                              if (isSelected) {
-                                setFilterBrands(prev => prev.filter(b => b !== brand));
-                              } else {
-                                setFilterBrands(prev => [...prev, brand]);
-                              }
-                            }}
-                            className="flex items-center space-x-2 cursor-pointer"
-                          >
-                            <div className={`w-4 h-4 border rounded flex items-center justify-center ${
-                              filterBrands.includes(brand) ? 'bg-blue-600 border-blue-600' : 'border-gray-300'
-                            }`}>
-                              {filterBrands.includes(brand) && (
-                                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                </svg>
-                              )}
-                            </div>
-                            <span>{brand}</span>
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-
-              {/* Conditions Dropdown */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="w-full sm:w-48 justify-between">
-                    <span>Conditions {filterConditions.length > 0 && `(${filterConditions.length})`}</span>
-                    <ChevronDown className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56">
-                  {formConditions.map(condition => (
-                    <DropdownMenuCheckboxItem
-                      key={condition}
-                      checked={filterConditions.includes(condition)}
-                      onCheckedChange={(checked) => {
-                        if (checked) {
-                          setFilterConditions(prev => [...prev, condition]);
-                        } else {
-                          setFilterConditions(prev => prev.filter(c => c !== condition));
-                        }
-                      }}
-                    >
-                      {condition}
-                    </DropdownMenuCheckboxItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              {/* Statuses Dropdown */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="w-full sm:w-48 justify-between">
-                    <span>Statuses {filterStatuses.length > 0 && `(${filterStatuses.length})`}</span>
-                    <ChevronDown className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56">
-                  {formStatuses.map(status => (
-                    <DropdownMenuCheckboxItem
-                      key={status}
-                      checked={filterStatuses.includes(status)}
-                      onCheckedChange={(checked) => {
-                        if (checked) {
-                          setFilterStatuses(prev => [...prev, status]);
-                        } else {
-                          setFilterStatuses(prev => prev.filter(s => s !== status));
-                        }
-                      }}
-                    >
-                      {status.charAt(0).toUpperCase() + status.slice(1)}
-                    </DropdownMenuCheckboxItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-
-            {/* Action buttons on right */}
-            <div className="flex gap-2">
-              {(filterBrands.length > 0 || filterConditions.length > 0 || filterStatuses.length > 0) && (
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setFilterBrands([]);
-                    setFilterConditions([]);
-                    setFilterStatuses([]);
-                    clearSelection();
-                  }}
-                  className="text-gray-600"
-                >
-                  Clear Filters
-                </Button>
-              )}
-              <Button
-                onClick={() => onNavigate('add-listing')}
-                className="bg-red-600 hover:bg-red-700"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add New Car
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Actions Row */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center space-x-3">
+        <div className="flex gap-2">
+          {selectedCars.size > 0 && (
+            <Button
+              variant="destructive"
+              onClick={() => setShowBulkDeleteDialog(true)}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete Selected ({selectedCars.size})
+            </Button>
+          )}
           <Button
             variant="outline"
             onClick={handleRefresh}
             disabled={loading}
-            className="text-gray-600 hover:text-gray-900"
           >
             <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
-          {selectedCars.length === 1 && (
-            <Button
-              onClick={handleEditSelected}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              <Edit className="h-4 w-4 mr-2" />
-              Edit
-            </Button>
-          )}
-          {selectedCars.length > 0 && (
-            <Button
-              onClick={handleDeleteSelected}
-              variant="destructive"
-              className="bg-red-600 hover:bg-red-700"
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Delete {selectedCars.length > 1 ? `(${selectedCars.length})` : ''}
-            </Button>
-          )}
+          <Button
+            onClick={() => onNavigate('add-listing')}
+            className="bg-red-600 hover:bg-red-700"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add New Car
+          </Button>
         </div>
       </div>
 
-        {/* Cars Table */}
-        <Card className="shadow-sm">
-          <CardContent className="p-0">
-            {filteredCars.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="text-gray-400 mb-4">
-                  <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
-                  </svg>
+      {/* Search and Filters */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex flex-col lg:flex-row gap-4">
+            {/* Search */}
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Input
+                  placeholder="Search cars..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+
+            {/* Filter Toggle */}
+            <Button
+              variant="outline"
+              onClick={() => setShowFilters(!showFilters)}
+              className={showFilters ? 'bg-gray-100' : ''}
+            >
+              <Filter className="h-4 w-4 mr-2" />
+              Filters
+            </Button>
+
+            {/* Clear Filters */}
+            {hasActiveFilters() && (
+              <Button variant="outline" onClick={clearFilters}>
+                Clear All
+              </Button>
+            )}
+          </div>
+
+          {/* Advanced Filters */}
+          {showFilters && (
+            <div className="mt-6 pt-6 border-t border-gray-200">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Status Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Status
+                  </label>
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="All statuses" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All statuses</SelectItem>
+                      <SelectItem value="published">Published</SelectItem>
+                      <SelectItem value="draft">Draft</SelectItem>
+                      <SelectItem value="sold">Sold</SelectItem>
+                      <SelectItem value="new">New</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No cars found</h3>
-                <p className="text-gray-600 mb-4">
-                  {filterBrands.length > 0 || filterConditions.length > 0 || filterStatuses.length > 0
-                    ? 'No cars match your current filters.'
-                    : 'Get started by adding your first car listing.'}
-                </p>
-                <Button 
-                  className="bg-red-600 hover:bg-red-700"
-                  onClick={() => onNavigate('add-listing')}
-                >
+
+                {/* Condition Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Condition
+                  </label>
+                  <Select value={conditionFilter} onValueChange={setConditionFilter}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="All conditions" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All conditions</SelectItem>
+                      <SelectItem value="New">New</SelectItem>
+                      <SelectItem value="Used">Used</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Category Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Category
+                  </label>
+                  <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="All categories" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All categories</SelectItem>
+                      <SelectItem value="SUV">SUV</SelectItem>
+                      <SelectItem value="Sedan">Sedan</SelectItem>
+                      <SelectItem value="Hatchback">Hatchback</SelectItem>
+                      <SelectItem value="Coupe">Coupe</SelectItem>
+                      <SelectItem value="Truck">Truck</SelectItem>
+                      <SelectItem value="Convertible">Convertible</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Price Range Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Price Range
+                  </label>
+                  <Select value={priceRangeFilter} onValueChange={setPriceRangeFilter}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="All prices" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All prices</SelectItem>
+                      <SelectItem value="under-20k">Under GHS 20,000</SelectItem>
+                      <SelectItem value="20k-50k">GHS 20,000 - 50,000</SelectItem>
+                      <SelectItem value="50k-100k">GHS 50,000 - 100,000</SelectItem>
+                      <SelectItem value="over-100k">Over GHS 100,000</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Cars List */}
+      <Card>
+        <CardContent className="p-6">
+          {filteredCars.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="text-gray-400 text-6xl mb-4">🚗</div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No cars found</h3>
+              <p className="text-gray-600 mb-4">
+                {cars.length === 0 
+                  ? "You haven't added any cars yet." 
+                  : "Try adjusting your search or filters."
+                }
+              </p>
+              {cars.length === 0 && (
+                <Button onClick={() => onNavigate('add-listing')} className="bg-red-600 hover:bg-red-700">
                   <Plus className="h-4 w-4 mr-2" />
                   Add Your First Car
                 </Button>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-12">
-                        <Checkbox
-                          checked={selectedCars.length === filteredCars.length && filteredCars.length > 0}
-                          onCheckedChange={handleSelectAll}
+              )}
+            </div>
+          ) : (
+            <>
+              {/* Bulk Selection Header */}
+              {paginatedCars.length > 0 && (
+                <div className="flex items-center justify-between mb-4 p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <Checkbox
+                      checked={isAllSelected}
+                      indeterminate={isIndeterminate}
+                      onCheckedChange={toggleSelectAll}
+                    />
+                    <span className="text-sm text-gray-700">
+                      {selectedCars.size === 0 
+                        ? 'Select all cars on this page'
+                        : `${selectedCars.size} car(s) selected`
+                      }
+                    </span>
+                  </div>
+                  {selectedCars.size > 0 && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSelectedCars(new Set())}
+                    >
+                      Clear Selection
+                    </Button>
+                  )}
+                </div>
+              )}
+              
+              <div className="space-y-4">
+                {paginatedCars.map((car) => (
+                  <div key={car.id} className="flex items-start space-x-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                    {/* Selection Checkbox */}
+                    <div className="flex-shrink-0 pt-1">
+                      <Checkbox
+                        checked={selectedCars.has(car.id)}
+                        onCheckedChange={() => toggleCarSelection(car.id)}
+                      />
+                    </div>
+                    
+                    {/* Car Image */}
+                    <div className="flex-shrink-0">
+                      {car.imageUrls && car.imageUrls.length > 0 ? (
+                        <img
+                          src={car.imageUrls[0]}
+                          alt={`${car.brand} ${car.model}`}
+                          className="w-20 h-16 object-cover rounded-md"
                         />
-                      </TableHead>
-                      <TableHead className="min-w-[260px]">Car</TableHead>
-                      <TableHead className="min-w-[160px]">Details</TableHead>
-                      <TableHead className="min-w-[120px]">Price</TableHead>
-                      <TableHead className="min-w-[130px]">Condition</TableHead>
-                      <TableHead className="min-w-[130px]">Status</TableHead>
-                      <TableHead className="min-w-[130px]">Category</TableHead>
-                      <TableHead className="min-w-[130px]">Date Added</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredCars.map((car) => (
-                      <TableRow 
-                        key={car.id}
-                        className={`cursor-pointer transition-colors hover:bg-gray-50 ${
-                          selectedCars.includes(car.id) ? 'bg-blue-50 border-blue-200' : ''
-                        }`}
-                        onClick={() => handleSelectCar(car.id, !selectedCars.includes(car.id))}
-                      >
-                        <TableCell>
-                          <Checkbox
-                            checked={selectedCars.includes(car.id)}
-                            onCheckedChange={(checked) => handleSelectCar(car.id, !!checked)}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center space-x-3">
-                            <div className="w-16 h-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
-                              {car.imageUrls && car.imageUrls.length > 0 ? (
-                                <StorageImage
-                                  src={car.imageUrls[0]}
-                                  alt={`${car.year} ${car.brand} ${car.model}`}
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400">
-                                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
-                                    <path fillRule="evenodd" d="M1.5 6A2.25 2.25 0 013.75 3.75h16.5A2.25 2.25 0 0122.5 6v12a2.25 2.25 0 01-2.25 2.25H3.75A2.25 2.25 0 011.5 18V6zm3 .75a.75.75 0 000 1.5h14.25a.75.75 0 000-1.5H4.5zm4.28 5.47a.75.75 0 011.06 0l2.22 2.22 1.22-1.22a.75.75 0 011.06 0l2.72 2.72a.75.75 0 01-1.06 1.06l-2.19-2.19-1.25 1.25a.75.75 0 01-1.06 0l-2.75-2.75a.75.75 0 010-1.06z" clipRule="evenodd" />
-                                  </svg>
-                                </div>
-                              )}
-                            </div>
-                            <div>
-                              <p className="font-medium text-gray-900">
-                                {car.year} {car.brand} {car.model}
-                              </p>
-                              <p className="text-sm text-gray-500">
-                                {formatMileage(car.mileage)} • {car.fuelType}
-                              </p>
-                            </div>
+                      ) : (
+                        <div className="w-20 h-16 bg-gray-200 rounded-md flex items-center justify-center">
+                          <span className="text-gray-400 text-xs">No Image</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Car Details */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900">
+                            {car.year} {car.brand} {car.model}
+                          </h3>
+                          <p className="text-sm text-gray-600 mt-1">
+                            {formatPrice(car.price)} • {formatMileage(car.mileage)} • {car.condition}
+                            {(car as any).category && ` • ${(car as any).category}`}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            Listed on {formatDate(car.createdAt)}
+                          </p>
+                          <div className="flex items-center space-x-2 mt-2">
+                            <Badge className={getStatusColor(car.status || 'draft')}>
+                              {(car.status || 'draft').charAt(0).toUpperCase() + (car.status || 'draft').slice(1)}
+                            </Badge>
+                            {(car as any).category && (
+                              <Badge variant="outline" className="text-xs">
+                                {(car as any).category}
+                              </Badge>
+                            )}
                           </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="text-sm">
-                            <p>{car.transmission}</p>
-                            <p className="text-gray-500">{car.features?.length || 0} features</p>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <span className="font-semibold text-gray-900">
-                            {formatPrice(car.price)}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          {getStatusBadge(car.condition)}
-                        </TableCell>
-                        <TableCell>
-                          {getListingStatusBadge(car.status || 'draft')}
-                        </TableCell>
-                        <TableCell>
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                            {car.category || 'Unregistered'}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <span className="text-sm text-gray-600">
-                            {formatDate(car.createdAt)}
-                          </span>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex items-center space-x-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => onNavigate(`edit-listing/${car.id}`)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setCarToDelete(car.id);
+                              setShowDeleteDialog(true);
+                            }}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-            )}
-          </CardContent>
-        </Card>
 
-        {/* Pagination */}
-        {filteredCars.length > 0 && (
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-600">
-              Showing {filteredCars.length} of {cars.length} cars
-            </div>
-            <div className="flex items-center space-x-2">
-              <Button variant="outline" size="sm" disabled>
-                Previous
-              </Button>
-              <Button variant="outline" size="sm">
-                1
-              </Button>
-              <Button variant="outline" size="sm" disabled>
-                Next
-              </Button>
-            </div>
-          </div>
-        )}
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex justify-center items-center gap-3 mt-8 pt-6 border-t border-gray-200">
+                  <Button
+                    onClick={handlePrevPage}
+                    disabled={currentPage === 1}
+                    variant="outline"
+                    size="sm"
+                  >
+                    Previous
+                  </Button>
 
-      {/* Floating Action Button */}
-      <Button
-        className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-red-600 hover:bg-red-700 shadow-lg z-40"
-        onClick={() => onNavigate('add-listing')}
-      >
-        <Plus className="w-6 h-6" />
-      </Button>
+                  <span className="text-sm text-gray-600">
+                    Page {currentPage} of {totalPages}
+                  </span>
+
+                  <Button
+                    onClick={handleNextPage}
+                    disabled={currentPage >= totalPages}
+                    variant="outline"
+                    size="sm"
+                  >
+                    Next
+                  </Button>
+                </div>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Car Listing{deleteCarIds.length > 1 ? 's' : ''}</AlertDialogTitle>
+            <AlertDialogTitle>Delete Car Listing</AlertDialogTitle>
             <AlertDialogDescription>
-              {deleteCarIds.length === 1 ? (
-                (() => {
-                  const car = cars.find(c => c.id === deleteCarIds[0]);
-                  return car ? 
-                    `Are you sure you want to delete the ${car.year} ${car.brand} ${car.model}? This action cannot be undone and will remove all associated images.` :
-                    'Are you sure you want to delete this car listing? This action cannot be undone.';
-                })()
-              ) : (
-                `Are you sure you want to delete ${deleteCarIds.length} car listings? This action cannot be undone and will remove all associated images.`
-              )}
+              {(() => {
+                const car = cars.find(c => c.id === carToDelete);
+                return car ? 
+                  `Are you sure you want to delete the ${car.year} ${car.brand} ${car.model}? This action cannot be undone.` :
+                  'Are you sure you want to delete this car listing? This action cannot be undone.';
+              })()}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => {
               setShowDeleteDialog(false);
-              setDeleteCarIds([]);
+              setCarToDelete(null);
             }}>
               Cancel
             </AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
+              onClick={() => {
+                if (carToDelete) {
+                  handleDeleteCar(carToDelete);
+                }
+              }}
               className="bg-red-600 hover:bg-red-700"
-              onClick={() => handleDeleteCar(deleteCarIds)}
             >
               Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Bulk Delete Dialog */}
+      <AlertDialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Multiple Cars</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete {selectedCars.size} car listing(s)? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setShowBulkDeleteDialog(false)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBulkDelete}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Delete {selectedCars.size} Car(s)
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

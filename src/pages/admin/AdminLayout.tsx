@@ -1,5 +1,6 @@
 import React from 'react';
 import { AdminHeader } from './AdminHeader';
+import { AdminBottomNav } from './AdminBottomNav';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -47,6 +48,9 @@ export function AdminLayout({ children, currentPage, onNavigate }: AdminLayoutPr
       <main className="flex-1 overflow-auto pb-16 md:pb-0">
         {childrenWithProps}
       </main>
+
+      {/* Mobile Bottom Navigation */}
+      <AdminBottomNav currentPage={currentPage} onNavigate={onNavigate} />
     </div>
   );
 }

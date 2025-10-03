@@ -72,13 +72,11 @@ export function AdminSidebar({ currentPage, onNavigate, collapsed, mobileOpen, o
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center shadow-sm flex-shrink-0">
-                <span className="text-white font-bold text-lg">A</span>
-              </div>
+              <img src="/nabus-motors-logo.png" alt="Nabus Motors" className="w-14 h-14 object-contain flex-shrink-0" />
               <div className={`transition-all duration-300 overflow-hidden ${
                 collapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'
               }`}>
-                <h2 className="text-lg font-semibold text-gray-900 whitespace-nowrap">AutoMax</h2>
+                <h2 className="text-lg font-semibold text-gray-900 whitespace-nowrap">Nabus Motors</h2>
                 <p className="text-sm text-gray-500 whitespace-nowrap">Admin Panel</p>
               </div>
             </div>
@@ -194,11 +192,9 @@ export function AdminSidebar({ currentPage, onNavigate, collapsed, mobileOpen, o
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center shadow-sm">
-                <span className="text-white font-bold text-lg">A</span>
-              </div>
+              <img src="/nabus-motors-logo.png" alt="Nabus Motors" className="w-14 h-14 object-contain" />
               <div>
-                <h2 className="text-lg font-semibold text-gray-900">AutoMax</h2>
+                <h2 className="text-lg font-semibold text-gray-900">Nabus Motors</h2>
                 <p className="text-sm text-gray-500">Admin Panel</p>
               </div>
             </div>

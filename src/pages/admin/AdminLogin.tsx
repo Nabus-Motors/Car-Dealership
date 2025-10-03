@@ -99,13 +99,11 @@ export function AdminLogin({ onBack }: AdminLoginProps) {
           <CardHeader className="text-center pb-6">
             {/* Logo */}
             <div className="flex justify-center mb-4">
-              <div className="w-16 h-16 bg-red-600 rounded-xl flex items-center justify-center">
-                <span className="text-white text-2xl font-bold">A</span>
-              </div>
+              <img src="/nabus-motors-logo.png" alt="Nabus Motors" className="w-20 h-20 object-contain" />
             </div>
             
             <CardTitle className="text-2xl font-semibold text-gray-900">
-              AutoMax Admin
+              Nabus Motors Admin
             </CardTitle>
             <p className="text-gray-600 mt-2">
               Sign in to access the admin panel
@@ -127,7 +125,7 @@ export function AdminLogin({ onBack }: AdminLoginProps) {
                   type="email"
                   value={formData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
-                  placeholder="admin@automax.com"
+                  placeholder="admin@nabusmotors.com"
                   className={errors.email ? 'border-red-500' : ''}
                   disabled={isLoading}
                 />
@@ -188,7 +186,7 @@ export function AdminLogin({ onBack }: AdminLoginProps) {
         <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
           <p className="text-sm text-blue-800 font-medium mb-1">Demo Credentials:</p>
           <p className="text-xs text-blue-700">
-            Email: admin@automax.com<br />
+            Email: admin@nabusmotors.com<br />
             Password: admin123
           </p>
         </div>

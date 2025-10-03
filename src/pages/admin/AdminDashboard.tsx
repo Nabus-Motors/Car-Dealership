@@ -3,11 +3,15 @@ import { StatsCard } from './StatsCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { StatsCardSkeleton, ActivitySkeleton } from '@/components/ui/skeleton';
 import { Car, DollarSign, CheckCircle, Plus, List, BarChart3, ShoppingCart, Edit, RefreshCw } from 'lucide-react';
 import { collection, query, onSnapshot, orderBy } from 'firebase/firestore';
 import { db, COLLECTIONS } from '@/firebase/firebase';
+import { subscribeToActivities } from '@/services/activityService';
+import type { Activity as ActivityType } from '@/types/activity';
 import type { Car as CarType } from '@/types/car';
 import { normalizeImageUrls } from '@/utils/images';
+import { formatPrice } from '@/utils/format';
 
 interface AdminDashboardProps {
   onNavigate: (page: string) => void;
@@ -15,6 +19,7 @@ interface AdminDashboardProps {
 
 export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
   const [cars, setCars] = useState<CarType[]>([]);
+  const [activities, setActivities] = useState<ActivityType[]>([]);
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -37,6 +42,24 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
       console.error('Error fetching cars:', error);
       setLoading(false);
     });
+
+    return () => unsubscribe();
+  }, []);
+
+  // Fetch activities from Firebase
+  useEffect(() => {
+    const unsubscribe = subscribeToActivities((activitiesData) => {
+      // Filter activities from last 7 days
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      
+      const recentActivities = activitiesData.filter(activity => {
+        const activityDate = activity.timestamp.toDate();
+        return activityDate >= sevenDaysAgo;
+      });
+      
+      setActivities(recentActivities);
+    }, {}, 10); // Limit to 10 recent activities
 
     return () => unsubscribe();
   }, []);
@@ -69,7 +92,7 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
     },
     {
       title: 'Inventory Value',
-      value: `$${(totalValue / 1000).toFixed(0)}K`,
+      value: formatPrice(totalValue),
       icon: DollarSign,
       change: {
         value: `${cars.filter(car => car.status === 'published' || car.status === 'new').length} available`,
@@ -99,57 +122,6 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
     }
   ];
 
-  // Generate recent activities from car data
-  const generateRecentActivities = () => {
-    const activities: Array<{
-      id: number;
-      type: string;
-      message: string;
-      time: string;
-      status: string;
-      icon: any;
-    }> = [];
-    const sortedCars = [...cars]
-      .sort((a, b) => {
-        const aTime = a.updatedAt?.toDate ? a.updatedAt.toDate() : new Date(a.updatedAt);
-        const bTime = b.updatedAt?.toDate ? b.updatedAt.toDate() : new Date(b.updatedAt);
-        return bTime.getTime() - aTime.getTime();
-      })
-      .slice(0, 5);
-
-    sortedCars.forEach((car, index) => {
-      const timeAgo = getTimeAgo(car.updatedAt);
-      const isNew = car.createdAt?.toString() === car.updatedAt?.toString();
-      
-      activities.push({
-        id: index + 1,
-        type: car.status === 'sold' ? 'sold' : (isNew ? 'added' : 'edited'),
-        message: car.status === 'sold' 
-          ? `${car.year} ${car.brand} ${car.model} marked as sold`
-          : isNew 
-            ? `New ${car.year} ${car.brand} ${car.model} listing added`
-            : `${car.year} ${car.brand} ${car.model} listing updated`,
-        time: timeAgo,
-        status: car.status === 'sold' ? 'success' : (isNew ? 'success' : 'info'),
-        icon: car.status === 'sold' ? ShoppingCart : (isNew ? Plus : Edit)
-      });
-    });
-
-    // If no activities, show placeholder
-    if (activities.length === 0) {
-      activities.push({
-        id: 1,
-        type: 'info',
-        message: 'No recent activity. Add your first car listing to get started!',
-        time: 'Welcome',
-        status: 'info',
-        icon: Plus
-      });
-    }
-
-    return activities;
-  };
-
   const getTimeAgo = (timestamp: any) => {
     if (!timestamp) return 'Unknown';
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
@@ -163,7 +135,34 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
     return 'Just now';
   };
 
-  const recentActivities = generateRecentActivities();
+  // Transform activities for display
+  const getActivityIcon = (type: string) => {
+    switch (type) {
+      case 'car_added': return Plus;
+      case 'car_updated': return Edit;
+      case 'car_deleted': return Car;
+      case 'car_sold': return ShoppingCart;
+      case 'settings_updated': return Edit;
+      case 'user_login': return CheckCircle;
+      default: return Plus;
+    }
+  };
+
+  const recentActivities = activities.length > 0 ? activities.map(activity => ({
+    id: activity.id,
+    type: activity.type,
+    message: activity.message,
+    time: getTimeAgo(activity.timestamp),
+    status: activity.status,
+    icon: getActivityIcon(activity.type)
+  })) : [{
+    id: '1',
+    type: 'info',
+    message: 'No recent activity. Add your first car listing to get started!',
+    time: 'Welcome',
+    status: 'info',
+    icon: Plus
+  }];
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -176,11 +175,54 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
 
   if (loading) {
     return (
-      <div className="flex-1 p-6">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading dashboard...</p>
+      <div className="flex-1 p-6 space-y-6">
+        {/* Header Skeleton */}
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="h-7 w-32 bg-gray-200 animate-pulse rounded mb-2"></div>
+            <div className="h-4 w-48 bg-gray-200 animate-pulse rounded"></div>
+          </div>
+          <div className="h-10 w-20 bg-gray-200 animate-pulse rounded"></div>
+        </div>
+
+        {/* Stats Cards Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <StatsCardSkeleton key={index} />
+          ))}
+        </div>
+
+        {/* Content Grid Skeleton */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Recent Activity Skeleton */}
+          <div className="lg:col-span-2">
+            <div className="bg-white rounded-lg border shadow-sm">
+              <div className="p-6 border-b border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div className="h-5 w-32 bg-gray-200 animate-pulse rounded"></div>
+                  <div className="h-6 w-16 bg-gray-200 animate-pulse rounded"></div>
+                </div>
+              </div>
+              <div className="p-6 space-y-4">
+                {Array.from({ length: 5 }).map((_, index) => (
+                  <ActivitySkeleton key={index} />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Actions & System Status Skeleton */}
+          <div className="space-y-6">
+            <div className="bg-white rounded-lg border shadow-sm">
+              <div className="p-6 border-b border-gray-200">
+                <div className="h-5 w-28 bg-gray-200 animate-pulse rounded"></div>
+              </div>
+              <div className="p-6 space-y-3">
+                {Array.from({ length: 4 }).map((_, index) => (
+                  <div key={index} className="h-10 w-full bg-gray-200 animate-pulse rounded"></div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -253,7 +295,12 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
                 </div>
                 
                 <div className="mt-4 pt-4 border-t border-gray-200">
-                  <Button variant="outline" className="w-full" size="sm">
+                  <Button 
+                    variant="outline" 
+                    className="w-full" 
+                    size="sm"
+                    onClick={() => onNavigate('activity')}
+                  >
                     View All Activity
                   </Button>
                 </div>

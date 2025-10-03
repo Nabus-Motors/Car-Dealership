@@ -28,7 +28,12 @@ import {
   Calendar,
   RefreshCw,
   Check,
-  X
+  X,
+  MapPin,
+  Mail,
+  Facebook,
+  Twitter,
+  Instagram
 } from 'lucide-react';
 
 export const Icons = {
@@ -61,5 +66,10 @@ export const Icons = {
   calendar: Calendar,
   refresh: RefreshCw,
   check: Check,
-  x: X
+  x: X,
+  mapPin: MapPin,
+  mail: Mail,
+  facebook: Facebook,
+  twitter: Twitter,
+  instagram: Instagram
 } as const;

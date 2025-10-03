@@ -22,7 +22,7 @@ export function Navbar() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <Icons.car className="h-8 w-8 text-red-600" />
+            <img src="/nabus-motors-logo.png" alt="Nabus Motors" className="h-12 w-12 object-contain" />
             <span className="font-bold text-xl">Nabus Motors</span>
           </Link>
 
@@ -63,7 +63,7 @@ export function Navbar() {
         >
           <div className="p-4 border-b border-gray-200 flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <Icons.car className="h-6 w-6 text-red-600" />
+              <img src="/nabus-motors-logo.png" alt="Nabus Motors" className="h-10 w-10 object-contain" />
               <span className="font-semibold">Nabus Motors</span>
             </div>
             <Button variant="ghost" size="icon" onClick={() => setMobileOpen(false)}>

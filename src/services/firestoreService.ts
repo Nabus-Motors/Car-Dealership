@@ -10,16 +10,42 @@ import {
 } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 import { Car } from "../types/car";
+import { logActivity } from "./activityService";
 
 type CarInput = Omit<Car, 'id' | 'createdAt' | 'updatedAt'>;
 
 // Function to add a car listing to Firestore
-export const addCarListing = async (carData: CarInput): Promise<string> => {
+export const addCarListing = async (
+  carData: CarInput, 
+  userId?: string, 
+  userName?: string
+): Promise<string> => {
   try {
     const docRef = await addDoc(collection(db, "cars"), {
       ...carData,
       createdAt: serverTimestamp(),
     });
+    
+    // Log activity
+    if (userId && userName) {
+      await logActivity(
+        'car_added',
+        `Added new ${carData.year} ${carData.brand} ${carData.model} to inventory`,
+        userId,
+        userName,
+        {
+          entityId: docRef.id,
+          status: 'success',
+          details: {
+            brand: carData.brand,
+            model: carData.model,
+            year: carData.year,
+            price: carData.price
+          }
+        }
+      );
+    }
+    
     console.log("Car listing added with ID: ", docRef.id);
     return docRef.id;
   } catch (error) {
@@ -29,12 +55,32 @@ export const addCarListing = async (carData: CarInput): Promise<string> => {
 };
 
 // Function to delete a car listing and its images
-export const deleteCar = async (carId: string): Promise<void> => {
+export const deleteCar = async (
+  carId: string, 
+  userId?: string, 
+  userName?: string,
+  carDetails?: { brand?: string; model?: string; year?: number }
+): Promise<void> => {
   try {
     // Since we're using base64 images stored in Firestore,
     // we only need to delete the Firestore document
     // The images are part of the document and will be deleted automatically
     await deleteDoc(doc(db, "cars", carId));
+    
+    // Log activity
+    if (userId && userName) {
+      await logActivity(
+        'car_deleted',
+        `Deleted ${carDetails?.year || ''} ${carDetails?.brand || ''} ${carDetails?.model || 'car'} from inventory`,
+        userId,
+        userName,
+        {
+          entityId: carId,
+          status: 'success',
+          details: carDetails || {}
+        }
+      );
+    }
     
     console.log("Car deleted successfully");
   } catch (error) {

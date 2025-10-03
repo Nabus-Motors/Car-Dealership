@@ -11,6 +11,8 @@ import { AdminLayout } from './pages/admin/AdminLayout';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { ListingsManagement } from './pages/admin/ListingsManagement';
 import { AddEditListing } from './pages/admin/AddEditListing';
+import { ActivityList } from './pages/admin/ActivityList';
+import { AdminSettings } from './pages/admin/AdminSettings';
 import { Toaster } from 'react-hot-toast';
 // import { useAuth } from './context/AuthContext'; // Temporarily commented for testing
 
@@ -39,6 +41,8 @@ function AdminRouter({ onNavigate }: { onNavigate: (path: string) => void }) {
     if (path.includes('/admin/listings')) return 'listings';
     if (path.includes('/admin/add-listing')) return 'add-listing';
     if (path.includes('/admin/edit-listing')) return 'add-listing';
+    if (path.includes('/admin/activity')) return 'activity';
+    if (path.includes('/admin/settings')) return 'settings';
     return 'dashboard';
   };
   
@@ -50,8 +54,10 @@ function AdminRouter({ onNavigate }: { onNavigate: (path: string) => void }) {
       <Routes>
         <Route index element={<AdminDashboard onNavigate={onNavigate} />} />
         <Route path="listings" element={<ListingsManagement onNavigate={onNavigate} />} />
-  <Route path="add-listing" element={<AddEditListing />} />
-  <Route path="edit-listing/:id" element={<AddEditListing />} />
+        <Route path="add-listing" element={<AddEditListing />} />
+        <Route path="edit-listing/:id" element={<AddEditListing />} />
+        <Route path="activity" element={<ActivityList onNavigate={onNavigate} />} />
+        <Route path="settings" element={<AdminSettings onNavigate={onNavigate} />} />
       </Routes>
     </AdminLayout>
   );
@@ -76,6 +82,14 @@ function App() {
     }
     if (path === 'add-listing') {
       navigate('/admin/add-listing');
+      return;
+    }
+    if (path === 'activity') {
+      navigate('/admin/activity');
+      return;
+    }
+    if (path === 'settings') {
+      navigate('/admin/settings');
       return;
     }
     if (path.startsWith('edit-listing/')) {

@@ -32,7 +32,7 @@ export function AboutPage() {
       {/* Hero Section */}
       <HeroSection
         backgroundImage="https://images.unsplash.com/photo-1592891024301-bf7948cee673?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjYXIlMjBkZWFsZXJzaGlwJTIwdGVhbXxlbnwxfHx8fDE3NTg3MjE3Mjh8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
-        title="About AutoMax"
+        title="About Nabus Motors"
         subtitle="Your trusted automotive partner since 2004"
         height="h-[400px]"
       />
@@ -47,7 +47,7 @@ export function AboutPage() {
               </h2>
               <div className="space-y-4 text-gray-700 leading-relaxed">
                 <p>
-                  Founded in 2004, AutoMax began as a small family-owned dealership with a simple mission: 
+                  Founded in 2004, Nabus Motors began as a small family-owned dealership with a simple mission: 
                   to provide honest, reliable, and exceptional automotive services to our community. 
                   What started as a modest operation has grown into one of the region's most trusted 
                   automotive destinations.
@@ -69,7 +69,7 @@ export function AboutPage() {
             <div className="relative">
               <ImageWithFallback
                 src="https://images.unsplash.com/photo-1705747401901-28363172fe7e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxsdXh1cnklMjBjYXIlMjBzaG93cm9vbXxlbnwxfHx8fDE3NTg3MTYyMTl8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
-                alt="AutoMax showroom"
+                alt="Nabus Motors showroom"
                 className="w-full h-80 object-cover rounded-lg shadow-lg"
               />
             </div>

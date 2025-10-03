@@ -3,6 +3,7 @@ import { HeroSection } from '../components/HeroSection';
 import { CarCard } from '../components/CarCard';
 import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
+import { CarCardSkeleton } from '../components/ui/skeleton';
 import { collection, query, orderBy, limit, where, addDoc, serverTimestamp, getDocs, getDoc, doc } from 'firebase/firestore';
 import { db, COLLECTIONS } from '../firebase/firebase';
 import type { Car } from '@/types/car';
@@ -325,9 +326,7 @@ export function HomePage() {
                 <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide">
                   {Array(4).fill(null).map((_, idx) => (
                     <div key={idx} className="snap-center shrink-0 w-[80%]">
-                      <div className="animate-pulse">
-                        <div className="h-80 bg-gray-200 rounded-lg" />
-                      </div>
+                      <CarCardSkeleton />
                     </div>
                   ))}
                 </div>
@@ -336,9 +335,7 @@ export function HomePage() {
               {/* Desktop grid loading */}
               <div className="hidden md:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 auto-rows-fr">
                 {Array(8).fill(null).map((_, index) => (
-                  <div key={index} className="animate-pulse h-80">
-                    <div className="h-full bg-gray-200 rounded-lg" />
-                  </div>
+                  <CarCardSkeleton key={index} />
                 ))}
               </div>
             </>

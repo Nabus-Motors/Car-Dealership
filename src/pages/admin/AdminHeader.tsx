@@ -98,10 +98,16 @@ export function AdminHeader({ title, showSearch = false, searchPlaceholder = "Se
               <ArrowLeft className="w-4 h-4 mr-1" />
               Main Site
             </Button>
-            <Avatar className="w-8 h-8">
+            <Avatar 
+              className="w-8 h-8 cursor-pointer hover:ring-2 hover:ring-red-200 transition-all"
+              onClick={() => onNavigate?.('settings')}
+            >
               <AvatarFallback className="bg-red-100 text-red-700 text-sm font-medium">AM</AvatarFallback>
             </Avatar>
-            <div className="hidden xl:block text-left max-w-[180px] truncate">
+            <div 
+              className="hidden xl:block text-left max-w-[180px] truncate cursor-pointer hover:opacity-80 transition-opacity"
+              onClick={() => onNavigate?.('settings')}
+            >
               <p className="text-sm font-medium text-gray-900 truncate">{user?.displayName || 'Admin'}</p>
               <p className="text-xs text-gray-500 truncate">{user?.email || '—'}</p>
             </div>
@@ -112,9 +118,13 @@ export function AdminHeader({ title, showSearch = false, searchPlaceholder = "Se
             variant="ghost"
             size="sm"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="md:hidden p-2"
+            className="md:hidden p-2 h-10 w-10 flex items-center justify-center"
           >
-            {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            {isMobileMenuOpen ? (
+              <X className="w-5 h-5" />
+            ) : (
+              <Menu className="w-5 h-5" />
+            )}
           </Button>
         </div>
       </div>

@@ -114,12 +114,18 @@ export function AdminHeader({ title, showSearch = false, searchPlaceholder = "Se
               <ArrowLeft className="w-4 h-4 mr-1" />
               Main Site
             </Button>
-            <Avatar className="w-8 h-8">
-              <AvatarFallback className="bg-red-100 text-red-700 text-sm font-medium">AM</AvatarFallback>
+            <Avatar 
+              className="w-8 h-8 cursor-pointer hover:ring-2 hover:ring-red-200 transition-all"
+              onClick={() => onNavigate?.('settings')}
+            >
+              <AvatarFallback className="bg-red-100 text-red-700 text-sm font-medium">NM</AvatarFallback>
             </Avatar>
-            <div className="hidden lg:block text-left">
+            <div 
+              className="hidden lg:block text-left cursor-pointer hover:opacity-80 transition-opacity"
+              onClick={() => onNavigate?.('settings')}
+            >
               <p className="text-sm font-medium text-gray-900">Admin Manager</p>
-              <p className="text-xs text-gray-500">admin@automax.com</p>
+              <p className="text-xs text-gray-500">admin@nabusmotors.com</p>
             </div>
           </div>
         </div>

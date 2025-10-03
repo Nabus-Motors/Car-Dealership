@@ -1,4 +1,3 @@
-import React from 'react';
 import { Button } from './ui/button';
 
 interface HeaderProps {
@@ -19,10 +18,8 @@ export function Header({ currentPage, onNavigate }: HeaderProps) {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold">A</span>
-            </div>
-            <span className="text-xl font-bold">AutoMax</span>
+            <img src="/nabus-motors-logo.png" alt="Nabus Motors" className="w-12 h-12 object-contain" />
+            <span className="text-xl font-bold">Nabus Motors</span>
           </div>
 
           {/* Desktop Navigation */}

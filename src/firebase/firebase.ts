@@ -74,7 +74,11 @@ export interface CarListing {
 export const COLLECTIONS = {
   CARS: 'cars',
   USERS: 'users',
-  FEATURED: 'featured'
+  FEATURED: 'featured',
+  ACTIVITIES: 'activities',
+  SETTINGS: 'settings',
+  USER_PROFILES: 'userProfiles',
+  ADMIN_USERS: 'adminUsers'
 } as const;
 
 export default app;
