@@ -24,7 +24,7 @@ import {
   AlertTriangle,
   XCircle
 } from 'lucide-react';
-import { subscribeToActivities, ACTIVITY_TYPE_LABELS, ACTIVITY_STATUS_COLORS } from '@/services/activityService';
+import { subscribeToActivities, logActivity, ACTIVITY_TYPE_LABELS, ACTIVITY_STATUS_COLORS } from '@/services/activityService';
 import type { Activity, ActivityFilters } from '@/types/activity';
 import { format } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
@@ -155,18 +155,16 @@ export function ActivityList({ onNavigate: _ }: ActivityListProps) {
     
     // Create a test activity to see if activities are working
     if (user) {
-      import('@/services/activityService').then(({ logActivity }) => {
-        logActivity(
-          'user_login',
-          'Test activity created from refresh',
-          user.uid,
-          user.displayName || user.email || 'Test User',
-          { status: 'info', details: { testRefresh: true } }
-        ).then(() => {
-          console.log('Test activity logged successfully');
-        }).catch((err) => {
-          console.error('Failed to log test activity:', err);
-        });
+      logActivity(
+        'user_login',
+        'Test activity created from refresh',
+        user.uid,
+        user.displayName || user.email || 'Test User',
+        { status: 'info', details: { testRefresh: true } }
+      ).then(() => {
+        console.log('Test activity logged successfully');
+      }).catch((err) => {
+        console.error('Failed to log test activity:', err);
       });
     }
     

@@ -1,5 +1,4 @@
 import { Calendar, Car, Star, Trophy } from 'lucide-react';
-import { HeroSection } from '../components/HeroSection';
 import { Card, CardContent } from '../components/ui/card';
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 
@@ -30,12 +29,21 @@ export function AboutPage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <HeroSection
-        backgroundImage="https://images.unsplash.com/photo-1592891024301-bf7948cee673?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjYXIlMjBkZWFsZXJzaGlwJTIwdGVhbXxlbnwxfHx8fDE3NTg3MjE3Mjh8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
-        title="About Nabus Motors"
-        subtitle="Your trusted automotive partner since 2004"
-        height="h-[400px]"
-      />
+      <div className="relative h-[400px] w-full flex items-center justify-center overflow-hidden bg-background pt-16">
+        {/* Background Image */}
+        <img 
+          src="https://images.unsplash.com/photo-1592891024301-bf7948cee673?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjYXIlMjBkZWFsZXJzaGlwJTIwdGVhbXxlbnwxfHx8fDE3NTg3MjE3Mjh8MA&ixlib=rb-4.1.0&q=80&w=1080"
+          alt="About us"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-black/40"></div>
+        
+        {/* Content */}
+        <div className="relative z-10 text-center text-white px-6 max-w-5xl mx-auto">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">About Nabus Motors</h1>
+          <p className="text-lg md:text-xl text-gray-100">Your trusted automotive partner since 2004</p>
+        </div>
+      </div>
 
       {/* Company Story Section */}
       <section className="py-16 bg-white">
