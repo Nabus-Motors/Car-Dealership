@@ -3,18 +3,18 @@ import { Link } from 'react-router-dom';
 
 export function Footer() {
   return (
-    <footer className="bg-slate-900 text-white">
+    <footer className="bg-[#001F3F] text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Company Info */}
           <div className="space-y-4">
             <Link to="/" className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-white rounded flex items-center justify-center">
-                <span className="text-slate-900 font-bold text-sm">NM</span>
+              <div className="w-10 h-10 bg-[#FFD700] rounded flex items-center justify-center">
+                <span className="text-[#001F3F] font-bold text-sm">NM</span>
               </div>
               <div>
                 <div className="text-sm tracking-wider font-semibold">Nabus</div>
-                <div className="text-xs text-gray-300">Motors</div>
+                <div className="text-xs text-[#FFD700]">Motors</div>
               </div>
             </Link>
             <p className="text-gray-400">
@@ -28,25 +28,25 @@ export function Footer() {
             <div className="space-y-2">
               <Link
                 to="/"
-                className="block text-gray-400 hover:text-amber-500 transition-colors"
+                className="block text-gray-400 hover:text-[#FFD700] transition-colors duration-300"
               >
                 Home
               </Link>
               <Link
                 to="/explore"
-                className="block text-gray-400 hover:text-amber-500 transition-colors"
+                className="block text-gray-400 hover:text-[#FFD700] transition-colors duration-300"
               >
                 Inventory
               </Link>
               <Link
                 to="/about"
-                className="block text-gray-400 hover:text-amber-500 transition-colors"
+                className="block text-gray-400 hover:text-[#FFD700] transition-colors duration-300"
               >
                 About Us
               </Link>
               <Link
                 to="/contact"
-                className="block text-gray-400 hover:text-amber-500 transition-colors"
+                className="block text-gray-400 hover:text-[#FFD700] transition-colors duration-300"
               >
                 Contact
               </Link>
@@ -58,15 +58,15 @@ export function Footer() {
             <h3 className="font-semibold text-lg">Contact</h3>
             <div className="space-y-3 text-gray-400">
               <div className="flex items-center gap-3">
-                <MapPin className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                <MapPin className="w-4 h-4 text-[#FFD700] flex-shrink-0" />
                 <span className="text-sm">123 Auto Street, Car City, CC 12345</span>
               </div>
               <div className="flex items-center gap-3">
-                <Phone className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                <Phone className="w-4 h-4 text-[#FFD700] flex-shrink-0" />
                 <span className="text-sm">(555) 123-4567</span>
               </div>
               <div className="flex items-center gap-3">
-                <Mail className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                <Mail className="w-4 h-4 text-[#FFD700] flex-shrink-0" />
                 <span className="text-sm">info@nabusmotors.com</span>
               </div>
             </div>
@@ -84,16 +84,16 @@ export function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t border-slate-800 mt-12 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div className="border-t border-[#1A3A52] mt-12 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-gray-400 text-sm">&copy; 2024 Nabus Motors. All rights reserved.</p>
           <div className="flex gap-6">
-            <a href="#" className="text-gray-400 hover:text-amber-500 transition-colors">
+            <a href="#" className="text-gray-400 hover:text-[#FFD700] transition-colors duration-300">
               <Facebook className="w-5 h-5" />
             </a>
-            <a href="#" className="text-gray-400 hover:text-amber-500 transition-colors">
+            <a href="#" className="text-gray-400 hover:text-[#FFD700] transition-colors duration-300">
               <Twitter className="w-5 h-5" />
             </a>
-            <a href="#" className="text-gray-400 hover:text-amber-500 transition-colors">
+            <a href="#" className="text-gray-400 hover:text-[#FFD700] transition-colors duration-300">
               <Instagram className="w-5 h-5" />
             </a>
           </div>
