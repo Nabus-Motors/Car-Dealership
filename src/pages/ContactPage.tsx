@@ -139,7 +139,7 @@ export function ContactPage() {
               {/* Contact Form */}
               <Card>
                 <CardContent className="p-8">
-                  <h2 className="text-2xl font-bold text-slate-900 mb-6">
+                  <h2 className="text-2xl font-bold text-[#001F3F] mb-6">
                     Send Us a Message
                   </h2>
                   <form onSubmit={handleSubmit} className="space-y-6">
@@ -205,7 +205,7 @@ export function ContactPage() {
               {/* Map Location */}
               <Card className="overflow-hidden mt-6">
                 <CardHeader className="pb-0">
-                  <CardTitle className="text-2xl font-bold text-slate-900">Location</CardTitle>
+                  <CardTitle className="text-2xl font-bold text-[#001F3F]">Location</CardTitle>
                 </CardHeader>
                 <CardContent className="p-0">
                   <div className="h-80 relative">
@@ -227,7 +227,7 @@ export function ContactPage() {
 
             {/* Contact Information */}
             <div className="space-y-6">
-              <h2 className="text-2xl font-bold text-slate-900">
+              <h2 className="text-2xl font-bold text-[#001F3F]">
                 Get in Touch
               </h2>
               <p className="text-gray-600">
@@ -240,11 +240,11 @@ export function ContactPage() {
                   <Card key={index}>
                     <CardContent className="p-6">
                       <div className="flex items-start space-x-4">
-                        <div className="p-2 bg-blue-50 rounded-lg">
-                          <info.icon className="w-6 h-6 text-blue-600" />
+                        <div className="p-2 bg-[#FFD700]/20 rounded-lg">
+                          <info.icon className="w-6 h-6 text-[#FFD700]" />
                         </div>
                         <div>
-                          <h3 className="font-semibold text-slate-900">
+                          <h3 className="font-semibold text-[#001F3F]">
                             {info.title}
                           </h3>
                           <div className="space-y-1 mt-2 text-sm text-gray-600">
@@ -254,7 +254,7 @@ export function ContactPage() {
                           </div>
                           <Button
                             variant="link"
-                            className="mt-2 h-auto p-0 text-blue-600"
+                            className="mt-2 h-auto p-0 text-[#FFD700] hover:text-[#FFC700]"
                           >
                             {info.action} →
                           </Button>
@@ -268,7 +268,7 @@ export function ContactPage() {
               {/* Business Hours */}
               <Card>
                 <CardContent className="p-6">
-                  <h3 className="font-semibold text-slate-900 mb-4">
+                  <h3 className="font-semibold text-[#001F3F] mb-4">
                     Business Hours
                   </h3>
                   <div className="space-y-2 text-sm text-gray-600">

@@ -12,7 +12,7 @@ export function ValuesSection() {
     <section className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">Our Core Values</h2>
+          <h2 className="text-4xl md:text-5xl font-bold mb-4 text-[#001F3F]">Our Core Values</h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             Built on principles that matter to you and your family
           </p>

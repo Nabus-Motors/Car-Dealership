@@ -7,12 +7,12 @@ export function StatsSection() {
   ];
 
   return (
-    <section className="py-20 bg-slate-900 text-white">
+    <section className="py-20 bg-[#001F3F] text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-4 gap-8 text-center">
           {stats.map((stat, index) => (
             <div key={index}>
-              <div className="text-5xl font-bold text-amber-500 mb-2">{stat.number}</div>
+              <div className="text-5xl font-bold text-[#FFD700] mb-2">{stat.number}</div>
               <div className="text-gray-200 text-lg">{stat.label}</div>
             </div>
           ))}

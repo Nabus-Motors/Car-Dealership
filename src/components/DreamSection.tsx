@@ -11,14 +11,14 @@ export function DreamSection() {
             />
           </div>
           <div>
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">Your Dream Car Awaits</h2>
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-[#001F3F]">Your Dream Car Awaits</h2>
             <p className="text-lg text-gray-600 mb-4">
               From sleek sedans to powerful SUVs, our curated collection features the vehicles you've always wanted.
             </p>
             <p className="text-lg text-gray-600 mb-8">
               Every car in our inventory is thoroughly inspected, certified, and ready to exceed your expectations.
             </p>
-            <button className="bg-amber-500 hover:bg-amber-600 text-white px-8 py-3 rounded font-semibold transition-colors">
+            <button className="bg-[#FFD700] hover:bg-[#FFC700] text-[#001F3F] px-8 py-3 rounded font-semibold transition-all duration-300 hover:shadow-lg hover:shadow-[#FFD700]/50">
               Explore All Vehicles
             </button>
           </div>

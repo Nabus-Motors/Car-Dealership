@@ -26,7 +26,7 @@ export function TestimonialsSection() {
     <section className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">What Our Customers Say</h2>
+          <h2 className="text-4xl md:text-5xl font-bold mb-4 text-[#001F3F]">What Our Customers Say</h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             Real reviews from real customers who trusted us with their vehicle purchase
           </p>
@@ -34,15 +34,15 @@ export function TestimonialsSection() {
         
         <div className="grid md:grid-cols-3 gap-8">
           {testimonials.map((testimonial, index) => (
-            <div key={index} className="bg-gray-50 p-8 rounded-lg border border-gray-200 hover:shadow-lg transition-shadow">
+            <div key={index} className="bg-gray-50 p-8 rounded-lg border border-gray-200 hover:shadow-lg transition-all duration-300 hover:border-[#FFD700]">
               <div className="flex items-center gap-1 mb-4">
                 {Array.from({ length: testimonial.rating }).map((_, i) => (
-                  <Star key={i} className="w-5 h-5 fill-amber-500 text-amber-500" />
+                  <Star key={i} className="w-5 h-5 fill-[#FFD700] text-[#FFD700]" />
                 ))}
               </div>
               <p className="text-gray-700 mb-6 italic">"{testimonial.content}"</p>
               <div className="border-t border-gray-200 pt-4">
-                <p className="font-semibold text-gray-900">{testimonial.name}</p>
+                <p className="font-semibold text-[#001F3F]">{testimonial.name}</p>
                 <p className="text-sm text-gray-600">{testimonial.role}</p>
               </div>
             </div>

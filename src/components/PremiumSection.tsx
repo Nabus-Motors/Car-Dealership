@@ -1,6 +1,6 @@
 export function PremiumSection() {
   return (
-    <section className="py-20 bg-gradient-to-r from-slate-900 to-slate-800 text-white">
+    <section className="py-20 bg-gradient-to-r from-[#001F3F] to-[#0A1D47] text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div>
@@ -10,19 +10,19 @@ export function PremiumSection() {
             </p>
             <ul className="space-y-3 mb-8">
               <li className="flex items-center gap-3">
-                <span className="text-amber-500 text-2xl">✓</span>
+                <span className="text-[#FFD700] text-2xl">✓</span>
                 <span>Competitive interest rates</span>
               </li>
               <li className="flex items-center gap-3">
-                <span className="text-amber-500 text-2xl">✓</span>
+                <span className="text-[#FFD700] text-2xl">✓</span>
                 <span>Quick approval process</span>
               </li>
               <li className="flex items-center gap-3">
-                <span className="text-amber-500 text-2xl">✓</span>
+                <span className="text-[#FFD700] text-2xl">✓</span>
                 <span>Flexible loan terms</span>
               </li>
             </ul>
-            <button className="bg-amber-500 hover:bg-amber-600 text-white px-8 py-3 rounded font-semibold transition-colors">
+            <button className="bg-[#FFD700] hover:bg-[#FFC700] text-[#001F3F] px-8 py-3 rounded font-semibold transition-all duration-300 hover:shadow-lg hover:shadow-[#FFD700]/50">
               Get Pre-Approved
             </button>
           </div>

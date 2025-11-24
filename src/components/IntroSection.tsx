@@ -4,7 +4,7 @@ export function IntroSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div>
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">Welcome to Nabus Motors</h2>
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-[#001F3F]">Welcome to Nabus Motors</h2>
             <p className="text-lg text-gray-600 mb-4">
               Experience the finest selection of premium vehicles, meticulously curated and expertly maintained for your ultimate driving satisfaction.
             </p>

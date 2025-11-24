@@ -49,9 +49,9 @@ export function BestDeals() {
   return (
     <section className="py-20 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-end justify-between mb-4 border-b-4 border-amber-500 pb-4">
-          <h2 className="text-4xl md:text-5xl font-bold">Nabus Best Deals</h2>
-          <button className="text-amber-500 hover:text-amber-600 flex items-center gap-2 transition-colors hidden md:flex">
+        <div className="flex items-end justify-between mb-4 border-b-4 border-[#FFD700] pb-4">
+          <h2 className="text-4xl md:text-5xl font-bold text-[#001F3F]">Nabus Best Deals</h2>
+          <button className="text-[#FFD700] hover:text-[#FFC700] flex items-center gap-2 transition-colors duration-300 hidden md:flex">
             View All
             <ArrowRight className="w-5 h-5" />
           </button>
@@ -59,10 +59,10 @@ export function BestDeals() {
         
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
           {deals.map((deal) => (
-            <div key={deal.id} className="bg-white rounded overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow relative">
+            <div key={deal.id} className="bg-white rounded overflow-hidden border border-gray-200 hover:shadow-lg transition-all duration-300 relative hover:border-[#FFD700]">
               {deal.soldOut && (
                 <div className="absolute top-0 left-0 z-10">
-                  <div className="bg-amber-500 text-white px-8 py-1 text-xs transform -rotate-45 -translate-x-7 translate-y-4 font-semibold">
+                  <div className="bg-[#FFD700] text-[#001F3F] px-8 py-1 text-xs transform -rotate-45 -translate-x-7 translate-y-4 font-semibold">
                     SPECIAL
                   </div>
                 </div>
@@ -74,7 +74,7 @@ export function BestDeals() {
                   alt={deal.name}
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute bottom-0 right-0 bg-slate-800 text-white px-4 py-2 flex items-baseline gap-2">
+                <div className="absolute bottom-0 right-0 bg-[#001F3F] text-white px-4 py-2 flex items-baseline gap-2">
                   <span className="text-xl font-bold">{deal.price}</span>
                   <span className="text-xs text-gray-300">MSRP: {deal.msrp}</span>
                 </div>
@@ -83,13 +83,13 @@ export function BestDeals() {
               <div className="p-4">
                 <div className="flex items-start justify-between mb-2">
                   <div>
-                    <h4 className="font-semibold text-lg mb-1">{deal.name}</h4>
+                    <h4 className="font-semibold text-lg mb-1 text-[#001F3F]">{deal.name}</h4>
                     <div className="flex items-center gap-1 text-sm text-gray-500">
                       📍 {deal.location}
                     </div>
                   </div>
                   {deal.soldOut && (
-                    <span className="text-xs px-2 py-1 border-2 border-red-500 text-red-500 rounded font-semibold">
+                    <span className="text-xs px-2 py-1 border-2 border-[#FFD700] text-[#FFD700] rounded font-semibold">
                       SOLD OUT
                     </span>
                   )}
