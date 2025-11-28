@@ -11,7 +11,7 @@ import { collection, query, onSnapshot, orderBy } from 'firebase/firestore';
 import { db, COLLECTIONS } from '@/firebase/firebase';
 import { RefreshCw, Plus, Edit, Trash2, Search, Filter } from 'lucide-react';
 import { formatPrice, formatMileage, formatDate } from '@utils/format';
-import type { Car } from '@types/car';
+import type { Car } from '@/types/car';
 import { deleteCar } from '@services/firestoreService';
 import { useAuth } from '@hooks/useAuth';
 import toast from 'react-hot-toast';

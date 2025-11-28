@@ -8,8 +8,8 @@ import { Car, DollarSign, CheckCircle, Plus, List, BarChart3, ShoppingCart, Edit
 import { collection, query, onSnapshot, orderBy } from 'firebase/firestore';
 import { db, COLLECTIONS } from '@/firebase/firebase';
 import { subscribeToActivities } from '@services/activityService';
-import type { Activity as ActivityType } from '@types/activity';
-import type { Car as CarType } from '@types/car';
+import type { Activity as ActivityType } from '@/types/activity';
+import type { Car as CarType } from '@/types/car';
 import { normalizeImageUrls } from '@utils/images';
 import { formatPrice } from '@utils/format';
 

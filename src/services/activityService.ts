@@ -1,6 +1,6 @@
 import { collection, addDoc, query, orderBy, limit, onSnapshot, where, Timestamp } from 'firebase/firestore';
 import { db, COLLECTIONS } from '@/firebase/firebase';
-import type { Activity, ActivityFilters } from '@types/activity';
+import type { Activity, ActivityFilters } from '@/types/activity';
 
 export const ACTIVITY_COLLECTION = COLLECTIONS.ACTIVITIES;
 

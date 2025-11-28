@@ -5,7 +5,7 @@ import { Button } from '@components/ui/button';
 import { MapPin } from 'lucide-react';
 import { formatPrice, formatMileage } from '@utils/format';
 import { ContactFormDialog } from '@components/ContactFormDialog';
-import type { Car } from '@types/car';
+import type { Car } from '@/types/car';
 
 interface CarCardHorizontalProps extends Car {}
 

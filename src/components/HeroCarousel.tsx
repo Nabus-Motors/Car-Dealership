@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { StorageImage } from '@components/figma/StorageImage';
 import { useNavigate } from 'react-router-dom';
-import type { Car } from '@types/car';
+import type { Car } from '@/types/car';
 
 interface HeroCarouselProps {
   cars: Car[];
@@ -60,12 +60,13 @@ export function HeroCarousel({ cars, autoPlayInterval = 6000, onCarSelect }: Her
       <div className="relative w-full h-full">
         {/* Image Display */}
         {currentCar.imageUrls && currentCar.imageUrls.length > 0 ? (
-          <StorageImage
-            src={currentCar.imageUrls[0]}
-            alt={`${currentCar.year} ${currentCar.brand} ${currentCar.model}`}
-            className="w-full h-full object-cover cursor-pointer"
-            onClick={handleCarClick}
-          />
+          <div onClick={handleCarClick} className="cursor-pointer">
+            <StorageImage
+              src={currentCar.imageUrls[0]}
+              alt={`${currentCar.year} ${currentCar.brand} ${currentCar.model}`}
+              className="w-full h-full object-cover"
+            />
+          </div>
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
             <div className="text-center text-gray-400">

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { StorageImage } from '@components/figma/StorageImage';
-import type { Car } from '@types/car';
+import type { Car } from '@/types/car';
 
 interface CarHeroCarouselProps {
   cars: Car[];

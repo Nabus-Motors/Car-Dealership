@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@components/ui
 import { formatMileage, formatPrice } from '@utils/format';
 import { ContactFormDialog } from '@components/ContactFormDialog';
 
-import type { Car } from '@types/car';
+import type { Car } from '@/types/car';
 
 const carThemeStyles = {
   card: 'bg-white rounded overflow-hidden border border-gray-200 hover:shadow-lg transition-all duration-300 relative hover:border-[#FFD700]',

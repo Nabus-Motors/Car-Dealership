@@ -5,7 +5,7 @@ import { TestDriveDialog } from '../components/TestDriveDialog';
 import { Button } from '../components/ui/button';
 import { collection, query, orderBy, limit, where, getDocs, getDoc, doc } from 'firebase/firestore';
 import { db, COLLECTIONS } from '../firebase/firebase';
-import type { Car } from '@types/car';
+import type { Car } from '@/types/car';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { normalizeImageUrls } from '@utils/images';

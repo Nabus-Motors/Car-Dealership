@@ -11,7 +11,7 @@ import { Slider } from '@components/ui/slider';
 import { collection, query, orderBy, limit, startAfter, getDocs, DocumentSnapshot } from 'firebase/firestore';
 import { db, COLLECTIONS } from '@/firebase/firebase';
 import { Grid3x3, List } from 'lucide-react';
-import type { Car } from '@types/car';
+import type { Car } from '@/types/car';
 import { normalizeImageUrls } from '@utils/images';
 import { CarCard } from '@components/CarCard';
 import { CarCardHorizontal } from '@components/CarCardHorizontal';

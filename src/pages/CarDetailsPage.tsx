@@ -8,7 +8,7 @@ import { db, COLLECTIONS } from '@/firebase/firebase';
 import { doc, getDoc, collection, query, where, limit, getDocs } from 'firebase/firestore';
 import { ChevronLeft, ChevronRight, Gauge, MapPin } from 'lucide-react';
 import { CarCard } from '@components/CarCard';
-import type { Car } from '@types/car';
+import type { Car } from '@/types/car';
 
 export default function CarDetailsPage() {
   const { carId } = useParams<{ carId: string }>();

@@ -25,7 +25,7 @@ import {
   XCircle
 } from 'lucide-react';
 import { subscribeToActivities, logActivity, ACTIVITY_TYPE_LABELS, ACTIVITY_STATUS_COLORS } from '@services/activityService';
-import type { Activity, ActivityFilters } from '@types/activity';
+import type { Activity, ActivityFilters } from '@/types/activity';
 import { format } from 'date-fns';
 import { useAuth } from '@hooks/useAuth';
 
