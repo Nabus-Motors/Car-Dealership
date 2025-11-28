@@ -9,7 +9,7 @@ import { Badge } from '../../components/ui/badge';
 import { Alert, AlertDescription } from '../../components/ui/alert';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../../components/ui/collapsible';
 import { Upload, X, Save, ChevronDown } from 'lucide-react';
-import { StorageImage } from '@/components/figma/StorageImage';
+import { StorageImage } from '@components/figma/StorageImage';
 import { formatFileSize } from '../../utils/imageCompression';
 
 interface FormData {

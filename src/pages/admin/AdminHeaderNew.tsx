@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@components/ui/button';
+import { Input } from '@components/ui/input';
+import { Avatar, AvatarFallback } from '@components/ui/avatar';
+import { Badge } from '@components/ui/badge';
 import { Search, Bell, Car, PlusCircle, ArrowLeft, LayoutDashboard } from 'lucide-react';
 
 interface AdminHeaderProps {

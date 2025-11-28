@@ -9,7 +9,7 @@ import { uploadImages } from '../../services/storageService';
 import { compressImage, validateImageFile, formatFileSize } from '../../utils/imageCompression';
 import toast from 'react-hot-toast';
 import { serverTimestamp } from 'firebase/firestore';
-import { normalizeImageUrls } from '@/utils/images';
+import { normalizeImageUrls } from '@utils/images';
 import { AddEditListingForm } from './AddEditListingForm';
 
 interface FormData {

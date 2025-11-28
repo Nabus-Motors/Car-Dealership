@@ -1,14 +1,14 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { formatPrice } from '@/utils/format';
-import { StorageImage } from '@/components/figma/StorageImage';
-import { Button } from '@/components/ui/button';
-import { ContactFormDialog } from '@/components/ContactFormDialog';
+import { formatPrice } from '@utils/format';
+import { StorageImage } from '@components/figma/StorageImage';
+import { Button } from '@components/ui/button';
+import { ContactFormDialog } from '@components/ContactFormDialog';
 import { db, COLLECTIONS } from '@/firebase/firebase';
 import { doc, getDoc, collection, query, where, limit, getDocs } from 'firebase/firestore';
 import { ChevronLeft, ChevronRight, Gauge, MapPin } from 'lucide-react';
-import { CarCard } from '@/components/CarCard';
-import type { Car } from '@/types/car';
+import { CarCard } from '@components/CarCard';
+import type { Car } from '@types/car';
 
 export default function CarDetailsPage() {
   const { carId } = useParams<{ carId: string }>();

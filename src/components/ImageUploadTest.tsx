@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { uploadImages } from '@/services/storageService';
+import { Button } from '@components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@components/ui/card';
+import { uploadImages } from '@services/storageService';
 import { Upload } from 'lucide-react';
 import toast from 'react-hot-toast';
 

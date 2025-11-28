@@ -1,21 +1,21 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Icons } from '@/components/ui/icons';
-import { useIsMobile } from '@/components/ui/use-mobile';
-import { Slider } from '@/components/ui/slider';
+import { Input } from '@components/ui/input';
+import { Button } from '@components/ui/button';
+import { Dialog, DialogContent, DialogTrigger } from '@components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@components/ui/select';
+import { Badge } from '@components/ui/badge';
+import { Icons } from '@components/ui/icons';
+import { useIsMobile } from '@components/ui/use-mobile';
+import { Slider } from '@components/ui/slider';
 import { collection, query, orderBy, limit, startAfter, getDocs, DocumentSnapshot } from 'firebase/firestore';
 import { db, COLLECTIONS } from '@/firebase/firebase';
 import { Grid3x3, List } from 'lucide-react';
-import type { Car } from '@/types/car';
-import { normalizeImageUrls } from '@/utils/images';
-import { CarCard } from '@/components/CarCard';
-import { CarCardHorizontal } from '@/components/CarCardHorizontal';
-import { HeroSection } from '@/components/HeroSection';
+import type { Car } from '@types/car';
+import { normalizeImageUrls } from '@utils/images';
+import { CarCard } from '@components/CarCard';
+import { CarCardHorizontal } from '@components/CarCardHorizontal';
+import { HeroSection } from '@components/HeroSection';
 
 // Filter types
 interface Filters {

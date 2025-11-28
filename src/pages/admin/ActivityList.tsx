@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { ActivityListSkeleton } from '@/components/ui/skeleton';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Card, CardContent, CardHeader, CardTitle } from '@components/ui/card';
+import { Button } from '@components/ui/button';
+import { Badge } from '@components/ui/badge';
+import { ActivityListSkeleton } from '@components/ui/skeleton';
+import { Input } from '@components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@components/ui/select';
+import { Calendar } from '@components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@components/ui/popover';
 import { 
   Filter, 
   Calendar as CalendarIcon, 
@@ -24,10 +24,10 @@ import {
   AlertTriangle,
   XCircle
 } from 'lucide-react';
-import { subscribeToActivities, logActivity, ACTIVITY_TYPE_LABELS, ACTIVITY_STATUS_COLORS } from '@/services/activityService';
-import type { Activity, ActivityFilters } from '@/types/activity';
+import { subscribeToActivities, logActivity, ACTIVITY_TYPE_LABELS, ACTIVITY_STATUS_COLORS } from '@services/activityService';
+import type { Activity, ActivityFilters } from '@types/activity';
 import { format } from 'date-fns';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@hooks/useAuth';
 
 interface ActivityListProps {
   onNavigate: (page: string) => void;
@@ -281,7 +281,7 @@ export function ActivityList({ onNavigate: _ }: ActivityListProps) {
                 <Input
                   placeholder="Search activities..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
                   className="pl-10"
                 />
               </div>

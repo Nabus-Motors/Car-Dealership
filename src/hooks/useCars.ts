@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { collection, query, onSnapshot, addDoc, updateDoc, deleteDoc, doc, QuerySnapshot, DocumentData } from 'firebase/firestore';
 import { db, storage } from '../firebase/firebase';
-import type { Car } from '@/types/car';
+import type { Car } from '@types/car';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 
 export function useCars() {

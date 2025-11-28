@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { StorageImage } from '@/components/figma/StorageImage';
-import { Button } from '@/components/ui/button';
+import { StorageImage } from '@components/figma/StorageImage';
+import { Button } from '@components/ui/button';
 import { MapPin } from 'lucide-react';
-import { formatPrice, formatMileage } from '@/utils/format';
-import { ContactFormDialog } from '@/components/ContactFormDialog';
-import type { Car } from '@/types/car';
+import { formatPrice, formatMileage } from '@utils/format';
+import { ContactFormDialog } from '@components/ContactFormDialog';
+import type { Car } from '@types/car';
 
 interface CarCardHorizontalProps extends Car {}
 

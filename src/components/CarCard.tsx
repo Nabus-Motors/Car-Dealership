@@ -1,16 +1,16 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { ImageWithFallback } from '@/components/figma/ImageWithFallback';
-import { StorageImage } from '@/components/figma/StorageImage';
+import { Card, CardContent } from '@components/ui/card';
+import { Button } from '@components/ui/button';
+import { ImageWithFallback } from '@components/figma/ImageWithFallback';
+import { StorageImage } from '@components/figma/StorageImage';
 import { ChevronLeft, ChevronRight, Share2, MapPin, Settings, Car as CarIcon } from 'lucide-react';
-import { AspectRatio } from '@/components/ui/aspect-ratio';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { formatMileage, formatPrice } from '@/utils/format';
-import { ContactFormDialog } from '@/components/ContactFormDialog';
+import { AspectRatio } from '@components/ui/aspect-ratio';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@components/ui/dialog';
+import { formatMileage, formatPrice } from '@utils/format';
+import { ContactFormDialog } from '@components/ContactFormDialog';
 
-import type { Car } from '@/types/car';
+import type { Car } from '@types/car';
 
 const carThemeStyles = {
   card: 'bg-white rounded overflow-hidden border border-gray-200 hover:shadow-lg transition-all duration-300 relative hover:border-[#FFD700]',

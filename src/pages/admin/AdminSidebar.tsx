@@ -1,5 +1,5 @@
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@components/ui/button';
+import { Badge } from '@components/ui/badge';
 import { LayoutDashboard, Car, PlusCircle, Users, Settings, X, ChevronLeft } from 'lucide-react';
 
 import { LucideIcon } from 'lucide-react';

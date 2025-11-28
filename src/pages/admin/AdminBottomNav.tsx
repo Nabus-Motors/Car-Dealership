@@ -1,6 +1,6 @@
 import React from 'react';
-import { cn } from '@/components/ui/utils';
-import { Button } from '@/components/ui/button';
+import { cn } from '@components/ui/utils';
+import { Button } from '@components/ui/button';
 import { LayoutDashboard, Car, PlusCircle, Settings } from 'lucide-react';
 
 type AdminPageKey = 'dashboard' | 'listings' | 'add-listing' | 'settings';

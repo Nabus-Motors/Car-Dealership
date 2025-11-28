@@ -1,21 +1,21 @@
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
-import { Separator } from '@/components/ui/separator';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { SettingsSkeleton } from '@/components/ui/skeleton';
+import { Card, CardContent, CardHeader, CardTitle } from '@components/ui/card';
+import { Button } from '@components/ui/button';
+import { Input } from '@components/ui/input';
+import { Label } from '@components/ui/label';
+import { Textarea } from '@components/ui/textarea';
+import { Switch } from '@components/ui/switch';
+import { Separator } from '@components/ui/separator';
+import { Avatar, AvatarFallback } from '@components/ui/avatar';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@components/ui/tabs';
+import { SettingsSkeleton } from '@components/ui/skeleton';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '@components/ui/select';
 
 import {
   Settings,
@@ -25,8 +25,8 @@ import {
   Globe,
   Edit,
 } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
-import { logActivity } from '@/services/activityService';
+import { useAuth } from '@hooks/useAuth';
+import { logActivity } from '@services/activityService';
 import {
   getSystemSettings,
   saveSystemSettings,
@@ -35,7 +35,7 @@ import {
   initializeDefaultSettings,
   type SystemSettings,
   type UserProfile,
-} from '@/services/settingsService';
+} from '@services/settingsService';
 import toast from 'react-hot-toast';
 
 interface AdminSettingsProps {

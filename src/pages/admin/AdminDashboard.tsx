@@ -1,17 +1,17 @@
 import { useState, useEffect } from 'react';
 import { StatsCard } from './StatsCard';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { StatsCardSkeleton, ActivitySkeleton } from '@/components/ui/skeleton';
+import { Card, CardContent, CardHeader, CardTitle } from '@components/ui/card';
+import { Button } from '@components/ui/button';
+import { Badge } from '@components/ui/badge';
+import { StatsCardSkeleton, ActivitySkeleton } from '@components/ui/skeleton';
 import { Car, DollarSign, CheckCircle, Plus, List, BarChart3, ShoppingCart, Edit, RefreshCw } from 'lucide-react';
 import { collection, query, onSnapshot, orderBy } from 'firebase/firestore';
 import { db, COLLECTIONS } from '@/firebase/firebase';
-import { subscribeToActivities } from '@/services/activityService';
-import type { Activity as ActivityType } from '@/types/activity';
-import type { Car as CarType } from '@/types/car';
-import { normalizeImageUrls } from '@/utils/images';
-import { formatPrice } from '@/utils/format';
+import { subscribeToActivities } from '@services/activityService';
+import type { Activity as ActivityType } from '@types/activity';
+import type { Car as CarType } from '@types/car';
+import { normalizeImageUrls } from '@utils/images';
+import { formatPrice } from '@utils/format';
 
 interface AdminDashboardProps {
   onNavigate: (page: string) => void;

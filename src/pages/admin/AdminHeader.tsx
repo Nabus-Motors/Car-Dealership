@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Button } from '@components/ui/button';
+import { Input } from '@components/ui/input';
+import { Avatar, AvatarFallback } from '@components/ui/avatar';
 import { Menu, Search, Car, PlusCircle, ArrowLeft, LayoutDashboard, X } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@hooks/useAuth';
 
 interface AdminHeaderProps {
   title: string;

@@ -1,19 +1,19 @@
 import { useState, useEffect, useRef } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import { ListingsManagementSkeleton } from '@/components/ui/skeleton';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Card, CardContent } from '@components/ui/card';
+import { Button } from '@components/ui/button';
+import { Badge } from '@components/ui/badge';
+import { Input } from '@components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@components/ui/select';
+import { Checkbox } from '@components/ui/checkbox';
+import { ListingsManagementSkeleton } from '@components/ui/skeleton';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@components/ui/alert-dialog';
 import { collection, query, onSnapshot, orderBy } from 'firebase/firestore';
 import { db, COLLECTIONS } from '@/firebase/firebase';
 import { RefreshCw, Plus, Edit, Trash2, Search, Filter } from 'lucide-react';
-import { formatPrice, formatMileage, formatDate } from '@/utils/format';
-import type { Car } from '@/types/car';
-import { deleteCar } from '@/services/firestoreService';
-import { useAuth } from '@/hooks/useAuth';
+import { formatPrice, formatMileage, formatDate } from '@utils/format';
+import type { Car } from '@types/car';
+import { deleteCar } from '@services/firestoreService';
+import { useAuth } from '@hooks/useAuth';
 import toast from 'react-hot-toast';
 
 interface ListingsManagementProps {

@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import emailjs from '@emailjs/browser';
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogTitle } from '@components/ui/dialog';
+import { Button } from '@components/ui/button';
+import { Input } from '@components/ui/input';
 import { X, Send } from 'lucide-react';
 import toast from 'react-hot-toast';
 

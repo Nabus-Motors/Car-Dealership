@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { StorageImage } from '@/components/figma/StorageImage';
+import { StorageImage } from '@components/figma/StorageImage';
 import { useNavigate } from 'react-router-dom';
-import type { Car } from '@/types/car';
+import type { Car } from '@types/car';
 
 interface HeroCarouselProps {
   cars: Car[];
