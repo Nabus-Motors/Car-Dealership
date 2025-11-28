@@ -179,10 +179,10 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
         {/* Header Skeleton */}
         <div className="flex items-center justify-between">
           <div>
-            <div className="h-7 w-32 bg-gray-200 animate-pulse rounded mb-2"></div>
-            <div className="h-4 w-48 bg-gray-200 animate-pulse rounded"></div>
+            <div className="h-7 w-32 bg-slate-200 animate-pulse rounded mb-2"></div>
+            <div className="h-4 w-48 bg-slate-200 animate-pulse rounded"></div>
           </div>
-          <div className="h-10 w-20 bg-gray-200 animate-pulse rounded"></div>
+          <div className="h-10 w-20 bg-slate-200 animate-pulse rounded"></div>
         </div>
 
         {/* Stats Cards Skeleton */}
@@ -196,11 +196,11 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Recent Activity Skeleton */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg border shadow-sm">
-              <div className="p-6 border-b border-gray-200">
+            <div className="bg-white rounded-xl border-2 border-slate-200 shadow-sm">
+              <div className="p-6 border-b-2 border-slate-100">
                 <div className="flex items-center justify-between">
-                  <div className="h-5 w-32 bg-gray-200 animate-pulse rounded"></div>
-                  <div className="h-6 w-16 bg-gray-200 animate-pulse rounded"></div>
+                  <div className="h-5 w-32 bg-slate-200 animate-pulse rounded"></div>
+                  <div className="h-6 w-16 bg-slate-200 animate-pulse rounded"></div>
                 </div>
               </div>
               <div className="p-6 space-y-4">
@@ -213,13 +213,13 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
 
           {/* Quick Actions & System Status Skeleton */}
           <div className="space-y-6">
-            <div className="bg-white rounded-lg border shadow-sm">
-              <div className="p-6 border-b border-gray-200">
-                <div className="h-5 w-28 bg-gray-200 animate-pulse rounded"></div>
+            <div className="bg-white rounded-xl border-2 border-slate-200 shadow-sm">
+              <div className="p-6 border-b-2 border-slate-100">
+                <div className="h-5 w-28 bg-slate-200 animate-pulse rounded"></div>
               </div>
               <div className="p-6 space-y-3">
                 {Array.from({ length: 4 }).map((_, index) => (
-                  <div key={index} className="h-10 w-full bg-gray-200 animate-pulse rounded"></div>
+                  <div key={index} className="h-10 w-full bg-slate-200 animate-pulse rounded"></div>
                 ))}
               </div>
             </div>
@@ -234,14 +234,14 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
       {/* Header with Refresh */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-600 mt-1">Overview of your car dealership</p>
+          <h1 className="text-3xl font-bold text-[#001F3F]">Dashboard</h1>
+          <p className="text-slate-600 mt-1">Overview of your car dealership</p>
         </div>
         <Button
           variant="outline"
           onClick={handleRefresh}
           disabled={isRefreshing}
-          className="flex items-center space-x-2"
+          className="flex items-center space-x-2 border-2 border-slate-300 text-slate-700 hover:bg-slate-50"
         >
           <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
           <span>Refresh</span>
@@ -265,27 +265,27 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Recent Activity Feed */}
           <div className="lg:col-span-2">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
+            <Card className="border-2 border-slate-200 rounded-xl">
+              <CardHeader className="border-b-2 border-slate-100">
+                <CardTitle className="flex items-center justify-between text-[#001F3F]">
                   Recent Activity
-                  <Badge variant="secondary" className="bg-gray-100 text-gray-700">
+                  <Badge variant="secondary" className="bg-[#FFD700]/20 text-[#FFD700] border-0 font-semibold">
                     Last 7 days
                   </Badge>
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-6">
                 <div className="space-y-4">
                   {recentActivities.map((activity) => (
-                    <div key={activity.id} className="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                    <div key={activity.id} className="flex items-start space-x-3 p-3 rounded-lg hover:bg-slate-50 transition-colors">
                       <div className="flex-shrink-0 mt-1">
-                        <activity.icon className="h-4 w-4 text-gray-500" />
+                        <activity.icon className="h-4 w-4 text-[#FFD700]" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 mb-1">
+                        <p className="text-sm font-medium text-slate-900 mb-1">
                           {activity.message}
                         </p>
-                        <p className="text-xs text-gray-500">{activity.time}</p>
+                        <p className="text-xs text-slate-500">{activity.time}</p>
                       </div>
                       <Badge className={`text-xs ${getStatusColor(activity.status)}`}>
                         {activity.type}
@@ -294,10 +294,10 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
                   ))}
                 </div>
                 
-                <div className="mt-4 pt-4 border-t border-gray-200">
+                <div className="mt-4 pt-4 border-t border-slate-200">
                   <Button 
                     variant="outline" 
-                    className="w-full" 
+                    className="w-full border-2 border-slate-300 text-slate-700 hover:bg-slate-50" 
                     size="sm"
                     onClick={() => onNavigate('activity')}
                   >
@@ -310,13 +310,13 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
 
           {/* Quick Actions */}
           <div>
-            <Card>
-              <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
+            <Card className="border-2 border-slate-200 rounded-xl">
+              <CardHeader className="border-b-2 border-slate-100">
+                <CardTitle className="text-[#001F3F]">Quick Actions</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="pt-6 space-y-3">
                 <Button
-                  className="w-full bg-red-600 hover:bg-red-700"
+                  className="w-full bg-[#FFD700] hover:bg-[#FFC700] text-[#001F3F] font-bold uppercase tracking-wide transition-all"
                   onClick={() => onNavigate('add-listing')}
                 >
                   <Plus className="mr-2 h-4 w-4" />
@@ -325,7 +325,7 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
                 
                 <Button
                   variant="outline"
-                  className="w-full"
+                  className="w-full border-2 border-slate-300 text-slate-700 hover:bg-slate-50"
                   onClick={() => onNavigate('listings')}
                 >
                   <List className="mr-2 h-4 w-4" />
@@ -334,37 +334,37 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
                 
                 <Button
                   variant="outline"
-                  className="w-full"
+                  className="w-full border-2 border-slate-300 text-slate-700 hover:bg-slate-50"
                   disabled
                 >
                   <BarChart3 className="mr-2 h-4 w-4" />
                   Generate Report
-                  <Badge className="ml-2 bg-gray-100 text-gray-500 text-xs">Soon</Badge>
+                  <Badge className="ml-2 bg-slate-100 text-slate-500 text-xs border-0">Soon</Badge>
                 </Button>
               </CardContent>
             </Card>
 
             {/* System Status */}
-            <Card className="mt-6">
-              <CardHeader>
-                <CardTitle>System Status</CardTitle>
+            <Card className="mt-6 border-2 border-slate-200 rounded-xl">
+              <CardHeader className="border-b-2 border-slate-100">
+                <CardTitle className="text-[#001F3F]">System Status</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Database</span>
-                  <Badge className="bg-green-100 text-green-800 text-xs">Online</Badge>
+                  <span className="text-sm text-slate-600">Database</span>
+                  <Badge className="bg-green-100 text-green-800 text-xs border-0">Online</Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Image Storage</span>
-                  <Badge className="bg-green-100 text-green-800 text-xs">Online</Badge>
+                  <span className="text-sm text-slate-600">Image Storage</span>
+                  <Badge className="bg-green-100 text-green-800 text-xs border-0">Online</Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Payment Gateway</span>
-                  <Badge className="bg-green-100 text-green-800 text-xs">Online</Badge>
+                  <span className="text-sm text-slate-600">Payment Gateway</span>
+                  <Badge className="bg-green-100 text-green-800 text-xs border-0">Online</Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Backup</span>
-                  <Badge className="bg-blue-100 text-blue-800 text-xs">Running</Badge>
+                  <span className="text-sm text-slate-600">Backup</span>
+                  <Badge className="bg-blue-100 text-blue-800 text-xs border-0">Running</Badge>
                 </div>
               </CardContent>
             </Card>

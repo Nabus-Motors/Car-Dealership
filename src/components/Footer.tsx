@@ -9,9 +9,7 @@ export function Footer() {
           {/* Company Info */}
           <div className="space-y-4">
             <Link to="/" className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-[#FFD700] rounded flex items-center justify-center">
-                <span className="text-[#001F3F] font-bold text-sm">NM</span>
-              </div>
+              <img src="/logo.png" alt="Nabus Motors" className="h-10 w-auto" />
               <div>
                 <div className="text-sm tracking-wider font-semibold">Nabus</div>
                 <div className="text-xs text-[#FFD700]">Motors</div>

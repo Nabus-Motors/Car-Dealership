@@ -1,22 +1,26 @@
-import { HeroSection } from '../components/HeroSection';
-import { IntroSection } from '../components/IntroSection';
-import { BestDeals } from '../components/BestDeals';
-import { DreamSection } from '../components/DreamSection';
-import { GreatestSection } from '../components/GreatestSection';
-import { ValuesSection } from '../components/ValuesSection';
-import { PremiumSection } from '../components/PremiumSection';
-import { TestimonialsSection } from '../components/TestimonialsSection';
-import { StatsSection } from '../components/StatsSection';
-import { CTASection } from '../components/CTASection';
 import { CarCard } from '../components/CarCard';
+import { HeroCarousel } from '../components/HeroCarousel';
+import { ContactFormDialog } from '../components/ContactFormDialog';
+import { TestDriveDialog } from '../components/TestDriveDialog';
 import { Button } from '../components/ui/button';
-import { CarCardSkeleton } from '../components/ui/skeleton';
 import { collection, query, orderBy, limit, where, getDocs, getDoc, doc } from 'firebase/firestore';
 import { db, COLLECTIONS } from '../firebase/firebase';
 import type { Car } from '@/types/car';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { normalizeImageUrls } from '@/utils/images';
+
+// Marketing texts for hero section
+const marketingTexts = [
+  'Premium vehicles for the discerning driver',
+  'Your journey to luxury starts here',
+  'Excellence in every mile',
+  'Drive with confidence and style',
+  'Where quality meets affordability',
+  'Your dream car awaits',
+  'Premium selection, exceptional service',
+  'Unleash your automotive passion',
+];
 
 // Fallback list used when Firestore doesn't return any brands
 const fallbackBrands = [
@@ -38,16 +42,28 @@ export function HomePage() {
   const [loading, setLoading] = useState(true);
   const [brands, setBrands] = useState<string[]>([]);
   const [brandsLoading, setBrandsLoading] = useState<boolean>(true);
+  const [selectedCar, setSelectedCar] = useState<Car | null>(null);
+  const [contactFormOpen, setContactFormOpen] = useState(false);
+  const [testDriveOpen, setTestDriveOpen] = useState(false);
+  const [currentMarketingText, setCurrentMarketingText] = useState(0);
 
+  // Rotate marketing text every 5 seconds
   useEffect(() => {
-    console.log('HomePage: Initializing featured cars...');
-  let unsub: (() => void) | undefined;
+    const interval = setInterval(() => {
+      setCurrentMarketingText((prev) => (prev + 1) % marketingTexts.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Load featured cars
+  useEffect(() => {
+    let unsub: (() => void) | undefined;
 
     (async () => {
       // Attempt 1: dedicated FEATURED collection
       try {
         console.log('HomePage: Trying FEATURED collection first...');
-        const featSnap = await getDocs(query(collection(db, COLLECTIONS.FEATURED), limit(8)));
+        const featSnap = await getDocs(query(collection(db, COLLECTIONS.FEATURED), limit(6)));
         if (!featSnap.empty) {
           const cars = await Promise.all(featSnap.docs.map(async (d) => {
             const data = d.data() as any;
@@ -91,7 +107,7 @@ export function HomePage() {
       // Try published + createdAt desc first with getDocs; if index is required, gracefully retry
       try {
         const publishedOrdered = await getDocs(
-          query(baseCol, where('status', '==', 'published'), orderBy('createdAt', 'desc'), limit(8))
+          query(baseCol, where('status', '==', 'published'), orderBy('createdAt', 'desc'), limit(6))
         );
         if (!publishedOrdered.empty) {
           const cars = publishedOrdered.docs.map((d) => {
@@ -111,7 +127,7 @@ export function HomePage() {
       // Retry: published only, no orderBy (no index required)
       try {
         console.log('HomePage: Trying published-only query (no orderBy)...');
-        const publishedOnly = await getDocs(query(baseCol, where('status', '==', 'published'), limit(8)));
+        const publishedOnly = await getDocs(query(baseCol, where('status', '==', 'published'), limit(6)));
         console.log('HomePage: Published-only query result:', publishedOnly.docs.length, 'documents');
         if (!publishedOnly.empty) {
           const cars = publishedOnly.docs.map((d) => {
@@ -132,7 +148,7 @@ export function HomePage() {
       // Fallback: any cars ordered by createdAt desc
       try {
         console.log('HomePage: Trying recent cars with orderBy...');
-        const recent = await getDocs(query(baseCol, orderBy('createdAt', 'desc'), limit(8)));
+        const recent = await getDocs(query(baseCol, orderBy('createdAt', 'desc'), limit(6)));
         console.log('HomePage: Recent cars query result:', recent.docs.length, 'documents');
         if (!recent.empty) {
           const cars = recent.docs.map((d) => {
@@ -154,7 +170,7 @@ export function HomePage() {
       // Last resort: any cars, no order
       try {
         console.log('HomePage: Trying any cars (no filters, no order)...');
-        const anyDocs = await getDocs(query(baseCol, limit(8)));
+        const anyDocs = await getDocs(query(baseCol, limit(6)));
         console.log('HomePage: Any cars query result:', anyDocs.docs.length, 'documents');
         const cars = anyDocs.docs.map((d) => {
           const data = d.data();
@@ -205,78 +221,161 @@ export function HomePage() {
 
   return (
     <>
-      <HeroSection />
-      <IntroSection />
-      <BestDeals />
-      <DreamSection />
-      <GreatestSection />
-      <ValuesSection />
-      <PremiumSection />
-      <TestimonialsSection />
-      <StatsSection />
-      <CTASection />
+      {/* Hero Section with Carousel */}
+      <section className="relative w-full overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white" style={{ height: 'calc(100vh - 64px)' }}>
+        {/* Background image with overlay */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center opacity-10"
+          style={{
+            backgroundImage: "url('https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1080')"
+          }}
+        />
+        
+        <div className="relative w-full h-full flex">
+          {/* Left - Carousel */}
+          <div className="hidden md:flex md:w-1/2 lg:w-3/5 h-full">
+            {loading ? (
+              <div className="w-full bg-slate-800 animate-pulse flex items-center justify-center">
+                <p className="text-gray-400">Loading featured vehicles...</p>
+              </div>
+            ) : featuredCars.length > 0 ? (
+              <HeroCarousel 
+                cars={featuredCars.slice(0, 8)} 
+                autoPlayInterval={5000}
+                onCarSelect={setSelectedCar}
+              />
+            ) : (
+              <div className="w-full flex items-center justify-center bg-slate-800">
+                <p className="text-gray-400">No vehicles available</p>
+              </div>
+            )}
+          </div>
 
-      {/* Legacy Featured Cars Section - kept for existing data */}
-      <section id="featured-cars" className="py-16 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">New Arrivals</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Discover our latest additions to the collection
-            </p>
+          {/* Right - Content */}
+          <div className="w-full md:w-1/2 lg:w-2/5 h-full flex items-center px-4 sm:px-8 lg:px-12 py-12">
+            <div className="w-full space-y-8">
+              <div>
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 text-white">
+                  Drive the Future
+                </h1>
+                <p className="text-base md:text-lg text-[#FFD700] leading-relaxed max-w-lg font-medium min-h-[2rem] transition-all duration-500">
+                  {marketingTexts[currentMarketingText]}
+                </p>
+              </div>
+
+              <div className="flex flex-wrap gap-4">
+                <button
+                  onClick={() => setContactFormOpen(true)}
+                  className="bg-[#FFD700] text-[#001F3F] px-8 py-3 font-semibold hover:bg-[#FFC700] transition-all duration-200 shadow-lg hover:shadow-xl"
+                >
+                  Reserve Now
+                </button>
+                <button
+                  onClick={() => setTestDriveOpen(true)}
+                  className="bg-[#001F3F] text-[#FFD700] px-8 py-3 font-semibold hover:bg-[#002855] transition-all duration-200 border-2 border-[#FFD700]"
+                >
+                  Test Drive
+                </button>
+                <button
+                  onClick={() => navigate('/explore')}
+                  className="border-2 border-white text-white px-8 py-3 font-semibold hover:bg-white hover:text-slate-900 transition-all duration-200"
+                >
+                  Browse Cars
+                </button>
+              </div>
+
+              {/* Dynamic Stats */}
+              <div className="grid grid-cols-3 gap-6 pt-8 border-t border-slate-700">
+                <div>
+                  <div className="text-2xl sm:text-3xl font-bold text-[#FFD700]">
+                    {selectedCar?.price ? `${(selectedCar.price / 1000).toFixed(0)}k` : '620mi'}
+                  </div>
+                  <div className="text-xs sm:text-sm text-slate-300">
+                    {selectedCar?.price ? 'Price' : 'Mile Range'}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-2xl sm:text-3xl font-bold text-[#FFD700]">
+                    {selectedCar?.mileage ? `${selectedCar.mileage}` : '1.9s'}
+                  </div>
+                  <div className="text-xs sm:text-sm text-slate-300">
+                    {selectedCar?.mileage ? 'Mileage' : '0-60 mph'}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-2xl sm:text-3xl font-bold text-[#FFD700]">
+                    {selectedCar?.fuelType ? selectedCar.fuelType.substring(0, 3) : '+250'}
+                    {!selectedCar?.fuelType && 'mph'}
+                  </div>
+                  <div className="text-xs sm:text-sm text-slate-300">
+                    {selectedCar?.fuelType ? 'Fuel Type' : 'Top Speed'}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Order by Body Style - Inspired by ZosiaZureau */}
+      <section className="py-16 bg-white border-b border-slate-200">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <h2 className="text-3xl font-bold mb-12">Order by Body Style</h2>
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+            {['Coupe', 'Convertible', 'SUV', 'Sedan', 'Hatchback', 'Pickup', 'Van'].map((style) => (
+              <button
+                key={style}
+                onClick={() => navigate(`/explore?bodyStyle=${encodeURIComponent(style)}`)}
+                className="py-8 px-4 border border-slate-200 text-center font-semibold text-slate-900 hover:bg-slate-50 hover:border-slate-400 transition-all duration-200"
+              >
+                {style}
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Vehicles - Inspired by ZosiaZureau */}
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <div className="mb-12">
+            <h2 className="text-3xl font-bold mb-4">Featured Vehicles</h2>
+            <p className="text-gray-600">Suggested by Dealer</p>
           </div>
 
           {loading ? (
-            <>
-              <div className="md:hidden -mx-4 px-4">
-                <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide">
-                  {Array(4).fill(null).map((_, idx) => (
-                    <div key={idx} className="snap-center shrink-0 w-[80%]">
-                      <CarCardSkeleton />
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="hidden md:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 auto-rows-fr">
-                {Array(8).fill(null).map((_, index) => (
-                  <CarCardSkeleton key={index} />
-                ))}
-              </div>
-            </>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {Array(6).fill(null).map((_, index) => (
+                <div key={index} className="bg-gray-100 animate-pulse aspect-square" />
+              ))}
+            </div>
           ) : featuredCars.length === 0 ? (
             <div className="text-center py-16">
-              <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-12 h-12 text-gray-400">
-                  <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.22.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
-                </svg>
-              </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">No Featured Cars Available</h3>
               <p className="text-gray-600 mb-6">Check back soon for amazing deals!</p>
               <button
                 onClick={() => navigate('/explore')}
-                className="inline-flex items-center rounded-full bg-amber-600 text-white px-6 py-3 text-sm font-medium shadow hover:bg-amber-700 transition-colors"
+                className="inline-flex items-center bg-slate-900 text-white px-8 py-3 font-semibold hover:bg-slate-800 transition-colors"
               >
                 Browse All Cars
               </button>
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 auto-rows-fr">
-                {featuredCars.slice(0, 8).map((car: Car) => (
-                  <div key={car.id} className="h-full">
-                    <CarCard {...car} />
-                  </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {featuredCars.slice(0, 6).map((car: Car) => (
+                  <CarCard key={car.id} {...car} />
                 ))}
               </div>
 
-              {featuredCars.length > 0 && (
-                <div className="mt-8 flex justify-center">
+              {featuredCars.length > 6 && (
+                <div className="mt-12 flex justify-center">
                   <button
                     onClick={() => navigate('/explore')}
-                    className="inline-flex items-center rounded-full bg-amber-600 text-white px-6 py-3 text-sm font-medium shadow hover:bg-amber-700 transition-colors"
+                    className="bg-slate-900 text-white px-8 py-3 font-semibold hover:bg-slate-800 transition-colors"
                   >
-                    Show More
+                    View All Inventory
                   </button>
                 </div>
               )}
@@ -285,58 +384,113 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* Browse by Brand */}
-      <section id="browse-by-brand" className="py-14 border-t border-gray-100 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl md:text-3xl font-bold">Browse by Brand</h2>
-            <Button variant="ghost" onClick={() => navigate('/explore')} className="hidden md:inline-flex">View all</Button>
-          </div>
-          <div className="md:hidden -mx-4 px-4">
-            <div className="flex gap-3.5 overflow-x-auto snap-x snap-mandatory scrollbar-hide py-2">
-              {brandsLoading ? (
-                Array(10).fill(null).map((_, i) => (
-                  <div key={i} className="snap-start shrink-0 h-10 w-28 rounded-full bg-gray-200 animate-pulse" />
-                ))
-              ) : (
-                brands.map((brand: string) => (
-                  <button
-                    key={brand}
-                    onClick={() => navigate(`/explore?brand=${encodeURIComponent(brand)}`)}
-                    className="snap-start shrink-0 inline-flex items-center gap-2 rounded-full ring-1 ring-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:ring-gray-300 hover:bg-gray-50 shadow-sm transition-colors"
-                    aria-label={`Filter by ${brand}`}
-                  >
-                    <span className="inline-grid place-items-center h-6 w-6 rounded-full bg-gray-100 text-gray-500 text-[10px] font-semibold">{brand[0]}</span>
-                    {brand}
-                  </button>
-                ))
-              )}
-            </div>
+      {/* Dream Section */}
+      <section className="py-20 bg-slate-50">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <div className="mb-16">
+            <h2 className="text-3xl font-bold mb-4">Our Services</h2>
+            <p className="text-gray-600 text-lg">How can we help to make your dream come true</p>
           </div>
 
-          <div className="hidden md:block">
-            <div className="flex flex-wrap gap-3.5">
-              {brandsLoading ? (
-                Array(14).fill(null).map((_, i) => (
-                  <div key={i} className="h-10 w-28 rounded-full bg-gray-200 animate-pulse" />
-                ))
-              ) : (
-                brands.map((brand: string) => (
-                  <button
-                    key={brand}
-                    onClick={() => navigate(`/explore?brand=${encodeURIComponent(brand)}`)}
-                    className="inline-flex items-center gap-2 rounded-full ring-1 ring-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:ring-gray-300 hover:bg-gray-50 shadow-sm transition-colors"
-                    aria-label={`Filter by ${brand}`}
-                  >
-                    <span className="inline-grid place-items-center h-6 w-6 rounded-full bg-gray-100 text-gray-500 text-[10px] font-semibold">{brand[0]}</span>
-                    {brand}
-                  </button>
-                ))
-              )}
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[
+              { title: 'Inventory', desc: 'Browse our extensive collection' },
+              { title: 'VIP Appointment', desc: 'Schedule a personal viewing' },
+              { title: 'Auto Finance', desc: 'Flexible financing options' },
+              { title: 'Auto Services', desc: 'Complete maintenance & support' }
+            ].map((service, idx) => (
+              <div key={idx} className="bg-white p-8 border border-slate-200 hover:shadow-lg transition-shadow">
+                <h3 className="text-xl font-bold mb-3 text-slate-900">{service.title}</h3>
+                <p className="text-gray-600 mb-6">{service.desc}</p>
+                <button className="text-slate-900 font-semibold hover:underline">
+                  Learn More →
+                </button>
+              </div>
+            ))}
           </div>
         </div>
       </section>
+
+      {/* Stats Section */}
+      <section className="py-20 bg-slate-900 text-white">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <h2 className="text-3xl font-bold mb-16">Why Choose Us</h2>
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            {[
+              { stat: '1200+', label: 'Vehicles in stock' },
+              { stat: '20k', label: 'Happy Customers' },
+              { stat: '15', label: 'Showrooms' },
+              { stat: '30', label: 'Awards' }
+            ].map((item, idx) => (
+              <div key={idx} className="text-center">
+                <div className="text-4xl md:text-5xl font-bold mb-2">{item.stat}</div>
+                <div className="text-slate-300">{item.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Browse by Brand */}
+      <section className="py-16 bg-white border-t border-slate-200">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <div className="flex items-center justify-between mb-12">
+            <h2 className="text-3xl font-bold">Browse by Brand</h2>
+            <Button variant="outline" onClick={() => navigate('/explore')} className="hidden md:inline-flex">
+              View all →
+            </Button>
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+            {brandsLoading ? (
+              Array(14).fill(null).map((_, i) => (
+                <div key={i} className="h-10 w-24 bg-gray-200 animate-pulse" />
+              ))
+            ) : (
+              brands.map((brand: string) => (
+                <button
+                  key={brand}
+                  onClick={() => navigate(`/explore?brand=${encodeURIComponent(brand)}`)}
+                  className="px-6 py-2 border border-slate-300 text-slate-900 font-medium hover:bg-slate-50 hover:border-slate-400 transition-all duration-200"
+                >
+                  {brand}
+                </button>
+              ))
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Call to Action */}
+      <section className="py-20 bg-slate-900 text-white">
+        <div className="container mx-auto px-4 max-w-6xl text-center">
+          <h2 className="text-4xl font-bold mb-6">Ready to find your next vehicle?</h2>
+          <p className="text-xl text-slate-200 mb-8 max-w-2xl mx-auto">
+            Explore our complete inventory and discover the perfect car for your lifestyle.
+          </p>
+          <button
+            onClick={() => navigate('/explore')}
+            className="bg-white text-slate-900 px-8 py-3 font-semibold hover:bg-slate-100 transition-colors shadow-lg"
+          >
+            Explore All Cars
+          </button>
+        </div>
+      </section>
+
+      {/* Contact Form Dialog */}
+      <ContactFormDialog 
+        open={contactFormOpen} 
+        onOpenChange={setContactFormOpen}
+        carTitle={selectedCar ? `${selectedCar.year} ${selectedCar.brand} ${selectedCar.model}` : undefined}
+      />
+
+      {/* Test Drive Dialog */}
+      <TestDriveDialog 
+        open={testDriveOpen} 
+        onOpenChange={setTestDriveOpen}
+        carTitle={selectedCar ? `${selectedCar.year} ${selectedCar.brand} ${selectedCar.model}` : undefined}
+      />
     </>
   );
 }

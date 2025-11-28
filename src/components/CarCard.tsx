@@ -2,15 +2,21 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { ImageWithFallback } from '@/components/figma/ImageWithFallback';
 import { StorageImage } from '@/components/figma/StorageImage';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Share2, MapPin, Settings, Car as CarIcon } from 'lucide-react';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { formatMileage, formatPrice } from '@/utils/format';
+import { ContactFormDialog } from '@/components/ContactFormDialog';
 
 import type { Car } from '@/types/car';
+
+const carThemeStyles = {
+  card: 'bg-white rounded overflow-hidden border border-gray-200 hover:shadow-lg transition-all duration-300 relative hover:border-[#FFD700]',
+  badge: 'bg-[#FFD700] text-[#001F3F]',
+  button: 'bg-[#FFD700] hover:bg-[#FFC700] text-[#001F3F]',
+};
 
 export function CarCard(props: Car) {
   const {
@@ -34,6 +40,7 @@ export function CarCard(props: Car) {
   const [modalIndex, setModalIndex] = useState(0);
   const [modalImageLoaded, setModalImageLoaded] = useState(false);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const [contactFormOpen, setContactFormOpen] = useState(false);
   const navigate = useNavigate();
 
   const nextCard = () => setCardIndex((i) => (i + 1) % Math.max(images.length || 1, 1));
@@ -71,126 +78,92 @@ export function CarCard(props: Car) {
   const isSold = status?.toLowerCase() === 'sold';
 
   return (
-    <Card className={`group overflow-hidden flex flex-col rounded-xl border shadow-sm transition-all h-full ${
-      isSold 
-        ? 'opacity-70 grayscale cursor-not-allowed bg-gray-50 border-gray-300' 
-        : 'hover:shadow-md cursor-pointer'
-    }`}
-          onClick={isSold ? undefined : () => { setModalIndex(cardIndex); setIsModalOpen(true); }}
-          onTouchStart={isSold ? undefined : onTouchStartCard}
-          onTouchEnd={isSold ? undefined : onTouchEndCard}>
+    <>
+    <Card
+      className={`group overflow-hidden flex flex-col ${carThemeStyles.card} ${isSold ? 'opacity-50 grayscale' : ''}`}
+      onClick={isSold ? undefined : () => navigate(`/car/${props.id}`)}
+      onTouchStart={isSold ? undefined : onTouchStartCard}
+      onTouchEnd={isSold ? undefined : onTouchEndCard}
+    >
       {/* Card media */}
-      <div className="w-full bg-gray-100 relative flex-shrink-0 overflow-hidden">
-        <AspectRatio ratio={16 / 9} className="overflow-hidden">
-          {images.length > 0 ? (
-            <>
-              <StorageImage
-                src={images[cardIndex]}
-                alt={`${year} ${brand} ${model}`}
-                className={`w-full h-full object-center car-image-mobile ${isSold ? 'brightness-75' : ''}`}
-              />
-              {images.length > 1 && !isSold && (
-                <>
-                  <button
-                    aria-label="Previous image"
-                    onClick={(e) => { e.stopPropagation(); prevCard(); }}
-                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/55 hover:bg-black/70 text-white p-2 sm:p-2 rounded-full shadow-lg backdrop-blur-sm transition-opacity opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
-                  >
-                    <ChevronLeft className="h-5 w-5 sm:h-5 sm:w-5" />
-                  </button>
-                  <button
-                    aria-label="Next image"
-                    onClick={(e) => { e.stopPropagation(); nextCard(); }}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/55 hover:bg-black/70 text-white p-2 sm:p-2 rounded-full shadow-lg backdrop-blur-sm transition-opacity opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
-                  >
-                    <ChevronRight className="h-5 w-5 sm:h-5 sm:w-5" />
-                  </button>
-                  <div className="absolute bottom-2 right-2 bg-black/60 text-white px-2 py-0.5 rounded text-[10px] sm:text-xs shadow-md">
-                    {cardIndex + 1} / {images.length}
-                  </div>
-                </>
-              )}
-              {/* Big SOLD stamp overlay for sold cars */}
-              {isSold && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/30 z-10">
-                  <div className="bg-red-600 text-white px-6 py-3 rounded-lg shadow-xl transform rotate-12 border-2 border-red-700">
-                    <span className="text-xl font-bold tracking-wider">SOLD</span>
-                  </div>
-                </div>
-              )}
-            </>
-          ) : (
-            <div className={`w-full h-full flex items-center justify-center text-gray-500 ${isSold ? 'bg-gray-300' : 'bg-gray-200'}`}>
-              <div className="text-center">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-12 h-12 mx-auto mb-2">
-                  <path fillRule="evenodd" d="M1.5 6A2.25 2.25 0 013.75 3.75h16.5A2.25 2.25 0 0122.5 6v12a.75.75 0 01-2.25 2.25H3.75A2.25 2.25 0 011.5 18V6zm3 .75a.75.75 0 000 1.5h14.25a.75.75 0 000-1.5H4.5zm4.28 5.47a.75.75 0 011.06 0l2.22 2.22 1.22-1.22a.75.75 0 011.06 0l2.72 2.72a.75.75 0 01-1.06 1.06l-2.19-2.19-1.25 1.25a.75.75 0 01-1.06 0l-2.75-2.75a.75.75 0 010-1.06z" clipRule="evenodd" />
-                </svg>
-                <p className="text-sm">No Image</p>
-              </div>
-            </div>
-          )}
-        </AspectRatio>
-        {/* Overlays: condition, category, and sold status */}
-        <div className="absolute top-2 left-2 flex gap-1">
-          {condition && (
-            <span className={`px-2 py-1 rounded-md text-xs font-semibold bg-gray-100 text-gray-800 ${isSold ? 'opacity-60' : ''}`}>
-              {condition}
-            </span>
-          )}
-          {category && (
-            <span className={`px-2 py-1 rounded-md text-xs font-semibold bg-gray-100 text-gray-800 ${isSold ? 'opacity-60' : ''}`}>
-              {category}
-            </span>
-          )}
+      <div className="relative h-48 bg-gray-100 group">
+        {images.length > 0 ? (
+          <StorageImage
+            src={images[cardIndex]}
+            alt={`${year} ${brand} ${model}`}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-gray-500 bg-gray-200">
+            <p>No Image</p>
+          </div>
+        )}
+        
+        {/* Chevron Navigation */}
+        {images.length > 1 && (
+          <>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                prevCard();
+              }}
+              className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10"
+              aria-label="Previous image"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                nextCard();
+              }}
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10"
+              aria-label="Next image"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </>
+        )}
+        
+        <div className="absolute bottom-0 right-0 bg-[#001F3F] text-white px-4 py-2 flex items-baseline gap-2">
+          <span className="text-xl font-bold">{formatPrice(price)}</span>
         </div>
       </div>
 
-      {/* Card body - flex-grow to fill remaining space */}
-      <CardContent className="py-4 flex flex-col flex-grow">
-        <div className="flex items-start justify-between gap-3 mb-2">
-          <div className="min-w-0 flex-1">
-            <div className={`text-base font-semibold truncate ${isSold ? 'text-gray-600 line-through' : 'text-gray-900'}`}>
-              {year} {brand} {model}
-            </div>
-            <div className="mt-1 flex items-center gap-1 text-xs sm:text-sm text-gray-500 overflow-hidden whitespace-nowrap">
-              {fuelType && (
-                <Badge variant="secondary" className={`px-2 py-0.5 max-w-[7rem] truncate ${isSold ? 'opacity-60' : ''}`}>
-                  {fuelType}
-                </Badge>
-              )}
-              {transmission && (
-                <Badge variant="secondary" className={`px-2 py-0.5 max-w-[7rem] truncate ${isSold ? 'opacity-60' : ''}`}>
-                  {transmission}
-                </Badge>
-              )}
+      {/* Card body */}
+      <CardContent className="p-4">
+        <div className="flex items-start justify-between mb-2">
+          <div>
+            <h4 className="font-semibold text-lg mb-1 text-[#001F3F]">{year} {brand} {model}</h4>
+            <div className="flex items-center gap-1 text-sm text-gray-500">
+              <MapPin className="w-4 h-4" /> Location
             </div>
           </div>
-          <div className="text-right flex-shrink-0">
-            <div className={`text-lg font-bold ${isSold ? 'text-gray-500 line-through' : 'text-gray-900'}`}>
-              {isSold ? 'SOLD' : formatPrice(price)}
-            </div>
-            <div className={`text-xs ${isSold ? 'text-gray-400' : 'text-gray-500'}`}>
-              {formatMileage(mileage)}
-            </div>
-          </div>
+          {isSold && (
+            <span className="text-xs px-2 py-1 border-2 border-[#FFD700] text-[#FFD700] rounded font-semibold">
+              SOLD OUT
+            </span>
+          )}
         </div>
 
-        {/* No description or features in the compact card */}
+        <div className="border-t border-gray-200 pt-3 mt-3">
+          <div className="grid grid-cols-4 gap-2 text-xs text-gray-600 mb-3">
+            <div><Settings className="w-4 h-4 inline-block" /> Engine</div>
+            <div><CarIcon className="w-4 h-4 inline-block" /> Type</div>
+          </div>
 
-        {/* Button fixed at bottom */}
-        <div className="mt-auto">
-          <Button 
-            className={`w-full ${isSold 
-              ? 'bg-gray-400 cursor-not-allowed opacity-60' 
-              : 'bg-slate-900 hover:bg-slate-800'}`}
-            onClick={isSold ? undefined : (e) => { e.stopPropagation(); setModalIndex(cardIndex); setIsModalOpen(true); }}
-            disabled={isSold}
-          >
-            <span className="mr-1.5">{isSold ? 'Vehicle Sold' : 'Show Details'}</span>
-            {!isSold && <ChevronRight className="h-4 w-4" />}
-          </Button>
+          <div className="flex items-center justify-between text-xs text-gray-500 pt-2 border-t border-gray-200">
+            <div><Share2 className="w-4 h-4" /></div>
+          </div>
         </div>
       </CardContent>
+
+      {/* Contact Form Dialog */}
+      <ContactFormDialog 
+        open={contactFormOpen} 
+        onOpenChange={setContactFormOpen}
+        carTitle={`${year} ${brand} ${model}`}
+      />
 
       {/* Dialog modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
@@ -294,8 +267,15 @@ export function CarCard(props: Car) {
                 </div>
                 {images.length > 1 && (
                   <div className="flex gap-2 overflow-x-auto pb-2">
-                    {images.slice(0, 6).map((image, i) => (
-                      <button key={i} onClick={(e) => { e.stopPropagation(); setModalIndex(i); }} className={`flex-shrink-0 w-16 sm:w-20 h-12 sm:h-16 rounded-lg overflow-hidden border-2 transition-all ${i === modalIndex ? 'border-slate-900' : 'border-gray-300 hover:border-gray-400'}`}>
+                    {images.slice(0, 6).map((image: string, i: number) => (
+                      <button
+                        key={i}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setModalIndex(i);
+                        }}
+                        className={`flex-shrink-0 w-16 sm:w-20 h-12 sm:h-16 rounded-lg overflow-hidden border-2 transition-all ${i === modalIndex ? 'border-slate-900' : 'border-gray-300 hover:border-gray-400'}`}
+                      >
                         <ImageWithFallback src={image} alt={`Thumbnail ${i + 1}`} className="w-full h-full object-cover" />
                       </button>
                     ))}
@@ -374,8 +354,8 @@ export function CarCard(props: Car) {
                 </Button>
                 <Button
                   size="lg"
-                  className="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-medium"
-                  onClick={() => { setIsModalOpen(false); navigate('/contact'); }}
+                  className="flex-1 bg-[#FFD700] hover:bg-[#FFC700] text-[#001F3F] font-bold"
+                  onClick={() => { setIsModalOpen(false); setContactFormOpen(true); }}
                 >
                   Contact Seller
                 </Button>
@@ -384,6 +364,7 @@ export function CarCard(props: Car) {
           </div>
         </DialogContent>
       </Dialog>
-      </Card>
+    </Card>
+    </>
   );
 }

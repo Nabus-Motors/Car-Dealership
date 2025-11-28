@@ -1,16 +1,17 @@
-import { Calendar, Car, Star, Trophy } from 'lucide-react';
+import { Target, Sparkles, Star, Trophy } from 'lucide-react';
 import { Card, CardContent } from '../components/ui/card';
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
+import { HeroSection } from '../components/HeroSection';
 
 export function AboutPage() {
   const highlights = [
     {
-      icon: Calendar,
+      icon: Target,
       title: "20+ Years",
       subtitle: "Of Experience"
     },
     {
-      icon: Car,
+      icon: Sparkles,
       title: "1000+",
       subtitle: "Cars Sold"
     },
@@ -29,21 +30,13 @@ export function AboutPage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <div className="relative h-[400px] w-full flex items-center justify-center overflow-hidden bg-[#001F3F] pt-16">
-        {/* Background Image */}
-        <img 
-          src="https://images.unsplash.com/photo-1592891024301-bf7948cee673?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjYXIlMjBkZWFsZXJzaGlwJTIwdGVhbXxlbnwxfHx8fDE3NTg3MjE3Mjh8MA&ixlib=rb-4.1.0&q=80&w=1080"
-          alt="About us"
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-black/50"></div>
-        
-        {/* Content */}
-        <div className="relative z-10 text-center text-white px-6 max-w-5xl mx-auto">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">About Nabus Motors</h1>
-          <p className="text-lg md:text-xl text-[#FFD700]">Your trusted automotive partner since 2004</p>
-        </div>
-      </div>
+      <HeroSection
+        backgroundImage="https://images.unsplash.com/photo-1592891024301-bf7948cee673?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjYXIlMjBkZWFsZXJzaGlwJTIwdGVhbXxlbnwxfHx8fDE3NTg3MjE3Mjh8MA&ixlib=rb-4.1.0&q=80&w=1080"
+        title="About Nabus Motors"
+        subtitle="Your trusted automotive partner since 2004"
+        centered={true}
+        className="-mt-16 pt-16"
+      />
 
       {/* Company Story Section */}
       <section className="py-16 bg-white">
@@ -53,7 +46,7 @@ export function AboutPage() {
               <h2 className="text-3xl md:text-4xl font-bold text-[#001F3F]">
                 Our Story
               </h2>
-              <div className="space-y-4 text-gray-700 leading-relaxed">
+              <div className="space-y-4 text-slate-700 leading-relaxed">
                 <p>
                   Founded in 2004, Nabus Motors began as a small family-owned dealership with a simple mission: 
                   to provide honest, reliable, and exceptional automotive services to our community. 
@@ -78,7 +71,7 @@ export function AboutPage() {
               <ImageWithFallback
                 src="https://images.unsplash.com/photo-1705747401901-28363172fe7e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxsdXh1cnklMjBjYXIlMjBzaG93cm9vbXxlbnwxfHx8fDE3NTg3MTYyMTl8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
                 alt="Nabus Motors showroom"
-                className="w-full h-80 object-cover rounded-lg shadow-lg"
+                className="w-full h-80 object-cover rounded-xl shadow-lg"
               />
             </div>
           </div>
@@ -90,15 +83,15 @@ export function AboutPage() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             {/* Mission */}
-            <Card className="h-full">
+            <Card className="h-full border-2 border-slate-200 rounded-xl shadow-md">
               <CardContent className="p-8">
                 <div className="text-center mb-6">
-                  <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-2xl text-white">🎯</span>
+                  <div className="w-16 h-16 bg-[#FFD700]/20 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <span className="text-2xl">🎯</span>
                   </div>
-                  <h3 className="text-2xl font-bold text-slate-900">Our Mission</h3>
+                  <h3 className="text-2xl font-bold text-[#001F3F]">Our Mission</h3>
                 </div>
-                <p className="text-gray-700 leading-relaxed text-center">
+                <p className="text-slate-700 leading-relaxed text-center">
                   To revolutionize the car buying experience by providing transparent pricing, 
                   exceptional customer service, and access to the finest vehicles. We strive to 
                   make every customer's journey memorable and stress-free, building lasting 
@@ -108,29 +101,29 @@ export function AboutPage() {
             </Card>
 
             {/* Values */}
-            <Card className="h-full">
+            <Card className="h-full border-2 border-slate-200 rounded-xl shadow-md">
               <CardContent className="p-8">
                 <div className="text-center mb-6">
-                  <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-2xl text-white">💫</span>
+                  <div className="w-16 h-16 bg-[#001F3F]/10 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <span className="text-2xl">💫</span>
                   </div>
-                  <h3 className="text-2xl font-bold text-slate-900">Our Values</h3>
+                  <h3 className="text-2xl font-bold text-[#001F3F]">Our Values</h3>
                 </div>
-                <ul className="space-y-4 text-gray-700">
+                <ul className="space-y-4 text-slate-700">
                   <li className="flex items-center">
-                    <span className="mr-2">✓</span>
+                    <span className="mr-3 text-[#FFD700] font-bold">✓</span>
                     <span>Integrity in every interaction</span>
                   </li>
                   <li className="flex items-center">
-                    <span className="mr-2">✓</span>
+                    <span className="mr-3 text-[#FFD700] font-bold">✓</span>
                     <span>Customer satisfaction above all</span>
                   </li>
                   <li className="flex items-center">
-                    <span className="mr-2">✓</span>
+                    <span className="mr-3 text-[#FFD700] font-bold">✓</span>
                     <span>Transparency in pricing and services</span>
                   </li>
                   <li className="flex items-center">
-                    <span className="mr-2">✓</span>
+                    <span className="mr-3 text-[#FFD700] font-bold">✓</span>
                     <span>Excellence in automotive expertise</span>
                   </li>
                 </ul>
@@ -147,24 +140,24 @@ export function AboutPage() {
             <h2 className="text-3xl md:text-4xl font-bold text-slate-900">
               Our Achievements
             </h2>
-            <p className="mt-4 text-gray-600">
+            <p className="mt-4 text-slate-600">
               Milestones that define our journey of excellence
             </p>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {highlights.map((highlight, index) => (
-              <Card key={index} className="text-center">
+              <Card key={index} className="text-center border-2 border-slate-200 rounded-xl shadow-md hover:shadow-lg transition-shadow">
                 <CardContent className="p-6">
                   <div className="flex justify-center mb-4">
-                    <div className="p-3 bg-blue-50 rounded-full">
-                      <highlight.icon className="w-8 h-8 text-blue-600" />
+                    <div className="p-3 bg-[#FFD700]/20 rounded-lg">
+                      <highlight.icon className="w-8 h-8 text-[#FFD700]" />
                     </div>
                   </div>
-                  <h3 className="text-2xl font-bold text-slate-900 mb-2">
+                  <h3 className="text-2xl font-bold text-[#001F3F] mb-2">
                     {highlight.title}
                   </h3>
-                  <p className="text-gray-600">{highlight.subtitle}</p>
+                  <p className="text-slate-600">{highlight.subtitle}</p>
                 </CardContent>
               </Card>
             ))}

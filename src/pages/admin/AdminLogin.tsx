@@ -81,13 +81,13 @@ export function AdminLogin({ onBack }: AdminLoginProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Back Button */}
         <Button
           variant="ghost"
           onClick={onBack}
-          className="mb-6 p-0 h-auto text-gray-600 hover:text-gray-900"
+          className="mb-6 p-0 h-auto text-slate-600 hover:text-slate-900"
         >
           <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -95,22 +95,22 @@ export function AdminLogin({ onBack }: AdminLoginProps) {
           Back to Main Site
         </Button>
 
-        <Card className="shadow-lg border-0">
-          <CardHeader className="text-center pb-6">
+        <Card className="shadow-lg border-2 border-slate-200 rounded-xl">
+          <CardHeader className="text-center pb-6 border-b-2 border-slate-100">
             {/* Logo */}
             <div className="flex justify-center mb-4">
               <img src="/nabus-motors-logo.png" alt="Nabus Motors" className="w-20 h-20 object-contain" />
             </div>
             
-            <CardTitle className="text-2xl font-semibold text-gray-900">
+            <CardTitle className="text-2xl font-bold text-[#001F3F]">
               Nabus Motors Admin
             </CardTitle>
-            <p className="text-gray-600 mt-2">
+            <p className="text-slate-600 mt-2">
               Sign in to access the admin panel
             </p>
           </CardHeader>
           
-          <CardContent>
+          <CardContent className="pt-6">
             <form onSubmit={handleSubmit} className="space-y-4">
               {errors.general && (
                 <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
@@ -119,14 +119,14 @@ export function AdminLogin({ onBack }: AdminLoginProps) {
               )}
               
               <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
+                <Label htmlFor="email" className="text-slate-700 font-medium">Email Address</Label>
                 <Input
                   id="email"
                   type="email"
                   value={formData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
                   placeholder="admin@nabusmotors.com"
-                  className={errors.email ? 'border-red-500' : ''}
+                  className={`border rounded-lg transition-all ${errors.email ? 'border-red-500 focus:border-red-500' : 'border-slate-300 focus:border-[#FFD700]'}`}
                   disabled={isLoading}
                 />
                 {errors.email && (
@@ -135,14 +135,14 @@ export function AdminLogin({ onBack }: AdminLoginProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password" className="text-slate-700 font-medium">Password</Label>
                 <Input
                   id="password"
                   type="password"
                   value={formData.password}
                   onChange={(e) => handleInputChange('password', e.target.value)}
                   placeholder="Enter your password"
-                  className={errors.password ? 'border-red-500' : ''}
+                  className={`border rounded-lg transition-all ${errors.password ? 'border-red-500 focus:border-red-500' : 'border-slate-300 focus:border-[#FFD700]'}`}
                   disabled={isLoading}
                 />
                 {errors.password && (
@@ -152,12 +152,12 @@ export function AdminLogin({ onBack }: AdminLoginProps) {
 
               <Button
                 type="submit"
-                className="w-full bg-red-600 hover:bg-red-700 text-white"
+                className="w-full bg-[#FFD700] hover:bg-[#FFC700] text-[#001F3F] font-bold uppercase tracking-wide transition-all h-12 rounded-lg"
                 disabled={isLoading}
               >
                 {isLoading ? (
                   <div className="flex items-center">
-                    <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-[#001F3F]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
@@ -172,7 +172,7 @@ export function AdminLogin({ onBack }: AdminLoginProps) {
               <div className="text-center pt-2">
                 <button
                   type="button"
-                  className="text-sm text-red-600 hover:text-red-700 hover:underline"
+                  className="text-sm text-[#FFD700] hover:text-[#FFC700] hover:underline font-medium"
                   disabled={isLoading}
                 >
                   Forgot your password?
@@ -183,9 +183,9 @@ export function AdminLogin({ onBack }: AdminLoginProps) {
         </Card>
 
         {/* Demo Credentials Note */}
-        <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <p className="text-sm text-blue-800 font-medium mb-1">Demo Credentials:</p>
-          <p className="text-xs text-blue-700">
+        <div className="mt-6 p-4 bg-blue-50 border-2 border-blue-200 rounded-xl">
+          <p className="text-sm text-blue-900 font-bold mb-1">Demo Credentials:</p>
+          <p className="text-xs text-blue-800">
             Email: admin@nabusmotors.com<br />
             Password: admin123
           </p>

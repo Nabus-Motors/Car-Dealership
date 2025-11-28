@@ -21,7 +21,7 @@ export function StatsCard({ title, value, icon, change, description }: StatsCard
       case 'down':
         return 'text-red-600';
       default:
-        return 'text-gray-600';
+        return 'text-slate-600';
     }
   };
 
@@ -37,12 +37,12 @@ export function StatsCard({ title, value, icon, change, description }: StatsCard
   };
 
   return (
-    <Card className="hover:shadow-md transition-shadow duration-200">
+    <Card className="hover:shadow-md transition-shadow duration-200 border-2 border-slate-200 rounded-xl">
       <CardContent className="p-6">
         <div className="flex items-center justify-between">
           <div className="flex-1">
-            <p className="text-sm font-medium text-gray-600 mb-1">{title}</p>
-            <p className="text-3xl font-bold text-gray-900 mb-1">{value}</p>
+            <p className="text-sm font-medium text-slate-600 mb-1">{title}</p>
+            <p className="text-3xl font-bold text-[#001F3F] mb-1">{value}</p>
             
             {change && (
               <div className={`flex items-center text-sm ${getTrendColor(change.trend)}`}>
@@ -52,12 +52,12 @@ export function StatsCard({ title, value, icon, change, description }: StatsCard
             )}
             
             {description && (
-              <p className="text-xs text-gray-500 mt-1">{description}</p>
+              <p className="text-xs text-slate-500 mt-1">{description}</p>
             )}
           </div>
           
-          <div className="bg-gray-50 p-3 rounded-lg">
-            {React.createElement(icon, { className: "h-6 w-6 text-gray-600" })}
+          <div className="bg-[#FFD700]/20 p-3 rounded-lg">
+            {React.createElement(icon, { className: "h-6 w-6 text-[#FFD700]" })}
           </div>
         </div>
       </CardContent>

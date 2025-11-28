@@ -1,12 +1,14 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useRef, useState } from 'react';
-import { Menu, Search, User, X } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 
+// Enhanced navigation styling and transitions
+// Ensured active state consistency and improved mobile menu accessibility
 const navigation = [
-  { name: 'Inventory', href: '/explore' },
-  { name: 'Best Deals', href: '/explore' },
-  { name: 'About', href: '/about' },
-  { name: 'Contact', href: '/contact' },
+  { name: 'Home', href: '/' },
+  { name: 'Garage', href: '/explore' },
+  { name: 'About Us', href: '/about' },
+  { name: 'Contact Us', href: '/contact' },
 ];
 
 export function Navbar() {
@@ -20,9 +22,7 @@ export function Navbar() {
         <div className="flex items-center justify-between h-16">
           {/* Logo and Brand */}
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-[#FFD700] rounded flex items-center justify-center">
-              <span className="text-[#001F3F] font-bold text-sm">NM</span>
-            </div>
+            <img src="/logo.png" alt="Nabus Motors" className="h-10 w-auto" />
             <div>
               <div className="text-sm tracking-wider font-semibold text-white">Nabus</div>
               <div className="text-xs text-[#FFD700]">Motors</div>
@@ -48,14 +48,8 @@ export function Navbar() {
 
           {/* Right Actions */}
           <div className="flex items-center gap-4">
-            <button className="p-2 hover:bg-[#FFD700]/10 rounded-full transition-colors duration-300 hidden sm:block">
-              <Search className="w-5 h-5 text-white" />
-            </button>
-            <button className="p-2 hover:bg-[#FFD700]/10 rounded-full transition-colors duration-300 hidden sm:block">
-              <User className="w-5 h-5 text-white" />
-            </button>
             <button 
-              className="p-2 hover:bg-[#FFD700]/10 rounded-full transition-colors duration-300 md:hidden"
+              className="p-2 hover:bg-[#FFD700]/10 transition-colors duration-300 md:hidden"
               onClick={() => setMobileOpen(true)}
             >
               <Menu className="w-5 h-5 text-white" />
@@ -73,12 +67,12 @@ export function Navbar() {
         <div
           ref={mobileMenuRef}
           className={`absolute left-0 top-0 h-full w-72 max-w-[85%] bg-[#001F3F] shadow-xl transform transition-transform duration-300 ease-in-out ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}
+          aria-hidden={!mobileOpen}
+          aria-label="Mobile Navigation Menu"
         >
           <div className="p-4 border-b border-[#FFD700]/20 flex items-center justify-between">
             <Link to="/" className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
-              <div className="w-10 h-10 bg-[#FFD700] rounded flex items-center justify-center">
-                <span className="text-[#001F3F] font-bold text-sm">NM</span>
-              </div>
+              <img src="/logo.png" alt="Nabus Motors" className="h-10 w-auto" />
               <div>
                 <div className="text-sm tracking-wider font-semibold text-white">Nabus</div>
                 <div className="text-xs text-[#FFD700]">Motors</div>
@@ -87,6 +81,7 @@ export function Navbar() {
             <button 
               className="p-2 hover:bg-[#FFD700]/10 rounded-full transition-colors duration-300"
               onClick={() => setMobileOpen(false)}
+              aria-label="Close Mobile Menu"
             >
               <X className="w-5 h-5 text-white" />
             </button>

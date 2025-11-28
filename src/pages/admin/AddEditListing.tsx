@@ -1,22 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
-import { Input } from '../../components/ui/input';
-import { Label } from '../../components/ui/label';
-import { Textarea } from '../../components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
-import { Badge } from '../../components/ui/badge';
-import { Alert, AlertDescription } from '../../components/ui/alert';
 import { AddEditListingSkeleton } from '../../components/ui/skeleton';
-import { Upload, X, Save, ArrowLeft } from 'lucide-react';
-import { StorageImage } from '@/components/figma/StorageImage';
+import { ArrowLeft } from 'lucide-react';
 import { Car } from '../../types/car';
 import { getCarById, createCar, updateCar } from '../../services/firestoreService';
 import { uploadImages } from '../../services/storageService';
+import { compressImage, validateImageFile, formatFileSize } from '../../utils/imageCompression';
 import toast from 'react-hot-toast';
 import { serverTimestamp } from 'firebase/firestore';
 import { normalizeImageUrls } from '@/utils/images';
+import { AddEditListingForm } from './AddEditListingForm';
 
 interface FormData {
   make: string;
@@ -33,6 +27,33 @@ interface FormData {
   existingImages: string[];
   status: 'draft' | 'published' | 'sold' | 'new';
   category?: 'Registered' | 'Unregistered';
+  technical: {
+    engine: {
+      cylinders: string;
+      displacement: string;
+      driveLayout: string;
+      horsepower: string;
+      rpm: string;
+      torque: string;
+      compressionRatio: string;
+      fuelType: string;
+    };
+    performance: {
+      topTrackSpeed: string;
+      acceleration060: string;
+    };
+    transmission: {
+      type: string;
+      displacement: string;
+    };
+  };
+  location: {
+    address: string;
+    latitude: number;
+    longitude: number;
+    city: string;
+    country: string;
+  };
 }
 
 interface ValidationErrors {
@@ -58,7 +79,34 @@ export const AddEditListing: React.FC = () => {
     images: [],
     existingImages: [],
     status: 'draft',
-    category: undefined
+    category: undefined,
+    technical: {
+      engine: {
+        cylinders: '',
+        displacement: '',
+        driveLayout: '',
+        horsepower: '',
+        rpm: '',
+        torque: '',
+        compressionRatio: '',
+        fuelType: ''
+      },
+      performance: {
+        topTrackSpeed: '',
+        acceleration060: ''
+      },
+      transmission: {
+        type: '',
+        displacement: ''
+      }
+    },
+    location: {
+      address: '',
+      latitude: 0,
+      longitude: 0,
+      city: '',
+      country: ''
+    }
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -92,7 +140,29 @@ export const AddEditListing: React.FC = () => {
           images: [],
           existingImages: existing,
           status: car.status || 'draft',
-          category: (car as any).category
+          category: (car as any).category,
+          technical: car.technical ? {
+            engine: { ...(car.technical.engine || {}), cylinders: car.technical.engine?.cylinders || '', displacement: car.technical.engine?.displacement || '', driveLayout: car.technical.engine?.driveLayout || '', horsepower: car.technical.engine?.horsepower || '', rpm: car.technical.engine?.rpm || '', torque: car.technical.engine?.torque || '', compressionRatio: car.technical.engine?.compressionRatio || '', fuelType: car.technical.engine?.fuelType || '' },
+            performance: { topTrackSpeed: car.technical.performance?.topTrackSpeed || '', acceleration060: car.technical.performance?.acceleration060 || '' },
+            transmission: { type: car.technical.transmission?.type || '', displacement: car.technical.transmission?.displacement || '' }
+          } : {
+            engine: { cylinders: '', displacement: '', driveLayout: '', horsepower: '', rpm: '', torque: '', compressionRatio: '', fuelType: '' },
+            performance: { topTrackSpeed: '', acceleration060: '' },
+            transmission: { type: '', displacement: '' }
+          },
+          location: car.location ? {
+            address: car.location.address || '',
+            latitude: car.location.latitude || 0,
+            longitude: car.location.longitude || 0,
+            city: car.location.city || '',
+            country: car.location.country || ''
+          } : {
+            address: '',
+            latitude: 0,
+            longitude: 0,
+            city: '',
+            country: ''
+          }
         });
       }
     } catch (error) {
@@ -117,9 +187,14 @@ export const AddEditListing: React.FC = () => {
     if (!formData.fuelType) newErrors.fuelType = 'Fuel type is required';
     if (!formData.condition) newErrors.condition = 'Condition is required';
     if (!formData.description.trim()) newErrors.description = 'Description is required';
+    if (formData.description.trim().split('\n').length < 3) {
+      newErrors.description = 'Description must be at least 3 lines';
+    }
 
-    if (!isEditing && formData.images.length === 0) {
-      newErrors.images = 'At least one image is required';
+    // Image validation - minimum 10 images
+    const totalImages = formData.existingImages.length + formData.images.length;
+    if (totalImages < 10) {
+      newErrors.images = `Minimum 10 images required (${totalImages}/10)`;
     }
 
     setErrors(newErrors);
@@ -133,12 +208,50 @@ export const AddEditListing: React.FC = () => {
     }
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
+    
+    // Check if adding these files would exceed 10 total
+    const totalAfterUpload = formData.existingImages.length + formData.images.length + files.length;
+    if (totalAfterUpload > 10) {
+      toast.error(`Maximum 10 images allowed. You would have ${totalAfterUpload} images.`);
+      return;
+    }
+
     if (files.length > 0) {
-      setFormData(prev => ({ ...prev, images: [...prev.images, ...files] }));
-      if (errors.images) {
-        setErrors(prev => ({ ...prev, images: '' }));
+      // Validate and compress images
+      const compressedFiles: File[] = [];
+      let hasErrors = false;
+
+      for (const file of files) {
+        // Validate file
+        const validation = validateImageFile(file);
+        if (!validation.valid) {
+          toast.error(`${file.name}: ${validation.message}`);
+          hasErrors = true;
+          continue;
+        }
+
+        try {
+          // Compress image
+          const compressed = await compressImage(file);
+          compressedFiles.push(compressed);
+          toast.success(`${file.name} (${formatFileSize(compressed.size)}) added`, { duration: 2 });
+        } catch (error) {
+          toast.error(`Failed to process ${file.name}`);
+          hasErrors = true;
+        }
+      }
+
+      if (compressedFiles.length > 0) {
+        setFormData(prev => ({ ...prev, images: [...prev.images, ...compressedFiles] }));
+        if (errors.images) {
+          setErrors(prev => ({ ...prev, images: '' }));
+        }
+      }
+
+      if (hasErrors) {
+        toast.error('Some files could not be processed. Please try again.');
       }
     }
   };
@@ -217,6 +330,8 @@ export const AddEditListing: React.FC = () => {
           imageUrls: [],
           status: formData.status,
           category: formData.category,
+          technical: formData.technical,
+          location: formData.location,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp()
         };
@@ -236,7 +351,7 @@ export const AddEditListing: React.FC = () => {
 
       console.log('Final imageUrls for database:', imageUrls);
 
-      // Update the car with the final image URLs (do NOT include createdAt on update)
+      // Update the car with the final image URLs
       const finalCarData: Partial<Car> = {
         brand: formData.make,
         model: formData.model,
@@ -251,6 +366,8 @@ export const AddEditListing: React.FC = () => {
         imageUrls: imageUrls,
         status: formData.status,
         category: formData.category,
+        technical: formData.technical,
+        location: formData.location,
         updatedAt: serverTimestamp()
       };
 
@@ -282,7 +399,7 @@ export const AddEditListing: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <div className="container mx-auto px-4 py-8 max-w-6xl">
       <div className="flex items-center gap-4 mb-6">
         <Button
           variant="outline"
@@ -293,353 +410,32 @@ export const AddEditListing: React.FC = () => {
           <ArrowLeft className="h-4 w-4" />
           Back to Listings
         </Button>
-        <h1 className="text-3xl font-bold">
+        <h1 className="text-3xl font-bold text-[#001F3F]">
           {isEditing ? 'Edit Listing' : 'Add New Car'}
         </h1>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Car Details</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <Label htmlFor="make">Make *</Label>
-              <Input
-                id="make"
-                value={formData.make}
-                onChange={(e) => handleInputChange('make', e.target.value)}
-                placeholder="e.g., Toyota"
-                className={errors.make ? 'border-red-500' : ''}
-              />
-              {errors.make && <p className="text-sm text-red-500 mt-1">{errors.make}</p>}
-            </div>
-
-            <div>
-              <Label htmlFor="model">Model *</Label>
-              <Input
-                id="model"
-                value={formData.model}
-                onChange={(e) => handleInputChange('model', e.target.value)}
-                placeholder="e.g., Camry"
-                className={errors.model ? 'border-red-500' : ''}
-              />
-              {errors.model && <p className="text-sm text-red-500 mt-1">{errors.model}</p>}
-            </div>
-
-            <div>
-              <Label htmlFor="year">Year *</Label>
-              <Input
-                id="year"
-                type="number"
-                value={formData.year}
-                onChange={(e) => handleInputChange('year', parseInt(e.target.value))}
-                min="1900"
-                max={new Date().getFullYear() + 1}
-                className={errors.year ? 'border-red-500' : ''}
-              />
-              {errors.year && <p className="text-sm text-red-500 mt-1">{errors.year}</p>}
-            </div>
-
-            <div>
-              <Label htmlFor="price">Price ($) *</Label>
-              <Input
-                id="price"
-                type="number"
-                value={formData.price}
-                onChange={(e) => handleInputChange('price', parseFloat(e.target.value))}
-                min="0"
-                step="0.01"
-                className={errors.price ? 'border-red-500' : ''}
-              />
-              {errors.price && <p className="text-sm text-red-500 mt-1">{errors.price}</p>}
-            </div>
-
-            <div>
-              <Label htmlFor="mileage">Mileage *</Label>
-              <Input
-                id="mileage"
-                type="number"
-                value={formData.mileage}
-                onChange={(e) => handleInputChange('mileage', parseInt(e.target.value))}
-                min="0"
-                className={errors.mileage ? 'border-red-500' : ''}
-              />
-              {errors.mileage && <p className="text-sm text-red-500 mt-1">{errors.mileage}</p>}
-            </div>
-
-            <div>
-              <Label htmlFor="transmission">Transmission *</Label>
-              <Select
-                value={formData.transmission}
-                onValueChange={(value) => handleInputChange('transmission', value)}
-              >
-                <SelectTrigger className={errors.transmission ? 'border-red-500' : ''}>
-                  <SelectValue placeholder="Select transmission" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Automatic">Automatic</SelectItem>
-                  <SelectItem value="Manual">Manual</SelectItem>
-                  <SelectItem value="CVT">CVT</SelectItem>
-                </SelectContent>
-              </Select>
-              {errors.transmission && <p className="text-sm text-red-500 mt-1">{errors.transmission}</p>}
-            </div>
-
-            <div>
-              <Label htmlFor="fuelType">Fuel Type *</Label>
-              <Select
-                value={formData.fuelType}
-                onValueChange={(value) => handleInputChange('fuelType', value)}
-              >
-                <SelectTrigger className={errors.fuelType ? 'border-red-500' : ''}>
-                  <SelectValue placeholder="Select fuel type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Gasoline">Gasoline</SelectItem>
-                  <SelectItem value="Diesel">Diesel</SelectItem>
-                  <SelectItem value="Hybrid">Hybrid</SelectItem>
-                  <SelectItem value="Electric">Electric</SelectItem>
-                </SelectContent>
-              </Select>
-              {errors.fuelType && <p className="text-sm text-red-500 mt-1">{errors.fuelType}</p>}
-            </div>
-
-            <div>
-              <Label htmlFor="condition">Condition *</Label>
-              <Select
-                value={formData.condition}
-                onValueChange={(value) => handleInputChange('condition', value)}
-              >
-                <SelectTrigger className={errors.condition ? 'border-red-500' : ''}>
-                  <SelectValue placeholder="Select condition" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="New">New</SelectItem>
-                  <SelectItem value="Used">Used</SelectItem>
-                  <SelectItem value="Certified Pre-Owned">Certified Pre-Owned</SelectItem>
-                </SelectContent>
-              </Select>
-              {errors.condition && <p className="text-sm text-red-500 mt-1">{errors.condition}</p>}
-            </div>
-
-            <div>
-              <Label htmlFor="status">Status *</Label>
-              <Select
-                value={formData.status}
-                onValueChange={(value) => handleInputChange('status', value)}
-              >
-                <SelectTrigger className={errors.status ? 'border-red-500' : ''}>
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="draft">Draft</SelectItem>
-                  <SelectItem value="published">Published</SelectItem>
-                  <SelectItem value="new">New</SelectItem>
-                  <SelectItem value="sold">Sold</SelectItem>
-                </SelectContent>
-              </Select>
-              {errors.status && <p className="text-sm text-red-500 mt-1">{errors.status}</p>}
-            </div>
-
-            <div>
-              <Label htmlFor="category">Category</Label>
-              <Select
-                value={formData.category}
-                onValueChange={(value) => handleInputChange('category', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Registered">Registered</SelectItem>
-                  <SelectItem value="Unregistered">Unregistered</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div>
-            <Label htmlFor="description">Description *</Label>
-            <Textarea
-              id="description"
-              value={formData.description}
-              onChange={(e) => handleInputChange('description', e.target.value)}
-              placeholder="Describe the car's features, history, and condition..."
-              rows={4}
-              className={errors.description ? 'border-red-500' : ''}
-            />
-            {errors.description && <p className="text-sm text-red-500 mt-1">{errors.description}</p>}
-          </div>
-
-          <div>
-            <Label>Features</Label>
-            <div className="flex gap-2 mb-2">
-              <Input
-                value={featureInput}
-                onChange={(e) => setFeatureInput(e.target.value)}
-                placeholder="Add a feature..."
-                onKeyPress={(e) => e.key === 'Enter' && addFeature()}
-              />
-              <Button type="button" onClick={addFeature} variant="outline">
-                Add
-              </Button>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {formData.features.map((feature, index) => (
-                <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                  {feature}
-                  <X
-                    className="h-3 w-3 cursor-pointer"
-                    onClick={() => removeFeature(feature)}
-                  />
-                </Badge>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <Label className="text-base font-semibold">Images</Label>
-            <div className="space-y-4">
-              {/* Upload Area */}
-              <div className="relative">
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={handleImageUpload}
-                  className="hidden"
-                  id="image-upload"
-                />
-                <label
-                  htmlFor="image-upload"
-                  className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-red-400 hover:bg-red-50 transition-all duration-200 bg-gray-50"
-                >
-                  <div className="text-center space-y-2">
-                    <Upload className="h-10 w-10 mx-auto text-gray-400" />
-                    <div>
-                      <p className="text-sm font-medium text-gray-700">Click to upload images</p>
-                      <p className="text-xs text-gray-500">PNG, JPG, JPEG up to 10MB each</p>
-                    </div>
-                  </div>
-                </label>
-                {errors.images && <p className="text-sm text-red-500 mt-2">{errors.images}</p>}
-              </div>
-
-              {/* Image Previews */}
-              {(formData.existingImages.length > 0 || formData.images.length > 0) && (
-                <div className="space-y-3">
-                  <h4 className="text-sm font-medium text-gray-700">Image Preview</h4>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {/* Existing Images */}
-                    {formData.existingImages.map((url, index) => (
-                      <div key={`existing-${index}`} className="relative group">
-                        <div className="aspect-square rounded-lg overflow-hidden border-2 border-gray-200 bg-gray-100">
-                          <StorageImage
-                            src={url}
-                            alt={`Car image ${index + 1}`}
-                            className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                          />
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => removeImage(index, true)}
-                          className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-lg"
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                        <div className="absolute bottom-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded backdrop-blur-sm">
-                          Saved
-                        </div>
-                      </div>
-                    ))}
-                    
-                    {/* New Images */}
-                    {formData.images.map((file, index) => {
-                      const url = URL.createObjectURL(file);
-                      return (
-                        <div key={`new-${index}`} className="relative group">
-                          <div className="aspect-square rounded-lg overflow-hidden border-2 border-green-200 bg-gray-100">
-                            <img
-                              src={url}
-                              alt={`New car image ${index + 1}`}
-                              className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                            />
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              removeImage(index, false);
-                              URL.revokeObjectURL(url);
-                            }}
-                            className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-lg"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
-                          <div className="absolute bottom-2 left-2 bg-green-600/80 text-white text-xs px-2 py-1 rounded backdrop-blur-sm">
-                            New
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {Object.keys(errors).length > 0 && (
-            <Alert variant="destructive">
-              <AlertDescription>
-                Please fix the errors above before saving.
-              </AlertDescription>
-            </Alert>
-          )}
-
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-6">
-            <Button 
-              variant="outline" 
-              onClick={() => navigate('/admin/listings')}
-              disabled={isSaving}
-              className="sm:flex-1"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={async () => { 
-                setFormData(prev => ({ ...prev, status: 'draft' })); 
-                await handleSave(); 
-              }}
-              disabled={isSaving}
-              className="sm:flex-1 bg-gray-900 hover:bg-gray-800"
-            >
-              {isSaving ? (
-                <div className="flex items-center">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Saving...
-                </div>
-              ) : (
-                <div className="flex items-center">
-                  <Save className="w-4 h-4 mr-2" />
-                  Save Draft
-                </div>
-              )}
-            </Button>
-            <Button
-              type="button"
-              onClick={async () => { 
-                setFormData(prev => ({ ...prev, status: 'published' })); 
-                await handleSave(); 
-              }}
-              disabled={isSaving}
-              className="sm:flex-1 bg-red-600 hover:bg-red-700"
-            >
-              Publish
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <AddEditListingForm
+        formData={formData}
+        errors={errors}
+        isSaving={isSaving}
+        featureInput={featureInput}
+        onInputChange={handleInputChange}
+        onFeatureInputChange={setFeatureInput}
+        onAddFeature={addFeature}
+        onRemoveFeature={removeFeature}
+        onImageUpload={handleImageUpload}
+        onRemoveImage={removeImage}
+        onSaveDraft={async () => { 
+          setFormData(prev => ({ ...prev, status: 'draft' })); 
+          await handleSave(); 
+        }}
+        onPublish={async () => { 
+          setFormData(prev => ({ ...prev, status: 'published' })); 
+          await handleSave(); 
+        }}
+        onNavigateBack={() => navigate('/admin/listings')}
+      />
     </div>
   );
 };

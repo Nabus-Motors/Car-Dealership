@@ -55,7 +55,7 @@
     },
     build: {
       target: 'esnext',
-      outDir: 'dist',
+      outDir: 'build',
       sourcemap: true,
       chunkSizeWarningLimit: 1000,
       rollupOptions: {

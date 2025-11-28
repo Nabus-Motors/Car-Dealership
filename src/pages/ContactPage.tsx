@@ -125,9 +125,10 @@ export function ContactPage() {
       {/* Hero Section */}
       <HeroSection
         backgroundImage="https://images.unsplash.com/photo-1705747401901-28363172fe7e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxsdXh1cnklMjBjYXIlMjBzaG93cm9vbXxlbnwxfHx8fDE3NTg3MTYyMTl8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
-        title="Contact Us"
-        subtitle="We're here to help you find your perfect vehicle"
-        height="h-[400px]"
+        title="Get in Touch with Us"
+        subtitle="We are here to assist you with all your vehicle needs."
+        centered={true}
+        className="-mt-16 pt-16"
       />
 
       {/* Contact Form and Info Section */}
@@ -137,7 +138,7 @@ export function ContactPage() {
             {/* Left Column: Contact Form and Map */}
             <div className="space-y-8">
               {/* Contact Form */}
-              <Card>
+              <Card className="border-2 border-slate-200 rounded-xl shadow-md">
                 <CardContent className="p-8">
                   <h2 className="text-2xl font-bold text-[#001F3F] mb-6">
                     Send Us a Message
@@ -195,7 +196,7 @@ export function ContactPage() {
                       />
                     </div>
                     
-                    <Button type="submit" className="w-full" disabled={isSubmitting}>
+                    <Button type="submit" className="w-full bg-[#FFD700] hover:bg-[#FFC700] text-[#001F3F] font-bold uppercase tracking-wide transition-all h-12" disabled={isSubmitting}>
                       {isSubmitting ? 'Sending...' : 'Send Message'}
                     </Button>
                   </form>
@@ -203,9 +204,9 @@ export function ContactPage() {
               </Card>
 
               {/* Map Location */}
-              <Card className="overflow-hidden mt-6">
+              <Card className="overflow-hidden mt-6 border-2 border-slate-200 shadow-md rounded-xl">
                 <CardHeader className="pb-0">
-                  <CardTitle className="text-2xl font-bold text-[#001F3F]">Location</CardTitle>
+                  <CardTitle className="text-2xl font-bold text-[#001F3F]">Our Location</CardTitle>
                 </CardHeader>
                 <CardContent className="p-0">
                   <div className="h-80 relative">
@@ -230,24 +231,24 @@ export function ContactPage() {
               <h2 className="text-2xl font-bold text-[#001F3F]">
                 Get in Touch
               </h2>
-              <p className="text-gray-600">
+              <p className="text-slate-600">
                 Have a question about a specific vehicle? Looking to schedule a test drive? 
                 Our team is here to help you with anything you need.
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-6">
                 {contactInfo.map((info, index) => (
-                  <Card key={index}>
+                  <Card key={index} className="border-2 border-slate-200 rounded-xl shadow-md">
                     <CardContent className="p-6">
                       <div className="flex items-start space-x-4">
-                        <div className="p-2 bg-[#FFD700]/20 rounded-lg">
+                        <div className="p-3 bg-[#FFD700]/20 rounded-lg">
                           <info.icon className="w-6 h-6 text-[#FFD700]" />
                         </div>
                         <div>
                           <h3 className="font-semibold text-[#001F3F]">
                             {info.title}
                           </h3>
-                          <div className="space-y-1 mt-2 text-sm text-gray-600">
+                          <div className="space-y-1 mt-2 text-sm text-slate-600">
                             {info.details.map((detail, i) => (
                               <p key={i}>{detail}</p>
                             ))}
@@ -266,12 +267,12 @@ export function ContactPage() {
               </div>
 
               {/* Business Hours */}
-              <Card>
+              <Card className="border-2 border-slate-200 rounded-xl shadow-md">
                 <CardContent className="p-6">
                   <h3 className="font-semibold text-[#001F3F] mb-4">
                     Business Hours
                   </h3>
-                  <div className="space-y-2 text-sm text-gray-600">
+                  <div className="space-y-2 text-sm text-slate-600">
                     <div className="flex justify-between">
                       <span>Monday - Friday</span>
                       <span>9:00 AM - 8:00 PM</span>

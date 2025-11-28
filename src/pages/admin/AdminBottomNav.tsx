@@ -25,7 +25,7 @@ export function AdminBottomNav({ currentPage, onNavigate }: AdminBottomNavProps)
   return (
     <nav
       aria-label="Admin bottom navigation"
-      className="md:hidden fixed bottom-0 inset-x-0 z-50 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 border-t border-gray-200"
+      className="md:hidden fixed bottom-0 inset-x-0 z-50 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 border-t-2 border-slate-200"
       style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0px)' }}
     >
       <ul className="grid grid-cols-4">
@@ -39,14 +39,14 @@ export function AdminBottomNav({ currentPage, onNavigate }: AdminBottomNavProps)
                 className={cn(
                   'flex-1 h-14 rounded-none flex flex-col items-center justify-center gap-1 text-xs',
                   isActive
-                    ? 'text-red-600 hover:text-red-700 hover:bg-red-50'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    ? 'text-[#FFD700] hover:text-[#FFC700] hover:bg-[#FFD700]/10'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                 )}
                 aria-current={isActive ? 'page' : undefined}
                 aria-label={item.label}
                 onClick={() => onNavigate(item.id)}
               >
-                <Icon className={cn('h-5 w-5', isActive ? 'text-red-600' : 'text-gray-600')} />
+                <Icon className={cn('h-5 w-5', isActive ? 'text-[#FFD700]' : 'text-slate-600')} />
                 <span>{item.label}</span>
               </Button>
             </li>

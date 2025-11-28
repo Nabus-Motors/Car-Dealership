@@ -7,6 +7,7 @@ import { HomePage } from './pages/HomePage';
 import { ExplorePage } from './pages/ExplorePage';
 import { AboutPage } from './pages/AboutPage';
 import { ContactPage } from './pages/ContactPage';
+import CarDetailsPage from './pages/CarDetailsPage';
 import { AdminLayout } from './pages/admin/AdminLayout';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { ListingsManagement } from './pages/admin/ListingsManagement';
@@ -122,6 +123,7 @@ function App() {
             <Route path="/explore" element={<ExplorePage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/contact" element={<ContactPage />} />
+            <Route path="/car/:carId" element={<CarDetailsPage />} />
 
             {/* Protected admin routes */}
             <Route path="/admin/*" element={
@@ -136,7 +138,7 @@ function App() {
         </main>
 
         {/* Hide footer on admin routes */}
-        {!isAdminRoute && <Footer onNavigate={handleNavigation} />}
+        {!isAdminRoute && <Footer />}
         
         {/* Hide floating admin button on admin routes */}
         {!isAdminRoute && <AdminFloatingButton />}
