@@ -20,6 +20,7 @@ export interface TransmissionDetails {
 }
 
 export interface LocationDetails {
+  name?: string;
   address?: string;
   latitude?: number;
   longitude?: number;
@@ -44,8 +45,7 @@ export interface Car {
   fuelType: string;
   transmission?: string; // Optional since it's not in the test data
   description: string;
-  imageUrls: string[];
-  features: string[];
+  imageUrls: string[];  primaryImageIndex?: number;  features: string[];
   status: 'draft' | 'published' | 'sold' | 'new'; // Add all status options
   category?: 'Registered' | 'Unregistered';
   technical?: TechnicalDetails;

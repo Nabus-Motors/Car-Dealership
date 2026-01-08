@@ -290,9 +290,32 @@ export default function CarDetailsPage() {
                   <div className="space-y-4">
                     <div className="flex items-start gap-4">
                       <MapPin className="w-6 h-6 text-[#FFD700] flex-shrink-0 mt-1" />
-                      <div>
-                        <h3 className="text-sm font-semibold text-[#001F3F] uppercase tracking-wider mb-2">Location</h3>
-                        <p className="text-lg text-slate-900">Contact dealer for location details</p>
+                      <div className="w-full space-y-3">
+                        <div>
+                          <h3 className="text-sm font-semibold text-[#001F3F] uppercase tracking-wider mb-1">Location</h3>
+                          <p className="text-lg font-semibold text-slate-900">{car.location?.name || 'Not specified'}</p>
+                          {car.location?.address && (
+                            <p className="text-sm text-slate-600 mt-1">{car.location.address}</p>
+                          )}
+                          {(car.location?.city || car.location?.country) && (
+                            <p className="text-sm text-slate-600">{[car.location?.city, car.location?.country].filter(Boolean).join(', ')}</p>
+                          )}
+                        </div>
+                        {car.location?.latitude && car.location?.longitude && (
+                          <div className="mt-4 pt-4 border-t border-slate-200">
+                            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Map View</p>
+                            <iframe
+                              src={`https://www.google.com/maps?q=${car.location.latitude},${car.location.longitude}&z=16&output=embed`}
+                              width="100%"
+                              height="300"
+                              style={{ border: 0, borderRadius: '8px' }}
+                              allowFullScreen={true}
+                              loading="lazy"
+                              referrerPolicy="no-referrer-when-downgrade"
+                              title="Car Location"
+                            />
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>

@@ -14,15 +14,19 @@ export const PriceBadge: React.FC<PriceBadgeProps> = ({
   const formatPrice = (value: string | number): string => {
     if (typeof value === "string") {
       const numValue = parseFloat(value.replace(/[^0-9.-]+/g, ""));
-      return `$${numValue.toLocaleString("en-US", {
+      return new Intl.NumberFormat("en-GH", {
+        style: "currency",
+        currency: "GHS",
         minimumFractionDigits: 0,
         maximumFractionDigits: 0,
-      })}`;
+      }).format(numValue);
     }
-    return `$${value.toLocaleString("en-US", {
+    return new Intl.NumberFormat("en-GH", {
+      style: "currency",
+      currency: "GHS",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
-    })}`;
+    }).format(value as number);
   };
 
   return (

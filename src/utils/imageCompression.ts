@@ -112,7 +112,7 @@ export async function compressImage(
  */
 export function validateImageFile(
   file: File,
-  maxSize: number = 5 * 1024 * 1024 // 5MB initial max (before compression)
+  maxSize: number = 30 * 1024 * 1024 // 30MB initial max (before compression)
 ): { valid: boolean; message?: string } {
   // Check file type
   const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];

@@ -221,22 +221,19 @@ export function HomePage() {
 
   return (
     <>
-      {/* Hero Section with Carousel */}
-      <section className="relative w-full overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white" style={{ height: 'calc(100vh - 64px)' }}>
-        {/* Background image with overlay */}
-        <div 
-          className="absolute inset-0 bg-cover bg-center opacity-10"
-          style={{
-            backgroundImage: "url('https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1080')"
-          }}
-        />
-        
-        <div className="relative w-full h-full flex">
-          {/* Left - Carousel */}
-          <div className="hidden md:flex md:w-1/2 lg:w-3/5 h-full">
+      {/* Premium Hero Section - starts right below fixed navbar */}
+      <section className="relative w-full overflow-hidden bg-black text-white mt-16">
+        {/* Animated background gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#001F3F] via-black to-[#0a0e27]" />
+
+        <div className="relative w-full flex flex-col lg:flex-row">
+          {/* Left - Carousel (Mobile shows on top, stacks on desktop) */}
+          <div className="w-full lg:w-3/5 h-[60vh] sm:h-[55vh] md:h-[50vh] lg:h-[80vh] order-first lg:order-none">
             {loading ? (
-              <div className="w-full bg-slate-800 animate-pulse flex items-center justify-center">
-                <p className="text-gray-400">Loading featured vehicles...</p>
+              <div className="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900 animate-pulse flex items-center justify-center">
+                <div className="text-center">
+                  <p className="text-gray-400 mb-2">Curating premium selection...</p>
+                </div>
               </div>
             ) : featuredCars.length > 0 ? (
               <HeroCarousel 
@@ -245,71 +242,69 @@ export function HomePage() {
                 onCarSelect={setSelectedCar}
               />
             ) : (
-              <div className="w-full flex items-center justify-center bg-slate-800">
+              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900">
                 <p className="text-gray-400">No vehicles available</p>
               </div>
             )}
           </div>
 
-          {/* Right - Content */}
-          <div className="w-full md:w-1/2 lg:w-2/5 h-full flex items-center px-4 sm:px-8 lg:px-12 py-12">
-            <div className="w-full space-y-8">
+          {/* Right - Premium Content */}
+          <div className="w-full lg:w-2/5 h-auto lg:h-[80vh] flex flex-col justify-center px-6 sm:px-8 lg:px-10 py-8 lg:py-16 bg-gradient-to-b lg:bg-gradient-to-r from-[#001F3F]/50 to-transparent overflow-y-auto lg:overflow-y-visible">
+            <div className="w-full max-w-xl space-y-8">
+              {/* Premium Badge */}
+              <div className="inline-flex items-center gap-2 bg-[#FFD700]/10 border border-[#FFD700]/30 rounded-full px-4 py-2 w-fit">
+                <span className="text-[#FFD700] text-xs font-bold uppercase tracking-widest">Premium Selection</span>
+              </div>
+
+              {/* Main Heading */}
               <div>
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 text-white">
-                  Drive the Future
+                <h1 className="text-3xl sm:text-4xl lg:text-6xl font-black leading-tight mb-4 text-white drop-shadow-lg">
+                  Luxury Awaits
                 </h1>
-                <p className="text-base md:text-lg text-[#FFD700] leading-relaxed max-w-lg font-medium min-h-[2rem] transition-all duration-500">
+                <p className="text-sm sm:text-base text-gray-300 leading-relaxed max-w-lg font-medium min-h-[3rem] transition-all duration-500">
                   {marketingTexts[currentMarketingText]}
                 </p>
               </div>
 
-              <div className="flex flex-wrap gap-4">
+              {/* Premium CTA Buttons */}
+              <div className="flex flex-col sm:flex-row gap-3 pt-4">
                 <button
                   onClick={() => setContactFormOpen(true)}
-                  className="bg-[#FFD700] text-[#001F3F] px-8 py-3 font-semibold hover:bg-[#FFC700] transition-all duration-200 shadow-lg hover:shadow-xl"
+                  className="bg-[#FFD700] hover:bg-[#FFC700] text-[#001F3F] px-8 py-4 font-bold uppercase tracking-widest transition-all duration-300 shadow-xl hover:shadow-2xl hover:shadow-[#FFD700]/30 group flex items-center justify-center gap-2 rounded-lg"
                 >
                   Reserve Now
+                  <span className="text-lg group-hover:translate-x-1 transition-transform duration-300">→</span>
                 </button>
                 <button
                   onClick={() => setTestDriveOpen(true)}
-                  className="bg-[#001F3F] text-[#FFD700] px-8 py-3 font-semibold hover:bg-[#002855] transition-all duration-200 border-2 border-[#FFD700]"
+                  className="bg-transparent hover:bg-white/10 text-white px-8 py-4 font-bold uppercase tracking-widest border-2 border-[#FFD700] transition-all duration-300 rounded-lg hover:shadow-lg hover:shadow-[#FFD700]/20"
                 >
                   Test Drive
                 </button>
-                <button
-                  onClick={() => navigate('/explore')}
-                  className="border-2 border-white text-white px-8 py-3 font-semibold hover:bg-white hover:text-slate-900 transition-all duration-200"
-                >
-                  Browse Cars
-                </button>
               </div>
 
-              {/* Dynamic Stats */}
-              <div className="grid grid-cols-3 gap-6 pt-8 border-t border-slate-700">
-                <div>
-                  <div className="text-2xl sm:text-3xl font-bold text-[#FFD700]">
-                    {selectedCar?.price ? `${(selectedCar.price / 1000).toFixed(0)}k` : '620mi'}
-                  </div>
-                  <div className="text-xs sm:text-sm text-slate-300">
-                    {selectedCar?.price ? 'Price' : 'Mile Range'}
-                  </div>
+              {/* Secondary CTA */}
+              <button
+                onClick={() => navigate('/explore')}
+                className="text-gray-400 hover:text-white font-semibold text-sm uppercase tracking-widest transition-colors duration-300 flex items-center gap-2 group"
+              >
+                <span>Explore All Vehicles</span>
+                <span className="group-hover:translate-x-1 transition-transform duration-300">→</span>
+              </button>
+
+              {/* Trust Indicators - Mobile optimized */}
+              <div className="grid grid-cols-3 gap-4 pt-8 border-t border-white/10">
+                <div className="text-center">
+                  <div className="text-2xl sm:text-3xl font-black text-[#FFD700] mb-1">50+</div>
+                  <div className="text-xs text-slate-400">Cars Listed</div>
                 </div>
-                <div>
-                  <div className="text-2xl sm:text-3xl font-bold text-[#FFD700]">
-                    {selectedCar?.mileage ? `${selectedCar.mileage}` : '1.9s'}
-                  </div>
-                  <div className="text-xs sm:text-sm text-slate-300">
-                    {selectedCar?.mileage ? 'Mileage' : '0-60 mph'}
-                  </div>
+                <div className="text-center">
+                  <div className="text-2xl sm:text-3xl font-black text-[#FFD700] mb-1">24/7</div>
+                  <div className="text-xs text-slate-400">Support</div>
                 </div>
-                <div>
-                  <div className="text-2xl sm:text-3xl font-bold text-[#FFD700]">
-                    {selectedCar?.fuelType ? selectedCar.fuelType.substring(0, 3) : '+250'}
-                    {!selectedCar?.fuelType && 'mph'}
-                  </div>
-                  <div className="text-xs sm:text-sm text-slate-300">
-                    {selectedCar?.fuelType ? 'Fuel Type' : 'Top Speed'}
-                  </div>
+                <div className="text-center">
+                  <div className="text-2xl sm:text-3xl font-black text-[#FFD700] mb-1">100%</div>
+                  <div className="text-xs text-slate-400">Verified</div>
                 </div>
               </div>
             </div>

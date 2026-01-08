@@ -8,9 +8,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Badge } from '../../components/ui/badge';
 import { Alert, AlertDescription } from '../../components/ui/alert';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../../components/ui/collapsible';
-import { Upload, X, Save, ChevronDown } from 'lucide-react';
+import { Upload, X, Save, ChevronDown, MapPin, Star, Image as ImageIcon } from 'lucide-react';
 import { StorageImage } from '@components/figma/StorageImage';
 import { formatFileSize } from '../../utils/imageCompression';
+import { LocationMapPicker } from './LocationMapPicker';
 
 interface FormData {
   make: string;
@@ -130,28 +131,42 @@ export const AddEditListingForm: React.FC<AddEditListingFormProps> = ({
 
             <div>
               <Label htmlFor="year">Year *</Label>
-              <Input
-                id="year"
-                type="number"
-                value={formData.year}
-                onChange={(e) => onInputChange('year', parseInt(e.target.value))}
-                min="1900"
-                max={new Date().getFullYear() + 1}
-                className={`border-2 rounded-lg ${errors.year ? 'border-red-500' : 'border-slate-200'}`}
-              />
+              <Select value={formData.year.toString()} onValueChange={(value) => onInputChange('year', parseInt(value))}>
+                <SelectTrigger className={`border-2 rounded-lg ${errors.year ? 'border-red-500' : 'border-slate-200'}`}>
+                  <SelectValue placeholder="Select year" />
+                </SelectTrigger>
+                <SelectContent>
+                  {(() => {
+                    const years = [];
+                    const currentYear = new Date().getFullYear();
+                    for (let i = currentYear + 1; i >= 1900; i--) {
+                      years.push(i);
+                    }
+                    return years.map((year) => (
+                      <SelectItem key={year} value={year.toString()}>
+                        {year}
+                      </SelectItem>
+                    ));
+                  })()}
+                </SelectContent>
+              </Select>
               {errors.year && <p className="text-sm text-red-500 mt-1">{errors.year}</p>}
             </div>
 
             <div>
-              <Label htmlFor="price">Price ($) *</Label>
-              <Input
-                id="price"
-                type="number"
-                value={formData.price}
-                onChange={(e) => onInputChange('price', parseInt(e.target.value))}
-                min="0"
-                className={`border-2 rounded-lg ${errors.price ? 'border-red-500' : 'border-slate-200'}`}
-              />
+              <Label htmlFor="price">Price (GHS) *</Label>
+              <div className="relative">
+                <span className="absolute left-3 top-3 text-slate-600 font-semibold">₵</span>
+                <Input
+                  id="price"
+                  type="number"
+                  value={formData.price}
+                  onChange={(e) => onInputChange('price', parseInt(e.target.value) || 0)}
+                  min="0"
+                  className={`border-2 rounded-lg pl-8 ${errors.price ? 'border-red-500' : 'border-slate-200'}`}
+                  placeholder="0.00"
+                />
+              </div>
               {errors.price && <p className="text-sm text-red-500 mt-1">{errors.price}</p>}
             </div>
 
@@ -204,7 +219,7 @@ export const AddEditListingForm: React.FC<AddEditListingFormProps> = ({
                   <SelectValue placeholder="Select fuel type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Gasoline">Gasoline</SelectItem>
+                  <SelectItem value="Petrol">Petrol</SelectItem>
                   <SelectItem value="Diesel">Diesel</SelectItem>
                   <SelectItem value="Hybrid">Hybrid</SelectItem>
                   <SelectItem value="Electric">Electric</SelectItem>
@@ -248,22 +263,24 @@ export const AddEditListingForm: React.FC<AddEditListingFormProps> = ({
 
           <div>
             <Label htmlFor="description">Description (minimum 3 lines) *</Label>
-            <Textarea
-              id="description"
-              value={formData.description}
-              onChange={(e) => onInputChange('description', e.target.value)}
-              placeholder="Describe the car's features, history, and condition... (at least 3 lines)"
-              rows={5}
-              className={`border-2 rounded-lg ${errors.description ? 'border-red-500' : 'border-slate-200'}`}
-            />
+            <div className={`border-2 rounded-lg ${errors.description ? 'border-red-500' : 'border-slate-200'} h-32 overflow-y-auto`}>
+              <Textarea
+                id="description"
+                value={formData.description}
+                onChange={(e) => onInputChange('description', e.target.value)}
+                placeholder="This is a beautiful [MAKE] [MODEL] in excellent condition. The vehicle has been well-maintained with service records available. Features include [LIST FEATURES], cruise control, and more. The interior is clean and the exterior shows minimal wear. Perfect for [TYPE OF BUYER]. Priced competitively at $[PRICE]. Contact us for test drive."
+                rows={10}
+                className={`border-0 rounded-none resize-none`}
+              />
+            </div>
             {errors.description && <p className="text-sm text-red-500 mt-1">{errors.description}</p>}
           </div>
         </div>
 
-        {/* ===== SECTION 2: TECHNICAL DETAILS ===== */}
+        {/* ===== SECTION 2: TECHNICAL DETAILS (OPTIONAL) ===== */}
         <div className="border-2 border-slate-200 rounded-xl p-6 space-y-4">
           <h2 className="text-xl font-bold text-[#001F3F]">
-            Technical Details
+            Technical Details (Optional)
           </h2>
 
           {/* Engine Collapsible */}
@@ -489,98 +506,26 @@ export const AddEditListingForm: React.FC<AddEditListingFormProps> = ({
           </Collapsible>
         </div>
 
-        {/* ===== SECTION 3: LOCATION & FEATURES ===== */}
+        {/* ===== SECTION 3: LOCATION ===== */}
         <div className="border-2 border-slate-200 rounded-xl p-6 space-y-4">
-          <h2 className="text-xl font-bold text-[#001F3F]">
-            📍 Location & Features
+          <h2 className="text-xl font-bold text-[#001F3F] flex items-center gap-2">
+            <MapPin className="h-5 w-5" />
+            Location
+          </h2>
+          <LocationMapPicker
+            location={formData.location}
+            onLocationChange={(location) => onInputChange('location', location)}
+          />
+        </div>
+
+        {/* ===== SECTION 4: FEATURES ===== */}
+        <div className="border-2 border-slate-200 rounded-xl p-6 space-y-4">
+          <h2 className="text-xl font-bold text-[#001F3F] flex items-center gap-2">
+            <Star className="h-5 w-5" />
+            Features
           </h2>
 
-          {/* Location Information */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4 border-b border-slate-200">
-            <div>
-              <Label htmlFor="address">Address</Label>
-              <Input
-                id="address"
-                value={formData.location.address}
-                onChange={(e) =>
-                  onInputChange('location', {
-                    ...formData.location,
-                    address: e.target.value
-                  })
-                }
-                placeholder="Vehicle location address"
-                className="border-2 rounded-lg border-slate-200"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="city">City</Label>
-              <Input
-                id="city"
-                value={formData.location.city}
-                onChange={(e) =>
-                  onInputChange('location', {
-                    ...formData.location,
-                    city: e.target.value
-                  })
-                }
-                placeholder="City"
-                className="border-2 rounded-lg border-slate-200"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="country">Country</Label>
-              <Input
-                id="country"
-                value={formData.location.country}
-                onChange={(e) =>
-                  onInputChange('location', {
-                    ...formData.location,
-                    country: e.target.value
-                  })
-                }
-                placeholder="Country"
-                className="border-2 rounded-lg border-slate-200"
-              />
-            </div>
-
-            <div>
-              <Label>Coordinates (Latitude, Longitude)</Label>
-              <div className="flex gap-2">
-                <Input
-                  type="number"
-                  value={formData.location.latitude}
-                  onChange={(e) =>
-                    onInputChange('location', {
-                      ...formData.location,
-                      latitude: parseFloat(e.target.value) || 0
-                    })
-                  }
-                  placeholder="Latitude"
-                  step="0.000001"
-                  className="border-2 rounded-lg border-slate-200 flex-1"
-                />
-                <Input
-                  type="number"
-                  value={formData.location.longitude}
-                  onChange={(e) =>
-                    onInputChange('location', {
-                      ...formData.location,
-                      longitude: parseFloat(e.target.value) || 0
-                    })
-                  }
-                  placeholder="Longitude"
-                  step="0.000001"
-                  className="border-2 rounded-lg border-slate-200 flex-1"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Features */}
           <div className="space-y-3">
-            <Label>Features</Label>
             <div className="flex gap-2">
               <Input
                 value={featureInput}
@@ -610,7 +555,8 @@ export const AddEditListingForm: React.FC<AddEditListingFormProps> = ({
         {/* ===== IMAGES SECTION ===== */}
         <div className="border-2 border-slate-200 rounded-xl p-6 space-y-4">
           <h2 className="text-lg font-bold text-[#001F3F] flex items-center gap-2">
-            📸 Images (Minimum 10 required) - {formData.existingImages.length + formData.images.length}/10
+            <ImageIcon className="h-5 w-5" />
+            Images (Minimum 6 required) - {formData.existingImages.length + formData.images.length}/6
           </h2>
 
           <div className="space-y-4">
@@ -632,7 +578,7 @@ export const AddEditListingForm: React.FC<AddEditListingFormProps> = ({
                   <Upload className="h-10 w-10 mx-auto text-[#FFD700]" />
                   <div>
                     <p className="text-sm font-medium text-slate-700">Click to upload images</p>
-                    <p className="text-xs text-slate-500">PNG, JPG, JPEG (auto-compressed, max 5MB each)</p>
+                    <p className="text-xs text-slate-500">PNG, JPG, JPEG (auto-compressed, max 30MB each)</p>
                   </div>
                 </div>
               </label>
@@ -642,37 +588,50 @@ export const AddEditListingForm: React.FC<AddEditListingFormProps> = ({
             {/* Image Previews */}
             {(formData.existingImages.length > 0 || formData.images.length > 0) && (
               <div className="space-y-3">
-                <h4 className="text-sm font-medium text-slate-700">Image Preview ({formData.existingImages.length + formData.images.length}/10)</h4>
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-medium text-slate-700">Image Preview ({formData.existingImages.length + formData.images.length}/6)</h4>
+                  <p className="text-xs text-slate-500">Click on an image to set as primary for hero section</p>
+                </div>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {/* Existing Images */}
-                  {formData.existingImages.map((url, index) => (
-                    <div key={`existing-${index}`} className="relative group">
-                      <div className="aspect-square rounded-lg overflow-hidden border-2 border-slate-200 bg-slate-100">
-                        <StorageImage
-                          src={url}
-                          alt={`Car image ${index + 1}`}
-                          className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                        />
+                  {formData.existingImages.map((url, index) => {
+                    const isPrimary = formData.primaryImageIndex === index;
+                    return (
+                      <div key={`existing-${index}`} className={`relative group cursor-pointer transition-all duration-200 ${isPrimary ? 'ring-4 ring-[#FFD700]' : ''}`}
+                        onClick={() => onImageChange('primaryImageIndex', index)}>
+                        <div className="aspect-square rounded-lg overflow-hidden border-2 border-slate-200 bg-slate-100 hover:border-[#FFD700] transition-colors duration-200">
+                          <StorageImage
+                            src={url}
+                            alt={`Car image ${index + 1}`}
+                            className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onRemoveImage(index, true);
+                          }}
+                          className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-lg"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                        <div className="absolute bottom-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded backdrop-blur-sm">
+                          {isPrimary ? '★ Primary' : 'Saved'}
+                        </div>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => onRemoveImage(index, true)}
-                        className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-lg"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                      <div className="absolute bottom-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded backdrop-blur-sm">
-                        Saved
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
 
                   {/* New Images */}
                   {formData.images.map((file, index) => {
+                    const existingCount = formData.existingImages.length;
+                    const isPrimary = formData.primaryImageIndex === existingCount + index;
                     const url = URL.createObjectURL(file);
                     return (
-                      <div key={`new-${index}`} className="relative group">
-                        <div className="aspect-square rounded-lg overflow-hidden border-2 border-[#FFD700] bg-slate-100">
+                      <div key={`new-${index}`} className={`relative group cursor-pointer transition-all duration-200 ${isPrimary ? 'ring-4 ring-[#FFD700]' : ''}`}
+                        onClick={() => onImageChange('primaryImageIndex', existingCount + index)}>
+                        <div className="aspect-square rounded-lg overflow-hidden border-2 border-[#FFD700] bg-slate-100 hover:border-[#FFC700] transition-colors duration-200">
                           <img
                             src={url}
                             alt={`New car image ${index + 1}`}
@@ -681,7 +640,8 @@ export const AddEditListingForm: React.FC<AddEditListingFormProps> = ({
                         </div>
                         <button
                           type="button"
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.stopPropagation();
                             onRemoveImage(index, false);
                             URL.revokeObjectURL(url);
                           }}
@@ -690,7 +650,7 @@ export const AddEditListingForm: React.FC<AddEditListingFormProps> = ({
                           <X className="h-3 w-3" />
                         </button>
                         <div className="absolute bottom-2 left-2 bg-[#FFD700]/80 text-[#001F3F] text-xs px-2 py-1 rounded backdrop-blur-sm font-semibold">
-                          New ({formatFileSize(file.size)})
+                          {isPrimary ? '★ Primary' : `New (${formatFileSize(file.size)})`}
                         </div>
                       </div>
                     );

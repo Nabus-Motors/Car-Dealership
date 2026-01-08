@@ -429,8 +429,8 @@ export function ExplorePage() {
                     <div className="space-y-4">
                       <div className="space-y-3">
                         <div className="flex justify-between items-center">
-                          <label className="text-xs md:text-sm font-medium text-slate-700">Min: ${tempFilters.priceRange[0].toLocaleString()}</label>
-                          <label className="text-xs md:text-sm font-medium text-slate-700">Max: ${tempFilters.priceRange[1].toLocaleString()}</label>
+                          <label className="text-xs md:text-sm font-medium text-slate-700">Min: ₵{tempFilters.priceRange[0].toLocaleString()}</label>
+                          <label className="text-xs md:text-sm font-medium text-slate-700">Max: ₵{tempFilters.priceRange[1].toLocaleString()}</label>
                         </div>
                         <Slider
                           value={tempFilters.priceRange}

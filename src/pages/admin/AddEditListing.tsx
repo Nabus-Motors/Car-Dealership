@@ -25,6 +25,7 @@ interface FormData {
   features: string[];
   images: File[];
   existingImages: string[];
+  primaryImageIndex: number;
   status: 'draft' | 'published' | 'sold' | 'new';
   category?: 'Registered' | 'Unregistered';
   technical: {
@@ -48,6 +49,7 @@ interface FormData {
     };
   };
   location: {
+    name: string;
     address: string;
     latitude: number;
     longitude: number;
@@ -74,10 +76,11 @@ export const AddEditListing: React.FC = () => {
     transmission: '',
     fuelType: '',
     condition: '',
-    description: '',
+    description: 'This is a beautiful [MAKE] [MODEL] in excellent condition. The vehicle has been well-maintained with service records available. Features include [LIST FEATURES], cruise control, and more. The interior is clean and the exterior shows minimal wear. Perfect for [TYPE OF BUYER]. Priced competitively at $[PRICE]. Contact us for test drive.',
     features: [],
     images: [],
     existingImages: [],
+    primaryImageIndex: 0,
     status: 'draft',
     category: undefined,
     technical: {
@@ -101,11 +104,12 @@ export const AddEditListing: React.FC = () => {
       }
     },
     location: {
-      address: '',
-      latitude: 0,
-      longitude: 0,
-      city: '',
-      country: ''
+      name: 'Nabus Motors',
+      address: 'Olusegun Obasanjo Wy, Accra',
+      latitude: 5.6037,
+      longitude: -0.1870,
+      city: 'Accra',
+      country: 'Ghana'
     }
   });
 
@@ -138,8 +142,7 @@ export const AddEditListing: React.FC = () => {
           description: car.description || '',
           features: car.features || [],
           images: [],
-          existingImages: existing,
-          status: car.status || 'draft',
+          existingImages: existing,          primaryImageIndex: 0,          status: car.status || 'draft',
           category: (car as any).category,
           technical: car.technical ? {
             engine: { ...(car.technical.engine || {}), cylinders: car.technical.engine?.cylinders || '', displacement: car.technical.engine?.displacement || '', driveLayout: car.technical.engine?.driveLayout || '', horsepower: car.technical.engine?.horsepower || '', rpm: car.technical.engine?.rpm || '', torque: car.technical.engine?.torque || '', compressionRatio: car.technical.engine?.compressionRatio || '', fuelType: car.technical.engine?.fuelType || '' },
@@ -151,17 +154,19 @@ export const AddEditListing: React.FC = () => {
             transmission: { type: '', displacement: '' }
           },
           location: car.location ? {
-            address: car.location.address || '',
-            latitude: car.location.latitude || 0,
-            longitude: car.location.longitude || 0,
-            city: car.location.city || '',
-            country: car.location.country || ''
+            name: car.location.name || 'Nabus Motors',
+            address: car.location.address || 'Olusegun Obasanjo Wy, Accra',
+            latitude: car.location.latitude || 5.6037,
+            longitude: car.location.longitude || -0.1870,
+            city: car.location.city || 'Accra',
+            country: car.location.country || 'Ghana'
           } : {
-            address: '',
-            latitude: 0,
-            longitude: 0,
-            city: '',
-            country: ''
+            name: 'Nabus Motors',
+            address: 'Olusegun Obasanjo Wy, Accra',
+            latitude: 5.6037,
+            longitude: -0.1870,
+            city: 'Accra',
+            country: 'Ghana'
           }
         });
       }
@@ -191,10 +196,10 @@ export const AddEditListing: React.FC = () => {
       newErrors.description = 'Description must be at least 3 lines';
     }
 
-    // Image validation - minimum 10 images
+    // Image validation - minimum 6 images
     const totalImages = formData.existingImages.length + formData.images.length;
-    if (totalImages < 10) {
-      newErrors.images = `Minimum 10 images required (${totalImages}/10)`;
+    if (totalImages < 6) {
+      newErrors.images = `Minimum 6 images required (${totalImages}/6)`;
     }
 
     setErrors(newErrors);
@@ -211,10 +216,10 @@ export const AddEditListing: React.FC = () => {
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     
-    // Check if adding these files would exceed 10 total
+    // Check if adding these files would exceed 6 total
     const totalAfterUpload = formData.existingImages.length + formData.images.length + files.length;
-    if (totalAfterUpload > 10) {
-      toast.error(`Maximum 10 images allowed. You would have ${totalAfterUpload} images.`);
+    if (totalAfterUpload > 6) {
+      toast.error(`Maximum 6 images allowed. You would have ${totalAfterUpload} images.`);
       return;
     }
 
