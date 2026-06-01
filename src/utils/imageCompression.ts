@@ -1,106 +1,102 @@
-/**
- * Image Compression Utility
- * Provides lossy compression for images while maintaining quality and respecting size caps
- */
+/* Image compression configuration and utilities */
 
-const MAX_IMAGE_SIZE = 2 * 1024 * 1024; // 2MB max per image
-const QUALITY_STEPS = [0.9, 0.8, 0.7, 0.6, 0.5, 0.4]; // Quality levels to try
+export const MAX_CARD_WIDTH = 600;
+export const MAX_HERO_WIDTH = 1920;
+export const MAX_THUMB_WIDTH = 200;
+export const JPEG_QUALITY = 0.82;
 
 /**
- * Compress image file to meet size requirements
- * Uses canvas-based lossy compression with quality adjustment
- * @param file - Image file to compress
- * @param maxSize - Maximum file size in bytes (default 2MB)
- * @returns Compressed image as File object
+ * Compress an image file to a smaller size while maintaining quality
+ * @param file - The image file to compress
+ * @param maxWidth - Maximum width of the output image (default: 600px)
+ * @param quality - JPEG compression quality 0-1 (default: 0.82)
+ * @returns Promise resolving to the compressed File
  */
 export async function compressImage(
   file: File,
-  maxSize: number = MAX_IMAGE_SIZE
+  maxWidth: number = MAX_CARD_WIDTH,
+  quality: number = JPEG_QUALITY
 ): Promise<File> {
   return new Promise((resolve, reject) => {
-    // If file is already small enough, return as-is
-    if (file.size <= maxSize) {
-      resolve(file);
-      return;
-    }
-
     const reader = new FileReader();
-    reader.readAsDataURL(file);
 
     reader.onload = (event) => {
       const img = new Image();
-      img.src = event.target?.result as string;
-
       img.onload = () => {
-        // Start with highest quality and reduce if necessary
-        let compressedFile: File | null = null;
-        let qualityIndex = 0;
+        // Calculate new dimensions maintaining aspect ratio
+        let width = img.width;
+        let height = img.height;
 
-        const tryCompress = () => {
-          const quality = QUALITY_STEPS[qualityIndex];
-          const canvas = document.createElement('canvas');
-          
-          // Calculate dimensions to reduce file size
-          let width = img.width;
-          let height = img.height;
-          
-          // If quality is too low, reduce dimensions
-          if (qualityIndex > 2) {
-            width = Math.floor(width * 0.9);
-            height = Math.floor(height * 0.9);
-          }
-          
-          canvas.width = width;
-          canvas.height = height;
+        if (width > maxWidth) {
+          height = (height * maxWidth) / width;
+          width = maxWidth;
+        }
 
-          const ctx = canvas.getContext('2d');
-          if (!ctx) {
-            reject(new Error('Failed to get canvas context'));
-            return;
-          }
+        // Create canvas and draw image
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
 
-          ctx.drawImage(img, 0, 0, width, height);
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          reject(new Error('Failed to get canvas context'));
+          return;
+        }
 
-          canvas.toBlob(
-            (blob) => {
-              if (!blob) {
-                reject(new Error('Failed to create blob'));
-                return;
-              }
+        ctx.drawImage(img, 0, 0, width, height);
 
-              // Check if file meets size requirement
-              if (blob.size <= maxSize || qualityIndex >= QUALITY_STEPS.length - 1) {
-                // Preserve original filename and extension
-                const extension = file.name.split('.').pop() || 'jpg';
-                const compressedFileName = `compressed_${Date.now()}.${extension}`;
-                compressedFile = new File([blob], compressedFileName, {
-                  type: file.type,
-                  lastModified: Date.now()
-                });
-                resolve(compressedFile);
-              } else {
-                // Try next quality level
-                qualityIndex++;
-                tryCompress();
-              }
-            },
-            'image/jpeg',
-            quality
-          );
-        };
+        // Convert to blob with compression
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              reject(new Error('Failed to compress image'));
+              return;
+            }
 
-        tryCompress();
+            // Create new File from blob
+            const compressedFile = new File(
+              [blob],
+              file.name.replace(/\.[^/.]+$/, '.jpg'),
+              { type: 'image/jpeg', lastModified: Date.now() }
+            );
+
+            resolve(compressedFile);
+          },
+          'image/jpeg',
+          quality
+        );
       };
 
       img.onerror = () => {
         reject(new Error('Failed to load image'));
       };
+
+      img.src = event.target?.result as string;
     };
 
     reader.onerror = () => {
       reject(new Error('Failed to read file'));
     };
+
+    reader.readAsDataURL(file);
   });
+}
+
+/**
+ * Compress multiple images in parallel
+ * @param files - Array of image files to compress
+ * @param maxWidth - Maximum width for all images
+ * @param quality - Compression quality for all images
+ * @returns Promise resolving to array of compressed Files
+ */
+export async function compressImages(
+  files: File[],
+  maxWidth: number = MAX_CARD_WIDTH,
+  quality: number = JPEG_QUALITY
+): Promise<File[]> {
+  return Promise.all(
+    files.map((file) => compressImage(file, maxWidth, quality))
+  );
 }
 
 /**

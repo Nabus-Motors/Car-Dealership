@@ -1,14 +1,13 @@
-import { useParams, useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import { formatPrice } from '@utils/format';
-import { StorageImage } from '@components/figma/StorageImage';
-import { Button } from '@components/ui/button';
-import { ContactFormDialog } from '@components/ContactFormDialog';
-import { db, COLLECTIONS } from '@/firebase/firebase';
-import { doc, getDoc, collection, query, where, limit, getDocs } from 'firebase/firestore';
-import { ChevronLeft, ChevronRight, Gauge, MapPin } from 'lucide-react';
-import { CarCard } from '@components/CarCard';
-import type { Car } from '@/types/car';
+import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { formatPrice, formatMileage } from "@/utils/format";
+import { db, COLLECTIONS } from "@/firebase/firebase";
+import { doc, getDoc, collection, query, where, limit, getDocs } from "firebase/firestore";
+import { CarCard } from "@/components/CarCard";
+import OptimizedImage from "@/components/OptimizedImage";
+import { ContactFormDialog } from "@/components/ContactFormDialog";
+import { TestDriveDialog } from "@/components/TestDriveDialog";
+import type { Car } from "@/types/car";
 
 export default function CarDetailsPage() {
   const { carId } = useParams<{ carId: string }>();
@@ -17,8 +16,9 @@ export default function CarDetailsPage() {
   const [similarCars, setSimilarCars] = useState<Car[]>([]);
   const [loading, setLoading] = useState(true);
   const [imageIndex, setImageIndex] = useState(0);
+  const [activeTab, setActiveTab] = useState<"overview" | "technical" | "location">("overview");
   const [contactFormOpen, setContactFormOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'technical' | 'location'>('overview');
+  const [testDriveOpen, setTestDriveOpen] = useState(false);
 
   useEffect(() => {
     const fetchCarDetails = async () => {
@@ -27,32 +27,34 @@ export default function CarDetailsPage() {
           setLoading(false);
           return;
         }
-        
+
         const carRef = doc(db, COLLECTIONS.CARS, carId);
         const carSnap = await getDoc(carRef);
-        
+
         if (carSnap.exists()) {
           const carData = { id: carSnap.id, ...carSnap.data() } as Car;
           setCar(carData);
-          
+
           // Fetch similar cars by brand
           try {
             const similarSnap = await getDocs(
-              query(collection(db, COLLECTIONS.CARS), where('brand', '==', carData.brand), limit(6))
+              query(
+                collection(db, COLLECTIONS.CARS),
+                where("brand", "==", carData.brand),
+                limit(6)
+              )
             );
             const similar = similarSnap.docs
-              .filter(d => d.id !== carId)
-              .slice(0, 4)
-              .map(d => ({ id: d.id, ...d.data() } as Car));
+              .filter((d) => d.id !== carId)
+              .slice(0, 3)
+              .map((d) => ({ id: d.id, ...d.data() } as Car));
             setSimilarCars(similar);
           } catch (err) {
-            console.warn('Failed to fetch similar cars:', err);
+            console.warn("Failed to fetch similar cars:", err);
           }
-        } else {
-          console.error('Car not found');
         }
       } catch (error) {
-        console.error('Error fetching car details:', error);
+        console.error("Error fetching car details:", error);
       } finally {
         setLoading(false);
       }
@@ -65,8 +67,8 @@ export default function CarDetailsPage() {
     return (
       <div className="pt-20 min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-slate-900 border-t-transparent animate-spin mx-auto"></div>
-          <p className="text-slate-600 mt-4 font-bold">Loading car details...</p>
+          <div className="w-12 h-12 border-4 border-[#0A0A0A] border-t-transparent animate-spin mx-auto"></div>
+          <p className="text-gray-600 mt-4 font-bold">Loading car details...</p>
         </div>
       </div>
     );
@@ -76,321 +78,252 @@ export default function CarDetailsPage() {
     return (
       <div className="pt-20 min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
-          <p className="text-slate-600 font-bold">Car not found</p>
-          <Button onClick={() => navigate('/explore')} className="mt-4 bg-slate-900 text-white hover:bg-slate-800 font-semibold">
+          <p className="text-gray-600 font-bold mb-4">Car not found</p>
+          <button
+            onClick={() => navigate("/explore")}
+            className="bg-[#0A0A0A] text-white px-6 py-2 rounded font-semibold hover:bg-gray-800"
+          >
             Back to Inventory
-          </Button>
+          </button>
         </div>
       </div>
     );
   }
 
   const images = car.imageUrls ?? [];
-  const nextImage = () => setImageIndex((i) => (i + 1) % Math.max(images.length, 1));
-  const prevImage = () => setImageIndex((i) => (i - 1 + Math.max(images.length, 1)) % Math.max(images.length, 1));
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Hero Section with Background Image - REDUCED HEIGHT */}
-      <section className="relative h-64 md:h-80 lg:h-96 bg-[#050F1F] text-white overflow-hidden">
-        {/* Background Image */}
-        <div className="absolute inset-0">
-          {images.length > 0 ? (
-            <StorageImage
-              src={images[imageIndex]}
-              alt={`${car.brand} ${car.model}`}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="w-full h-full bg-gradient-to-br from-[#001F3F] to-[#002855]" />
-          )}
-          <div className="absolute inset-0 bg-black/55 backdrop-blur-sm"></div>
-        </div>
-
-        {/* Hero Content */}
-        <div className="relative h-full flex items-center pt-16 md:pt-0">
-          <div className="container mx-auto px-4 max-w-7xl w-full">
-            <button 
-              onClick={() => navigate(-1)} 
-              className="flex items-center gap-2 text-[#FFD700] hover:text-white transition-colors mb-4 font-semibold text-sm sm:text-base"
-            >
-              <ChevronLeft className="w-5 h-5" />
-              Back
-            </button>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-2">
+      {/* Page Hero */}
+      <section className="pt-20 pb-12 bg-gradient-to-b from-[#F9F9F7] to-white border-b border-[#E8E8E8]">
+        <div className="container mx-auto px-4 md:px-6 lg:px-8">
+          <div className="text-center mb-8">
+            <p className="text-sm font-bold text-[#888] uppercase tracking-[2px] mb-2">
+              Vehicle Details
+            </p>
+            <h1 className="text-4xl md:text-5xl font-900 text-[#1C1C1E] mb-3">
               {car.year} {car.brand} {car.model}
             </h1>
-            <p className="text-[#FFD700] text-xl font-semibold">{formatPrice(car.price)}</p>
+            <p className="text-sm text-[#888]">
+              Stock: {car.id?.slice(0, 8).toUpperCase()}
+            </p>
           </div>
         </div>
       </section>
 
       {/* Main Content */}
-      <div className="pt-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Image Gallery - Left/Top */}
-          <div className="lg:col-span-2 space-y-4">
-            {/* Main Image */}
-            <div className="relative overflow-hidden bg-slate-100 group shadow-lg">
-              <div className="aspect-video">
-                {images.length > 0 ? (
-                  <StorageImage
-                    src={images[imageIndex]}
-                    alt={`${car.brand} ${car.model}`}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-slate-300 to-slate-400 flex items-center justify-center">
-                    <div className="text-center">
-                      <Gauge className="w-16 h-16 text-slate-500 mx-auto mb-4" />
-                      <p className="text-slate-600">No images available</p>
-                    </div>
-                  </div>
-                )}
+      <div className="container mx-auto px-4 md:px-6 lg:px-8 py-12">
+        <div className="car-detail-grid">
+          {/* LEFT: Images + Specs + Info */}
+          <div className="detail-left">
+            {/* Main Gallery */}
+            <div className="gallery-main">
+              <div className="gallery-ribbon">
+                {car.condition === "New" ? "NEW" : "USED"}
               </div>
-
-              {/* Navigation Arrows */}
-              {images.length > 1 && (
-                <>
-                  <button
-                    onClick={prevImage}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-[#001F3F]/70 hover:bg-[#001F3F] text-white p-3 transition-all z-10"
-                    aria-label="Previous image"
-                  >
-                    <ChevronLeft className="w-6 h-6" />
-                  </button>
-                  <button
-                    onClick={nextImage}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-[#001F3F]/70 hover:bg-[#001F3F] text-white p-3 transition-all z-10"
-                    aria-label="Next image"
-                  >
-                    <ChevronRight className="w-6 h-6" />
-                  </button>
-                  <div className="absolute bottom-4 right-4 bg-[#001F3F]/90 text-[#FFD700] px-3 py-1 text-sm font-bold">
-                    {imageIndex + 1} / {images.length}
-                  </div>
-                </>
-              )}
+              <OptimizedImage
+                src={images[imageIndex]}
+                alt={`${car.year} ${car.brand} ${car.model}`}
+                priority={true}
+                aspectRatio="16/9"
+                className="w-full h-full"
+              />
+              <button className="gallery-video-btn">? Watch Video</button>
+              <button className="gallery-save-btn" aria-label="Save to wishlist">
+                ?
+              </button>
             </div>
 
-            {/* Thumbnails */}
-            {images.length > 1 && (
-              <div className="flex gap-2 overflow-x-auto pb-2">
-                {images.map((image, i) => (
+            {/* Thumbnail Gallery */}
+            <div className="gallery-thumbs">
+              {images.length > 0 ? (
+                images.map((img, idx) => (
                   <button
-                    key={i}
-                    onClick={() => setImageIndex(i)}
-                    className={`flex-shrink-0 w-20 h-20 overflow-hidden border transition-all ${
-                      i === imageIndex ? 'border-2 border-slate-900 shadow-md' : 'border border-slate-300 hover:border-slate-400'
-                    }`}
+                    key={idx}
+                    onClick={() => setImageIndex(idx)}
+                    className={`thumb-img-container ${idx === imageIndex ? "active" : ""}`}
                   >
-                    <StorageImage src={image} alt={`Thumbnail ${i + 1}`} className="w-full h-full object-cover" />
+                    <OptimizedImage
+                      src={img}
+                      alt={`Thumbnail ${idx}`}
+                      priority={false}
+                      aspectRatio="1/1"
+                      className="w-full h-full"
+                    />
                   </button>
-                ))}
-              </div>
-            )}
-
-            {/* Specs Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 bg-white p-8 rounded-lg border border-slate-200">
-              <div>
-                <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-2">Transmission</p>
-                <p className="text-lg font-bold text-slate-900">{car.transmission || 'N/A'}</p>
-              </div>
-              <div>
-                <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-2">Fuel Type</p>
-                <p className="text-lg font-bold text-slate-900">{car.fuelType || 'N/A'}</p>
-              </div>
-              <div>
-                <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-2">Mileage</p>
-                <p className="text-lg font-bold text-slate-900">{car.mileage}</p>
-              </div>
-              <div>
-                <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-2">Year</p>
-                <p className="text-lg font-bold text-slate-900">{car.year}</p>
-              </div>
-              {car.category && (
-                <div>
-                  <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-2">Category</p>
-                  <p className="text-lg font-bold text-slate-900">{car.category}</p>
-                </div>
-              )}
-              {car.condition && (
-                <div>
-                  <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-2">Condition</p>
-                  <p className="text-lg font-bold text-slate-900">{car.condition}</p>
+                ))
+              ) : (
+                <div className="col-span-4 h-20 bg-gray-100 rounded flex items-center justify-center text-gray-500">
+                  No images
                 </div>
               )}
             </div>
 
-            {/* Details Tabs */}
-            <div className="border-b border-slate-200 overflow-hidden rounded-lg bg-white">
-              <div className="flex gap-0 border-b border-slate-200">
-                <button
-                  onClick={() => setActiveTab('overview')}
-                  className={`flex-1 py-4 px-6 text-center font-semibold transition-all border-b-2 ${
-                    activeTab === 'overview'
-                      ? 'text-[#001F3F] border-[#001F3F]'
-                      : 'text-slate-600 border-transparent hover:text-slate-900'
-                  }`}
-                >
-                  Overview
-                </button>
-                <button
-                  onClick={() => setActiveTab('technical')}
-                  className={`flex-1 py-4 px-6 text-center font-semibold transition-all border-b-2 ${
-                    activeTab === 'technical'
-                      ? 'text-[#001F3F] border-[#001F3F]'
-                      : 'text-slate-600 border-transparent hover:text-slate-900'
-                  }`}
-                >
-                  Technical
-                </button>
-                <button
-                  onClick={() => setActiveTab('location')}
-                  className={`flex-1 py-4 px-6 text-center font-semibold transition-all border-b-2 ${
-                    activeTab === 'location'
-                      ? 'text-[#001F3F] border-[#001F3F]'
-                      : 'text-slate-600 border-transparent hover:text-slate-900'
-                  }`}
-                >
-                  Location
-                </button>
+            {/* Specs Strip */}
+            <div className="detail-specs-strip">
+              <div className="dspec">
+                <span className="dspec-icon">?</span>
+                <span className="dspec-label">FUEL TYPE</span>
+                <span className="dspec-val">{car.fuelType ?? "Petrol"}</span>
               </div>
+              <div className="dspec">
+                <span className="dspec-icon">??</span>
+                <span className="dspec-label">MILEAGE</span>
+                <span className="dspec-val">{formatMileage(car.mileage)}</span>
+              </div>
+              <div className="dspec">
+                <span className="dspec-icon">??</span>
+                <span className="dspec-label">ENGINE</span>
+                <span className="dspec-val">{car.transmission ?? "Auto"}</span>
+              </div>
+              <div className="dspec">
+                <span className="dspec-icon">??</span>
+                <span className="dspec-label">CAR TYPE</span>
+                <span className="dspec-val">{car.condition}</span>
+              </div>
+              <div className="dspec">
+                <span className="dspec-icon">??</span>
+                <span className="dspec-label">TRANSMISSION</span>
+                <span className="dspec-val">{car.transmission ?? "Auto"}</span>
+              </div>
+              <div className="dspec">
+                <span className="dspec-icon">???</span>
+                <span className="dspec-label">YEAR</span>
+                <span className="dspec-val">{car.year}</span>
+              </div>
+            </div>
 
-              {/* Tab Content */}
-              <div className="p-8 bg-white">
-                {activeTab === 'overview' && (
-                  <div className="space-y-4">
-                    <p className="text-slate-700 leading-relaxed text-lg">
-                      {car.description || 'No description available for this vehicle.'}
-                    </p>
-                  </div>
-                )}
-                {activeTab === 'technical' && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <div>
-                      <h3 className="text-sm font-semibold text-[#001F3F] uppercase tracking-wider mb-2">Drivetrain</h3>
-                      <p className="text-lg text-slate-900">{car.transmission || 'N/A'}</p>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-semibold text-[#001F3F] uppercase tracking-wider mb-2">Fuel Type</h3>
-                      <p className="text-lg text-slate-900">{car.fuelType || 'N/A'}</p>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-semibold text-[#001F3F] uppercase tracking-wider mb-2">Mileage</h3>
-                      <p className="text-lg text-slate-900">{car.mileage}</p>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-semibold text-[#001F3F] uppercase tracking-wider mb-2">Category</h3>
-                      <p className="text-lg text-slate-900">{car.category || 'N/A'}</p>
-                    </div>
-                  </div>
-                )}
-                {activeTab === 'location' && (
-                  <div className="space-y-4">
-                    <div className="flex items-start gap-4">
-                      <MapPin className="w-6 h-6 text-[#FFD700] flex-shrink-0 mt-1" />
-                      <div className="w-full space-y-3">
-                        <div>
-                          <h3 className="text-sm font-semibold text-[#001F3F] uppercase tracking-wider mb-1">Location</h3>
-                          <p className="text-lg font-semibold text-slate-900">{car.location?.name || 'Not specified'}</p>
-                          {car.location?.address && (
-                            <p className="text-sm text-slate-600 mt-1">{car.location.address}</p>
-                          )}
-                          {(car.location?.city || car.location?.country) && (
-                            <p className="text-sm text-slate-600">{[car.location?.city, car.location?.country].filter(Boolean).join(', ')}</p>
-                          )}
-                        </div>
-                        {car.location?.latitude && car.location?.longitude && (
-                          <div className="mt-4 pt-4 border-t border-slate-200">
-                            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Map View</p>
-                            <iframe
-                              src={`https://www.google.com/maps?q=${car.location.latitude},${car.location.longitude}&z=16&output=embed`}
-                              width="100%"
-                              height="300"
-                              style={{ border: 0, borderRadius: '8px' }}
-                              allowFullScreen={true}
-                              loading="lazy"
-                              referrerPolicy="no-referrer-when-downgrade"
-                              title="Car Location"
-                            />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
+            {/* Dealer Note */}
+            <div className="dealer-note">
+              <strong>Dealer Note:</strong> {car.description ?? "Premium vehicle in excellent condition. Well-maintained with full service history."}
+            </div>
+
+            {/* Tabs */}
+            <div className="detail-tabs">
+              <button
+                className={`tab-btn ${activeTab === "overview" ? "active" : ""}`}
+                onClick={() => setActiveTab("overview")}
+              >
+                Overview
+              </button>
+              <button
+                className={`tab-btn ${activeTab === "technical" ? "active" : ""}`}
+                onClick={() => setActiveTab("technical")}
+              >
+                Technical
+              </button>
+              <button
+                className={`tab-btn ${activeTab === "location" ? "active" : ""}`}
+                onClick={() => setActiveTab("location")}
+              >
+                Location
+              </button>
+            </div>
+
+            <div className="tab-content" style={{ display: activeTab === "overview" ? "block" : "none" }}>
+              <p>{car.description || "This is a premium vehicle in excellent condition."}</p>
+            </div>
+            <div className="tab-content" style={{ display: activeTab === "technical" ? "block" : "none" }}>
+              <div className="space-y-2">
+                <p><strong>Fuel Type:</strong> {car.fuelType}</p>
+                <p><strong>Transmission:</strong> {car.transmission}</p>
+                <p><strong>Condition:</strong> {car.condition}</p>
+                <p><strong>Mileage:</strong> {formatMileage(car.mileage)}</p>
               </div>
+            </div>
+            <div className="tab-content" style={{ display: activeTab === "location" ? "block" : "none" }}>
+              <p>
+                Located in{" "}
+                {typeof car.location === "string"
+                  ? car.location
+                  : car.location?.name ?? "Accra, Ghana"}
+              </p>
             </div>
           </div>
 
-          {/* Right Sidebar - Price & Actions */}
-          <div className="space-y-6 h-fit lg:sticky lg:top-20">
+          {/* RIGHT: Sticky Sidebar */}
+          <div className="detail-sidebar">
             {/* Price Card */}
-            <div className="bg-white p-8 rounded-lg shadow-lg border border-slate-200">
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Asking Price</p>
-              <h2 className="text-4xl font-bold mb-3 text-slate-900">{formatPrice(car.price)}</h2>
-              <p className="text-sm text-slate-600">Premium Quality Vehicle</p>
+            <div className="sidebar-price-card">
+              <div className="sidebar-msrp">ASKING PRICE</div>
+              <div className="sidebar-price">{formatPrice(car.price ?? 0)}</div>
+              <div className="sidebar-price-note">Included Taxes & Fees</div>
             </div>
 
-            {/* Info Cards */}
-            <div className="bg-white p-6 rounded-lg border border-slate-200">
-              <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4">Vehicle Details</h3>
-              <div className="space-y-3">
-                <div>
-                  <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Brand</p>
-                  <p className="font-semibold text-slate-900">{car.brand}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Model</p>
-                  <p className="font-semibold text-slate-900">{car.model}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Year</p>
-                  <p className="font-semibold text-slate-900">{car.year}</p>
-                </div>
-              </div>
+            {/* Action Buttons */}
+            <div className="sidebar-actions">
+              <button
+                className="sidebar-btn primary"
+                onClick={() => setContactFormOpen(true)}
+              >
+                Get a Quote
+              </button>
+              <button
+                className="sidebar-btn secondary"
+                onClick={() => setTestDriveOpen(true)}
+              >
+                Book Test Drive
+              </button>
+              <button
+                className="sidebar-btn secondary"
+                onClick={() => setContactFormOpen(true)}
+              >
+                Make an Offer
+              </button>
+              <button
+                className="sidebar-btn secondary"
+                onClick={() => setContactFormOpen(true)}
+              >
+                Confirm Availability
+              </button>
             </div>
 
-            {/* CTA Buttons */}
-            <div className="space-y-3">
-              <Button onClick={() => setContactFormOpen(true)} className="w-full bg-[#001F3F] hover:bg-[#002855] text-white font-semibold py-3 text-base border-0 rounded-lg">
-                Contact Dealer
-              </Button>
-              <Button variant="outline" className="w-full py-3 text-base border border-slate-300 text-slate-900 hover:bg-slate-50 font-semibold rounded-lg">
-                Test Drive
-              </Button>
-              <Button variant="outline" className="w-full py-3 text-base border border-slate-300 text-slate-900 hover:bg-slate-50 font-semibold rounded-lg" onClick={() => navigate('/explore')}>
-                Back to Inventory
-              </Button>
+            {/* Utility Buttons */}
+            <div className="sidebar-utility">
+              <button className="utility-btn">
+                <span>?</span> Share
+              </button>
+              <button className="utility-btn">
+                <span>??</span> Print
+              </button>
+              <button className="utility-btn">
+                <span>??</span> Sticker
+              </button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Similar Vehicles Section */}
+      {/* Similar Vehicles */}
       {similarCars.length > 0 && (
-        <section className="py-16 bg-slate-50 border-t border-slate-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="mb-12">
-              <h2 className="text-3xl font-bold text-slate-900 mb-2">Similar Vehicles</h2>
-              <p className="text-slate-600">Other {car.brand} vehicles in our inventory</p>
+        <div className="container mx-auto px-4 md:px-6 lg:px-8 py-20">
+          <div className="similar-section">
+            <div className="section-label">
+              <span className="section-label-text">Related Listings</span>
+              <div className="section-label-line"></div>
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {similarCars.map((similarCar) => (
-                <CarCard key={similarCar.id} {...similarCar} />
+            <h2 className="section-title">
+              You May Also Like <span className="gold">Vehicles</span>
+            </h2>
+            <div className="cars-grid">
+              {similarCars.map((car) => (
+                <CarCard key={car.id} car={car} />
               ))}
             </div>
           </div>
-        </section>
+        </div>
       )}
 
-      {/* Contact Form Dialog */}
-      <ContactFormDialog 
-        open={contactFormOpen} 
+      {/* Dialogs */}
+      <ContactFormDialog
+        open={contactFormOpen}
         onOpenChange={setContactFormOpen}
-        carTitle={car ? `${car.year} ${car.brand} ${car.model}` : undefined}
+        carTitle={`${car.year} ${car.brand} ${car.model}`}
+      />
+      <TestDriveDialog
+        open={testDriveOpen}
+        onOpenChange={setTestDriveOpen}
+        carTitle={`${car.year} ${car.brand} ${car.model}`}
       />
     </div>
   );

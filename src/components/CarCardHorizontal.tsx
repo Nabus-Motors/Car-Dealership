@@ -1,119 +1,180 @@
+import { Link } from 'react-router-dom';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { StorageImage } from '@components/figma/StorageImage';
-import { Button } from '@components/ui/button';
-import { MapPin } from 'lucide-react';
-import { formatPrice, formatMileage } from '@utils/format';
-import { ContactFormDialog } from '@components/ContactFormDialog';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import OptimizedImage from './OptimizedImage';
 import type { Car } from '@/types/car';
 
-interface CarCardHorizontalProps extends Car {}
+interface CarCardHorizontalProps {
+  car: Car;
+}
 
-export function CarCardHorizontal(car: CarCardHorizontalProps) {
-  const navigate = useNavigate();
-  const [isContactHovered, setIsContactHovered] = useState(false);
-  const [contactFormOpen, setContactFormOpen] = useState(false);
-  const isSold = car.status?.toLowerCase() === 'sold';
+export function CarCardHorizontal({ car }: CarCardHorizontalProps) {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const images = car.imageUrls ?? [];
+  const hasMultipleImages = images.length > 1;
 
-  const handleClick = () => {
-    if (car.id) {
-      navigate(`/car/${car.id}`);
-    }
+  const fmt = (num: number) => new Intl.NumberFormat('en-GH', {
+    style: 'currency',
+    currency: 'GHS',
+    maximumFractionDigits: 0
+  }).format(num);
+
+  const handlePrevImage = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setCurrentImageIndex((prev) =>
+      prev === 0 ? images.length - 1 : prev - 1
+    );
+  };
+
+  const handleNextImage = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setCurrentImageIndex((prev) =>
+      prev === images.length - 1 ? 0 : prev + 1
+    );
   };
 
   return (
-    <>
-    <div 
-      onClick={() => !isSold && handleClick()}
-      className={`flex flex-col sm:flex-row gap-4 border border-slate-200 bg-white hover:shadow-lg hover:border-slate-300 transition-all duration-300 cursor-pointer overflow-hidden ${isSold ? 'opacity-50 grayscale' : ''}`}
-    >
-      {/* Image Section */}
-      <div className="flex-shrink-0 w-full sm:w-56 h-48 sm:h-40 bg-slate-100 overflow-hidden border-b sm:border-b-0 sm:border-r border-slate-200">
-        {car.imageUrls && car.imageUrls.length > 0 ? (
-          <StorageImage
-            src={car.imageUrls[0]}
-            alt={`${car.brand} ${car.model}`}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-slate-400 bg-slate-50">
-            <svg className="w-16 h-16" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.22.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z" />
-            </svg>
-          </div>
-        )}
-      </div>
+    <Link to={`/car/${car.id}`} className="block group">
+      <div className="flex bg-white rounded-lg border border-[#E8E8E8] overflow-hidden
+                      transition-all duration-200 hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)]
+                      hover:border-[#C9A84C]/30 sm:flex-col">
 
-      {/* Details Section */}
-      <div className="flex-1 p-4 sm:p-6 flex flex-col justify-between">
-        {/* Header */}
-        <div>
-          <div className="flex items-start justify-between mb-3">
-            <div className="flex-1">
-              <h3 className="text-lg sm:text-xl font-bold text-slate-900">
+        {/* Image — fixed width left side with carousel */}
+        <div className="relative w-[240px] shrink-0 bg-[#F0EFE9] overflow-hidden
+                        lg:w-[200px] sm:w-full sm:h-[180px]">
+          {/* Ribbon badge */}
+          <div className={`absolute top-[14px] left-[-24px] w-[100px] py-[4px] z-10
+                          text-[9px] font-black tracking-[2px] uppercase text-center
+                          rotate-[-45deg] pointer-events-none
+                          ${car.condition === 'New' ? 'bg-[#C9A84C] text-[#0A0A0A]'   :
+                                                     'bg-[#1C1C1E] text-white'}`}>
+            {car.condition === 'New' ? 'NEW' : 'USED'}
+          </div>
+
+          {/* Image Counter */}
+          {hasMultipleImages && (
+            <div className="absolute top-2 right-2 z-20 bg-black/70 backdrop-blur-sm px-2 py-1 rounded text-white text-xs font-semibold">
+              {currentImageIndex + 1} / {images.length}
+            </div>
+          )}
+
+          <OptimizedImage
+            src={images[currentImageIndex]}
+            alt={`${car.year} ${car.brand} ${car.model}`}
+            aspectRatio="3/2"
+            priority={false}
+            className="transition-transform duration-500 group-hover:scale-[1.04]"
+          />
+
+          {/* Navigation Chevrons */}
+          {hasMultipleImages && (
+            <>
+              <button
+                onClick={handlePrevImage}
+                className="absolute left-1 top-1/2 -translate-y-1/2 z-10 
+                           bg-black/60 hover:bg-black/90 transition-all duration-200
+                           p-1.5 rounded-full text-white opacity-0 group-hover:opacity-100
+                           sm:opacity-70 sm:hover:opacity-100"
+                aria-label="Previous image"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+
+              <button
+                onClick={handleNextImage}
+                className="absolute right-1 top-1/2 -translate-y-1/2 z-10
+                           bg-black/60 hover:bg-black/90 transition-all duration-200
+                           p-1.5 rounded-full text-white opacity-0 group-hover:opacity-100
+                           sm:opacity-70 sm:hover:opacity-100"
+                aria-label="Next image"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+
+              {/* Image Dots */}
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10 flex gap-1">
+                {images.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setCurrentImageIndex(idx);
+                    }}
+                    className={`w-1.5 h-1.5 rounded-full transition-all ${
+                      idx === currentImageIndex
+                        ? "bg-white w-2"
+                        : "bg-white/50 hover:bg-white/70"
+                    }`}
+                    aria-label={`Go to image ${idx + 1}`}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Content */}
+        <div className="flex flex-col justify-between flex-1 p-5 sm:p-4">
+          <div className="flex items-start justify-between gap-4 mb-3">
+            <div>
+              <h3 className="text-[17px] font-bold text-[#1C1C1E] leading-[1.2] mb-1">
                 {car.year} {car.brand} {car.model}
               </h3>
-              <div className="flex items-center gap-1 text-xs sm:text-sm text-slate-500 mt-1">
-                <MapPin className="w-3 h-3 sm:w-4 sm:h-4" /> 
-                <span>Location</span>
+              <p className="flex items-center gap-1 text-[12px] text-[#888]">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" strokeWidth="2" className="shrink-0">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+                  <circle cx="12" cy="10" r="3"/>
+                </svg>
+                {typeof car.location === 'string' ? car.location : car.location?.name ?? 'Accra, Ghana'}
+              </p>
+            </div>
+            {/* Price */}
+            <div className="shrink-0 bg-[#0A0A0A] rounded px-4 py-2 text-right">
+              <div className="text-[18px] font-black text-white whitespace-nowrap">
+                {fmt(car.price ?? 0)}
               </div>
             </div>
           </div>
 
-          {/* Specs Badges */}
-          <div className="flex flex-wrap gap-2 my-3">
-            {car.fuelType && (
-              <span className="text-xs bg-slate-100 text-slate-700 px-2 py-1 font-medium">
-                {car.fuelType}
-              </span>
-            )}
-            {car.transmission && (
-              <span className="text-xs bg-slate-100 text-slate-700 px-2 py-1 font-medium">
-                {car.transmission}
-              </span>
-            )}
-            {car.mileage && (
-              <span className="text-xs bg-slate-100 text-slate-700 px-2 py-1 font-medium">
-                {formatMileage(car.mileage)}
-              </span>
-            )}
-            {car.condition && (
-              <span className="text-xs bg-slate-100 text-slate-700 px-2 py-1 font-medium">
-                {car.condition}
-              </span>
-            )}
+          {/* Specs — horizontal row in list view */}
+          <div className="flex flex-wrap gap-x-5 gap-y-2 py-3
+                          border-t border-b border-[#F0F0F0] mb-3">
+            {[
+              { label: 'Fuel',     val: car.fuelType    ?? 'Petrol' },
+              { label: 'Mileage',  val: `${(typeof car.mileage === 'number' ? car.mileage : parseInt(car.mileage as string) || 0).toLocaleString()} km` },
+              { label: 'Trans.',   val: car.transmission ?? '—' },
+            ].map(({ label, val }) => (
+              <div key={label} className="text-[12px]">
+                <span className="text-[#aaa] uppercase text-[10px] font-bold">{label}: </span>
+                <span className="text-[#333] font-semibold">{val}</span>
+              </div>
+            ))}
           </div>
-        </div>
 
-        {/* Footer */}
-        <div className="flex items-end justify-between pt-3 sm:pt-4 border-t border-slate-200 mt-auto">
-          <div>
-            <p className="text-xs text-slate-500 uppercase tracking-wide font-medium mb-1">Price</p>
-            <p className="text-xl sm:text-2xl font-bold text-slate-900">{formatPrice(car.price)}</p>
+          {/* Footer */}
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] text-[#aaa]">
+              {car.createdAt
+                ? new Date(car.createdAt as unknown as string).toLocaleDateString('en-GB',{
+                    day:'numeric', month:'long', year:'numeric'})
+                : 'Recently listed'}
+            </span>
+            <div className="flex gap-2">
+              <button
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                className="px-4 py-2 bg-[#C9A84C] text-[#0A0A0A] rounded text-[11px] 
+                           font-bold uppercase tracking-[0.8px]
+                           hover:bg-[#b8943e] transition-colors">
+                View Car
+              </button>
+            </div>
           </div>
-          <Button
-            onClick={(e) => {
-              e.stopPropagation();
-              setContactFormOpen(true);
-            }}
-            onMouseEnter={() => setIsContactHovered(true)}
-            onMouseLeave={() => setIsContactHovered(false)}
-            className={`bg-[#FFD700] hover:bg-[#FFC700] text-[#001F3F] font-semibold transition-all duration-300 ${
-              isContactHovered ? 'shadow-lg' : ''
-            }`}
-          >
-            Contact Seller
-          </Button>
         </div>
       </div>
-    </div>
-
-    {/* Contact Form Dialog */}
-    <ContactFormDialog 
-      open={contactFormOpen} 
-      onOpenChange={setContactFormOpen}
-      carTitle={`${car.year} ${car.brand} ${car.model}`}
-    />
-    </>
+    </Link>
   );
 }

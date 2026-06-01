@@ -839,13 +839,13 @@ export function ExplorePage() {
             {viewMode === 'grid' ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
                 {cars.map((car) => (
-                  <CarCard key={car.id} {...car} />
+                  <CarCard key={car.id} car={car} />
                 ))}
               </div>
             ) : (
               <div className="space-y-4 mb-12">
                 {cars.map((car) => (
-                  <CarCardHorizontal key={car.id} {...car} />
+                  <CarCardHorizontal key={car.id} car={car} />
                 ))}
               </div>
             )}
