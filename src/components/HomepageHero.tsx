@@ -33,7 +33,7 @@ export default function HomepageHero({
   }, []);
 
   return (
-    <section className="relative w-full min-h-screen overflow-hidden bg-[#0A0A0A]">
+    <section className="relative w-screen min-h-screen overflow-hidden bg-[#0A0A0A]">
       {/* Background image layer */}
       <div className="absolute inset-0 w-full h-full">
         <img
