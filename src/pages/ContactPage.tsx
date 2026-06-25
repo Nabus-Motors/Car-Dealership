@@ -204,7 +204,7 @@ export function ContactPage() {
               </Card>
 
               {/* Map Location */}
-              <Card className="overflow-hidden mt-6 border-2 border-slate-200 shadow-md rounded-xl">
+              <Card className="overflow-hidden mt-6 border-2 border-slate-200 shadow-md rounded-xl px-2">
                 <CardHeader className="pb-0">
                   <CardTitle className="text-2xl font-bold text-[#001F3F]">Our Location</CardTitle>
                 </CardHeader>
@@ -227,7 +227,7 @@ export function ContactPage() {
             </div>
 
             {/* Contact Information */}
-            <div className="space-y-6">
+            <div className="space-y-6 px-4">
               <h2 className="text-2xl font-bold text-[#001F3F]">
                 Get in Touch
               </h2>
