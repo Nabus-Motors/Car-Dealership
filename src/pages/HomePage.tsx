@@ -221,7 +221,7 @@ export function HomePage() {
   }, []);
 
   return (
-    <div class="w-screen">
+    <div className="w-screen">
       {/* Premium Hero Section - Full-bleed responsive hero */}
       <HomepageHero 
         onTestDrive={() => setTestDriveOpen(true)}
@@ -254,7 +254,7 @@ export function HomePage() {
       </section>
 
       {/* Featured Vehicles - Inspired by ZosiaZureau */}
-      <section className="py-20 bg-white w-full flex flex-col items-cente px-2">
+      <section className="py-20 bg-white w-full flex flex-col items-center px-2">
         <div className="container mx-auto px-4 max-w-6xl">
           <div className="mb-12">
             <h2 className="text-3xl font-bold mb-4">Featured Vehicles</h2>
