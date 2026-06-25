@@ -37,7 +37,7 @@ export function AboutPage() {
   ];
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen w-screen">
       {/* Hero Section */}
       <HeroSection
         backgroundImage="https://images.unsplash.com/photo-1592891024301-bf7948cee673?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjYXIlMjBkZWFsZXJzaGlwJTIwdGVhbXxlbnwxfHx8fDE3NTg3MjE3Mjh8MA&ixlib=rb-4.1.0&q=80&w=1080"
@@ -48,7 +48,7 @@ export function AboutPage() {
       />
 
       {/* Company Overview Section */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-white flex flex-col items-center">
         <div className="container mx-auto px-4 max-w-5xl">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
@@ -101,7 +101,7 @@ export function AboutPage() {
       </section>
 
       {/* Our Values Section */}
-      <section className="py-20 bg-[#F9F9F7]">
+      <section className="py-20 bg-[#F9F9F7] flex flex-col items-center">
         <div className="container mx-auto px-4 max-w-6xl">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-[#0A0A0A] mb-4">
@@ -135,7 +135,7 @@ export function AboutPage() {
       </section>
 
       {/* Mission, Vision, Values Detailed Section */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-white flex flex-col items-center">
         <div className="container mx-auto px-4 max-w-5xl">
           <div className="space-y-16">
             {/* Mission */}
@@ -181,7 +181,7 @@ export function AboutPage() {
       </section>
 
       {/* Services Section */}
-      <section className="py-20 bg-[#F9F9F7]">
+      <section className="py-20 bg-[#F9F9F7] flex flex-col items-center">
         <div className="container mx-auto px-4 max-w-5xl">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-[#0A0A0A] mb-4">
@@ -213,7 +213,7 @@ export function AboutPage() {
       </section>
 
       {/* CEO Profile Section */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-white flex flex-col items-center">
         <div className="container mx-auto px-4 max-w-5xl">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="relative">
@@ -289,7 +289,7 @@ export function AboutPage() {
       </section>
 
       {/* Achievements Stats Section */}
-      <section className="py-20 bg-[#0A0A0A] text-white">
+      <section className="py-20 bg-[#0A0A0A] text-white flex flex-col items-center">
         <div className="container mx-auto px-4 max-w-5xl">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div className="text-center">
@@ -321,7 +321,7 @@ export function AboutPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-white flex flex-col items-center">
         <div className="container mx-auto px-4 max-w-4xl text-center">
           <h2 className="text-3xl font-bold text-[#0A0A0A] mb-6">
             Ready to Drive Your Dream Car?

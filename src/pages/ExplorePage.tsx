@@ -293,7 +293,7 @@ export function ExplorePage() {
   const activeFilterCount = filters.brands.length + filters.condition.length + filters.transmission.length + filters.fuelType.length;
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen w-screen bg-white flex flex-col items-center">
       {/* Hero Section */}
       <HeroSection
         backgroundImage="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=1200&q=80"
@@ -302,7 +302,7 @@ export function ExplorePage() {
         className="-mt-16 pt-16"
       />
 
-      <div className="container mx-auto px-4 max-w-7xl py-8">
+      <div className="container mx-auto px-4 max-w-7xl py-8 ">
         {/* Results Info and Sort Row */}
         <div className="mb-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
           {/* Results Count */}
@@ -329,7 +329,7 @@ export function ExplorePage() {
         </div>
 
         {/* Controls Bar */}
-        <div className="mb-8 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+        <div className="mb-8 flex flex-col sm:flex-row gap-3 items-center sm:items-center">
           {/* Search Bar - Flexible */}
           <div className="relative flex-1 min-w-0">
             <Input
