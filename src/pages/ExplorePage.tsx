@@ -818,7 +818,7 @@ export function ExplorePage() {
 
         {/* No Results */}
         {!loading && !error && cars.length === 0 && (
-          <div className="text-center py-16 bg-slate-50 border border-slate-200">
+          <div className="text-center py-16 bg-slate-50 mb-2 border border-slate-200">
             <Icons.search className="mx-auto h-12 w-12 text-slate-400 mb-4" />
             <h3 className="text-lg font-bold text-slate-900 mb-2">No Vehicles Found</h3>
             <p className="text-slate-600 mb-6">
