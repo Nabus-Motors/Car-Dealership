@@ -49,7 +49,7 @@ export function HeroSection({
       </div>
 
       {/* Main Content */}
-      <div className="relative h-full flex items-center pt-16 md:pt-0">
+      <div className="relative h-full flex items-center pt-16 md:pt-0 px-4">
         <div className="container mx-auto px-4 max-w-7xl w-full">
           {centered ? (
             // Centered layout
