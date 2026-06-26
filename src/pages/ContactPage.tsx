@@ -121,7 +121,7 @@ export function ContactPage() {
   ];
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen w-screen">
       {/* Hero Section */}
       <HeroSection
         backgroundImage="https://images.unsplash.com/photo-1705747401901-28363172fe7e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxsdXh1cnklMjBjYXIlMjBzaG93cm9vbXxlbnwxfHx8fDE3NTg3MTYyMTl8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
@@ -132,7 +132,7 @@ export function ContactPage() {
       />
 
       {/* Contact Form and Info Section */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 bg-gray-50 flex flex-col items-center">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             {/* Left Column: Contact Form and Map */}
@@ -204,7 +204,7 @@ export function ContactPage() {
               </Card>
 
               {/* Map Location */}
-              <Card className="overflow-hidden mt-6 border-2 border-slate-200 shadow-md rounded-xl">
+              <Card className="overflow-hidden mt-6 border-2 border-slate-200 shadow-md rounded-xl px-2">
                 <CardHeader className="pb-0">
                   <CardTitle className="text-2xl font-bold text-[#001F3F]">Our Location</CardTitle>
                 </CardHeader>
@@ -227,7 +227,7 @@ export function ContactPage() {
             </div>
 
             {/* Contact Information */}
-            <div className="space-y-6">
+            <div className="space-y-6 px-4">
               <h2 className="text-2xl font-bold text-[#001F3F]">
                 Get in Touch
               </h2>
