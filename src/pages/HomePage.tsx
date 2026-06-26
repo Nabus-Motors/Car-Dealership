@@ -221,7 +221,7 @@ export function HomePage() {
   }, []);
 
   return (
-    <>
+    <div className="w-screen">
       {/* Premium Hero Section - Full-bleed responsive hero */}
       <HomepageHero 
         onTestDrive={() => setTestDriveOpen(true)}
@@ -235,7 +235,7 @@ export function HomePage() {
       </div>
 
       {/* Order by Body Style - Inspired by ZosiaZureau */}
-      <section className="py-16 bg-white border-b border-slate-200">
+      <section className="py-16 w-full bg-white flex flex-col px-2 items-center border-b border-slate-200">
         <div className="container mx-auto px-4 max-w-6xl">
           <h2 className="text-3xl font-bold mb-12">Order by Body Style</h2>
           
@@ -254,7 +254,7 @@ export function HomePage() {
       </section>
 
       {/* Featured Vehicles - Inspired by ZosiaZureau */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-white w-full flex flex-col items-center px-2">
         <div className="container mx-auto px-4 max-w-6xl">
           <div className="mb-12">
             <h2 className="text-3xl font-bold mb-4">Featured Vehicles</h2>
@@ -302,7 +302,7 @@ export function HomePage() {
       </section>
 
       {/* Dream Section */}
-      <section className="py-20 bg-slate-50">
+      <section className="py-20 bg-slate-50 w-full flex flex-col items-center px-2">
         <div className="container mx-auto px-4 max-w-6xl">
           <div className="mb-16">
             <h2 className="text-3xl font-bold mb-4">Our Services</h2>
@@ -329,7 +329,7 @@ export function HomePage() {
       </section>
 
       {/* Stats Section */}
-      <section className="py-20 bg-slate-900 text-white">
+      <section className="py-20 bg-slate-900 text-white w-full flex flex-col items-center px-2">
         <div className="container mx-auto px-4 max-w-6xl">
           <h2 className="text-3xl font-bold mb-16">Why Choose Us</h2>
           
@@ -350,7 +350,7 @@ export function HomePage() {
       </section>
 
       {/* Browse by Brand */}
-      <section className="py-16 bg-white border-t border-slate-200">
+      <section className="py-16 bg-white border-t border-slate-200 w-full flex flex-col items-center px-2">
         <div className="container mx-auto px-4 max-w-6xl">
           <div className="flex items-center justify-between mb-12">
             <h2 className="text-3xl font-bold">Browse by Brand</h2>
@@ -380,7 +380,7 @@ export function HomePage() {
       </section>
 
       {/* Call to Action */}
-      <section className="py-20 bg-slate-900 text-white">
+      <section className="py-20 bg-slate-900 text-white w-full flex flex-col items-center px-2">
         <div className="container mx-auto px-4 max-w-6xl text-center">
           <h2 className="text-4xl font-bold mb-6">Ready to find your next vehicle?</h2>
           <p className="text-xl text-slate-200 mb-8 max-w-2xl mx-auto">
@@ -408,6 +408,6 @@ export function HomePage() {
         onOpenChange={setTestDriveOpen}
         carTitle={selectedCar ? `${selectedCar.year} ${selectedCar.brand} ${selectedCar.model}` : undefined}
       />
-    </>
+    </div>
   );
 }

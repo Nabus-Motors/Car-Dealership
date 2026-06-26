@@ -116,7 +116,7 @@ function App() {
         {/* Hide navbar on admin routes */}
         {!isAdminRoute && <Navbar />}
         
-        <main className={isAdminRoute ? "flex-grow" : "flex-grow"}>
+        <main className={""}>
           <Routes>
             {/* Public routes */}
             <Route path="/" element={<HomePage />} />
