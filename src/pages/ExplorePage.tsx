@@ -302,7 +302,7 @@ export function ExplorePage() {
         className="-mt-16 pt-16"
       />
 
-      <div className="container mx-auto px-4 max-w-7xl py-8 px-2">
+      <div className="container mx-auto px-4 max-w-7xl py-8">
         {/* Results Info and Sort Row */}
         <div className="mb-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
           {/* Results Count */}
