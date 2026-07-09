@@ -27,8 +27,8 @@ export function AdminHeader({ title, showSearch = false, searchPlaceholder = "Se
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
   return (
-    <header className="bg-white border-b-2 border-slate-200 px-4 lg:px-6 py-3 lg:py-4 relative shadow-sm">
-      <div className="flex items-center justify-between">
+    <header className="bg-white border-b-2 border-slate-200 px-4 lg:px-6 py-3 lg:py-4 relative shadow-sm w-full">
+      <div className="flex items-center justify-between p-3">
         {/* Title */}
         <div className="flex items-center space-x-3 lg:space-x-4 min-w-0 flex-1">
           <h1 className="text-xl lg:text-2xl font-bold text-[#001F3F] truncate">{title}</h1>

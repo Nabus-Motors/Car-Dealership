@@ -1,6 +1,5 @@
 import React from 'react';
 import { AdminHeader } from './AdminHeader';
-import { AdminBottomNav } from './AdminBottomNav';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -9,7 +8,6 @@ interface AdminLayoutProps {
 }
 
 export function AdminLayout({ children, currentPage, onNavigate }: AdminLayoutProps) {
-  // Clone children and pass navigation props if needed
   const childrenWithProps = React.Children.map(children, (child) => {
     if (React.isValidElement(child)) {
       return React.cloneElement(child as React.ReactElement<any>, {
@@ -19,38 +17,34 @@ export function AdminLayout({ children, currentPage, onNavigate }: AdminLayoutPr
     return child;
   });
 
-  // Determine the page title based on current page
   const getPageTitle = () => {
     switch (currentPage) {
-      case 'dashboard':
-        return 'Dashboard';
-      case 'listings':
-        return 'Car Listings';
-      case 'add-listing':
-        return 'Add New Listing';
-      case 'settings':
-        return 'Settings';
-      default:
-        return 'Admin Panel';
+      case 'dashboard': return 'Dashboard';
+      case 'listings': return 'Car Listings';
+      case 'add-listing': return 'Add New Listing';
+      case 'settings': return 'Settings';
+      default: return 'Admin Panel';
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex flex-col">
-      <AdminHeader 
-        title={getPageTitle()}
-        currentPage={currentPage}
-        onNavigate={onNavigate}
-        showSearch={currentPage === 'listings'}
-        searchPlaceholder="Search car listings..."
-      />
-      
-      <main className="flex-1 overflow-auto pb-16 md:pb-0">
-        {childrenWithProps}
-      </main>
+      <div className="min-h-screen w-screen bg-gradient-to-br from-slate-50 to-slate-100 ">
 
-      {/* Mobile Bottom Navigation */}
-      <AdminBottomNav currentPage={currentPage} onNavigate={onNavigate} />
-    </div>
+        <div className="max-w-[1600px] mx-auto w-full flex flex-col min-h-screen items-center">
+
+          <AdminHeader
+              title={getPageTitle()}
+              currentPage={currentPage}
+              onNavigate={onNavigate}
+              showSearch={currentPage === 'listings'}
+              searchPlaceholder="Search car listings..."
+          />
+
+          <main className="flex-1 overflow-auto pb-16 md:pb-0 w-full mt-3">
+            {childrenWithProps}
+          </main>
+
+        </div>
+      </div>
   );
 }
