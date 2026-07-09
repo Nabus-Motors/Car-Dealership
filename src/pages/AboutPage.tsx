@@ -37,13 +37,12 @@ export function AboutPage() {
   ];
 
   return (
-    <div className="min-h-screen w-screen">
+    <div className="min-h-screen w-screen ">
       {/* Hero Section */}
       <HeroSection
         backgroundImage="https://images.unsplash.com/photo-1592891024301-bf7948cee673?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjYXIlMjBkZWFsZXJzaGlwJTIwdGVhbXxlbnwxfHx8fDE3NTg3MjE3Mjh8MA&ixlib=rb-4.1.0&q=80&w=1080"
         title="Nabus Motors"
         subtitle="Drive Your Dream Car — Ghana's Premier Automotive Partner"
-        centered={true}
         className="-mt-16 pt-16"
       />
 

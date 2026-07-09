@@ -277,7 +277,7 @@ export function ListingsManagement({ onNavigate }: ListingsManagementProps) {
           </Button>
           <Button
             onClick={() => onNavigate('add-listing')}
-            className="bg-red-600 hover:bg-red-700"
+            className="bg-[#001F3F] hover:bg-[#1a4a6a]"
           >
             <Plus className="h-4 w-4 mr-2" />
             Add New Car
@@ -419,7 +419,7 @@ export function ListingsManagement({ onNavigate }: ListingsManagementProps) {
                 }
               </p>
               {cars.length === 0 && (
-                <Button onClick={() => onNavigate('add-listing')} className="bg-red-600 hover:bg-red-700">
+                <Button onClick={() => onNavigate('add-listing')} className="bg-[#001F3F] hover:bg-[#1a4a6a]">
                   <Plus className="h-4 w-4 mr-2" />
                   Add Your First Car
                 </Button>
