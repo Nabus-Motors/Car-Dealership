@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useProgressiveImage } from '../hooks/useProgressiveImage';
+import { generateSrcSet } from '../services/imageOptimizationService';
 
 interface OptimizedImageProps {
   src?: string | null;
@@ -8,6 +9,7 @@ interface OptimizedImageProps {
   aspectRatio?: '16/9' | '3/2' | '4/3' | '1/1' | 'auto';
   priority?: boolean;
   objectPosition?: string;
+  sizes?: string;
 }
 
 const aspectRatioClasses: Record<string, string> = {
@@ -25,13 +27,30 @@ export default function OptimizedImage({
   aspectRatio = 'auto',
   priority = false,
   objectPosition = 'center',
+  sizes = '(max-width: 768px) 100vw, 50vw',
 }: OptimizedImageProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const { src: progressiveSrc, isLoading } = useProgressiveImage(src);
+  
+  // Generate responsive image srcset for better performance
+  const srcSet = src && src.includes('firebaseapp.com') ? generateSrcSet(src) : undefined;
 
   const aspectClass = aspectRatioClasses[aspectRatio] || '';
   const loading = priority ? 'eager' : 'lazy';
   const decoding = priority ? 'sync' : 'async';
+
+  useEffect(() => {
+    // Prefetch next image on idle if available
+    if ('requestIdleCallback' in window && src) {
+      (window as any).requestIdleCallback(() => {
+        const link = document.createElement('link');
+        link.rel = 'prefetch';
+        link.as = 'image';
+        link.href = src;
+        document.head.appendChild(link);
+      });
+    }
+  }, [src]);
 
   return (
     <div className={`relative overflow-hidden bg-[#1C1C1E] ${aspectClass} ${className}`}>
@@ -47,9 +66,11 @@ export default function OptimizedImage({
         />
       )}
 
-      {/* Image */}
+      {/* Image with srcset for responsive loading */}
       <img
         src={progressiveSrc}
+        srcSet={srcSet}
+        sizes={sizes}
         alt={alt}
         className="w-full h-full object-cover transition-opacity duration-300"
         style={{
