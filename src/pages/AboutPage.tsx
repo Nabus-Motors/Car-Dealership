@@ -1,7 +1,8 @@
-import { Target, Sparkles, Star, Trophy, MapPin, Phone, Mail } from 'lucide-react';
+import { Target, Sparkles, Star, Trophy, MapPin } from 'lucide-react';
 import { Card, CardContent } from '../components/ui/card';
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 import { HeroSection } from '../components/HeroSection';
+import ceoPic from "../../public/ceo-pic.jpeg";
 
 export function AboutPage() {
   const values = [
@@ -218,7 +219,7 @@ export function AboutPage() {
             <div className="relative">
               <div className="absolute inset-0 bg-[#C9A84C]/20 rounded-xl" />
               <ImageWithFallback
-                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.1.0&auto=format&fit=facearea&facepad=8&w=1024&h=1024"
+                src={ceoPic}
                 alt="Nana Adu Bonsu Agyekum Prempeh"
                 className="w-full h-96 object-cover rounded-xl relative z-10"
               />

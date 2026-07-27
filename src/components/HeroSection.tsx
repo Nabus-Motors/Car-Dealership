@@ -35,7 +35,7 @@ export function HeroSection({
 
   return (
     <section
-      className={`relative ${height} bg-[#050F1F] text-white overflow-hidden ${className}`}
+      className={`relative ${height} flex flex-col items-center bg-[#050F1F] text-white overflow-hidden ${className}`}
     >
       {/* Background Image */}
       <div className="absolute inset-0">
@@ -49,8 +49,8 @@ export function HeroSection({
       </div>
 
       {/* Main Content */}
-      <div className="relative h-full flex items-center pt-16 md:pt-0 px-4">
-        <div className="container mx-auto px-4 max-w-7xl w-full">
+      <div className="relative max-w-[1280px]  w-full h-full flex items-center pt-16 md:pt-0 px-4">
+        <div className="container mx-auto px-4  w-full">
           {centered ? (
             // Centered layout
             <div className="text-center">
@@ -61,7 +61,7 @@ export function HeroSection({
                 {subtitle}
               </p>
               {cta && (
-                <button 
+                <button
                   onClick={handleCTA}
                   className="bg-[#FFD700] hover:bg-[#FFC700] text-[#001F3F] px-8 py-4 inline-flex items-center gap-3 transition-all duration-300 font-black uppercase tracking-widest text-lg hover:shadow-lg hover:shadow-[#FFD700]/50 hover:scale-105"
                 >

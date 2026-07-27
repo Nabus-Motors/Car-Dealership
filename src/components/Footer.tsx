@@ -57,15 +57,15 @@ export function Footer() {
             <div className="space-y-3 text-gray-400">
               <div className="flex items-center gap-3">
                 <MapPin className="w-4 h-4 text-[#FFD700] flex-shrink-0" />
-                <span className="text-sm">123 Auto Street, Car City, CC 12345</span>
+                <span className="text-sm">Olusegun Obasanjo Wy, Accra</span>
               </div>
               <div className="flex items-center gap-3">
                 <Phone className="w-4 h-4 text-[#FFD700] flex-shrink-0" />
-                <span className="text-sm">(555) 123-4567</span>
+                <span className="text-sm">0279940200</span>
               </div>
               <div className="flex items-center gap-3">
                 <Mail className="w-4 h-4 text-[#FFD700] flex-shrink-0" />
-                <span className="text-sm">info@nabusmotors.com</span>
+                <span className="text-sm">sales@nabusmotors.com</span>
               </div>
             </div>
           </div>

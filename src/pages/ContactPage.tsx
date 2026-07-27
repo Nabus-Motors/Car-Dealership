@@ -7,6 +7,7 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
 import { Label } from '../components/ui/label';
+import contactHeroImage from '../../public/contact-section.png'
 
 export function ContactPage() {
   const [formData, setFormData] = useState({
@@ -103,13 +104,13 @@ export function ContactPage() {
     {
       icon: MapPin,
       title: "Visit Our Showroom",
-      details: ["123 Auto Street", "Car City, CC 12345"],
+      details: ["Olusegun Obasanjo Wy, Accra"],
       action: "Get Directions"
     },
     {
       icon: Phone,
       title: "Call Us", 
-      details: ["(555) 123-4567", "Mon-Fri: 9AM-8PM"],
+      details: ["0279940200", "Mon-Fri: 9AM-8PM"],
       action: "Call Now"
     },
     {
@@ -124,7 +125,7 @@ export function ContactPage() {
     <div className="min-h-screen w-screen">
       {/* Hero Section */}
       <HeroSection
-        backgroundImage="https://images.unsplash.com/photo-1705747401901-28363172fe7e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxsdXh1cnklMjBjYXIlMjBzaG93cm9vbXxlbnwxfHx8fDE3NTg3MTYyMTl8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
+        backgroundImage={contactHeroImage}
         title="Get in Touch with Us"
         subtitle="We are here to assist you with all your vehicle needs."
         className="-mt-16 pt-16"

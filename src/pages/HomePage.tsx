@@ -238,7 +238,7 @@ export function HomePage() {
       <section className="py-16 w-full bg-white flex flex-col px-2 items-center border-b border-slate-200">
         <div className="container mx-auto px-4 max-w-6xl">
           <h2 className="text-3xl font-bold mb-12">Order by Body Style</h2>
-          
+
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
             {['Coupe', 'Convertible', 'SUV', 'Sedan', 'Hatchback', 'Pickup', 'Van'].map((style) => (
               <button
@@ -249,6 +249,35 @@ export function HomePage() {
                 {style}
               </button>
             ))}
+          </div>
+        </div>
+      </section>
+      {/* Browse by Brand */}
+      <section className="py-16 bg-white border-t border-slate-200 w-full flex flex-col items-center px-2">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <div className="flex items-center justify-between mb-12">
+            <h2 className="text-3xl font-bold">Browse by Brand</h2>
+            <Button variant="outline" onClick={() => navigate('/explore')} className="hidden md:inline-flex">
+              View all →
+            </Button>
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+            {brandsLoading ? (
+                Array(14).fill(null).map((_, i) => (
+                    <div key={i} className="h-10 w-24 bg-gray-200 animate-pulse" />
+                ))
+            ) : (
+                brands.map((brand: string) => (
+                    <button
+                        key={brand}
+                        onClick={() => navigate(`/explore?brand=${encodeURIComponent(brand)}`)}
+                        className="px-6 py-2 border border-slate-300 text-slate-900 font-medium hover:bg-slate-50 hover:border-slate-400 transition-all duration-200"
+                    >
+                      {brand}
+                    </button>
+                ))
+            )}
           </div>
         </div>
       </section>
@@ -349,38 +378,8 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* Browse by Brand */}
-      <section className="py-16 bg-white border-t border-slate-200 w-full flex flex-col items-center px-2">
-        <div className="container mx-auto px-4 max-w-6xl">
-          <div className="flex items-center justify-between mb-12">
-            <h2 className="text-3xl font-bold">Browse by Brand</h2>
-            <Button variant="outline" onClick={() => navigate('/explore')} className="hidden md:inline-flex">
-              View all →
-            </Button>
-          </div>
-
-          <div className="flex flex-wrap gap-3">
-            {brandsLoading ? (
-              Array(14).fill(null).map((_, i) => (
-                <div key={i} className="h-10 w-24 bg-gray-200 animate-pulse" />
-              ))
-            ) : (
-              brands.map((brand: string) => (
-                <button
-                  key={brand}
-                  onClick={() => navigate(`/explore?brand=${encodeURIComponent(brand)}`)}
-                  className="px-6 py-2 border border-slate-300 text-slate-900 font-medium hover:bg-slate-50 hover:border-slate-400 transition-all duration-200"
-                >
-                  {brand}
-                </button>
-              ))
-            )}
-          </div>
-        </div>
-      </section>
-
       {/* Call to Action */}
-      <section className="py-20 bg-slate-900 text-white w-full flex flex-col items-center px-2">
+      <section className="py-20 bg-slate-900 text-white w-full flex flex-col items-center px-2 border-white border-t">
         <div className="container mx-auto px-4 max-w-6xl text-center">
           <h2 className="text-4xl font-bold mb-6">Ready to find your next vehicle?</h2>
           <p className="text-xl text-slate-200 mb-8 max-w-2xl mx-auto">

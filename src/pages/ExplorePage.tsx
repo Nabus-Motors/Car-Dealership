@@ -10,7 +10,7 @@ import { useIsMobile } from '@components/ui/use-mobile';
 import { Slider } from '@components/ui/slider';
 import { collection, query, orderBy, limit, startAfter, getDocs, DocumentSnapshot } from 'firebase/firestore';
 import { db, COLLECTIONS } from '@/firebase/firebase';
-import { Grid3x3, List } from 'lucide-react';
+import { Grid3x3 } from 'lucide-react';
 import type { Car } from '@/types/car';
 import { normalizeImageUrls } from '@utils/images';
 import { CarCard } from '@components/CarCard';
@@ -64,6 +64,7 @@ export function ExplorePage() {
   const [pageCursors, setPageCursors] = useState<Array<DocumentSnapshot | null>>([]);
   const [hasMore, setHasMore] = useState(true);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [brandSearch, setBrandSearch] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState<'newest' | 'price-low' | 'price-high' | 'popular'>('newest');
   
@@ -304,7 +305,7 @@ export function ExplorePage() {
 
       <div className="container mx-auto px-4 max-w-7xl py-8">
         {/* Results Info and Sort Row */}
-        <div className="mb-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+        <div className="my-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
           {/* Results Count */}
           {!loading && cars.length > 0 && (
             <div className="text-sm text-slate-600 font-medium">
@@ -360,309 +361,331 @@ export function ExplorePage() {
                   )}
                 </Button>
               </DialogTrigger>
-              
-              <DialogContent onOpenAutoFocus={(e) => e.preventDefault()} className="max-w-2xl md:max-w-4xl max-h-[90vh] overflow-hidden bg-white flex flex-col">
-                {/* Sticky Header */}
-                <div className="sticky top-0 z-50 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
+
+              <DialogContent onOpenAutoFocus={(e) => e.preventDefault()} className="max-w-2xl md:max-w-4xl max-h-[90vh] overflow-hidden bg-white flex flex-col p-0 gap-0">
+                {/* 1. Sticky Header */}
+                <div className="shrink-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
                   <h2 className="text-xl md:text-2xl font-bold text-slate-900">Filter Vehicles</h2>
                   <button
-                    aria-label="Close modal"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setIsFilterModalOpen(false);
-                    }}
-                    className="inline-flex h-8 w-8 items-center justify-center bg-slate-100 border border-slate-200 text-slate-900 hover:bg-slate-200 hover:border-slate-300 focus:outline-none cursor-pointer transition-colors rounded"
-                    type="button"
+                      aria-label="Close modal"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setIsFilterModalOpen(false);
+                      }}
+                      className="inline-flex h-8 w-8 items-center justify-center bg-slate-100 border border-slate-200 text-slate-900 hover:bg-slate-200 hover:border-slate-300 focus:outline-none cursor-pointer transition-colors rounded"
+                      type="button"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   </button>
                 </div>
-                
-                {/* Scrollable Content */}
-                <div className="overflow-y-auto flex-1 px-4 md:px-6 py-6">
+
+                {/* 2. Scrollable Middle Content */}
+                <div className="overflow-y-auto flex-1 px-4 md:px-6 py-6 space-y-8">
                   <div className="space-y-8 max-w-4xl">
-                    {/* Brand Filter */}
-                  <div className="space-y-4">
-                    <h3 className="text-sm md:text-base font-semibold text-slate-900 border-b-2 border-slate-200 pb-2 md:pb-3 uppercase tracking-wide">Brand</h3>
-                    {brandsLoading ? (
-                      <div className="flex flex-wrap gap-2">
-                        {Array(6).fill(null).map((_, index) => (
-                          <div key={index} className="h-10 w-20 bg-gray-200 animate-pulse" />
-                        ))}
+
+                    {/* Brand Filter (Shadcn Select) */}
+                    <div className="space-y-4">
+                      <h3 className="text-sm md:text-base font-semibold text-slate-900 border-b-2 border-slate-200 pb-2 md:pb-3 uppercase tracking-wide">Brand</h3>
+
+                      {brandsLoading ? (
+                          <div className="h-10 w-full bg-gray-200 animate-pulse rounded" />
+                      ) : (
+                          <div className="space-y-3">
+                            <Select
+                                onValueChange={(brand) => {
+                                  if (!tempFilters.brands.includes(brand)) {
+                                    setTempFilters(prev => ({ ...prev, brands: [...prev.brands, brand] }));
+                                  }
+                                }}
+                            >
+                              <SelectTrigger className="w-full border-2 border-slate-300 focus:border-[#FFD700] focus:ring-1 focus:ring-[#FFD700]/30 transition-colors h-11">
+                                <SelectValue placeholder="Select a brand..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <div className="p-2">
+                                  <Input
+                                      placeholder="Search brands..."
+                                      value={brandSearch}
+                                      onChange={(e) => setBrandSearch(e.target.value)}
+                                      className="mb-2 border border-slate-300 text-sm"
+                                  />
+                                </div>
+                                {availableBrands
+                                    .filter((brand) => brand.toLowerCase().includes((brandSearch || "").toLowerCase()))
+                                    .map((brand) => (
+                                        <SelectItem key={brand} value={brand}>
+                                          {brand}
+                                        </SelectItem>
+                                    ))}
+                              </SelectContent>
+                            </Select>
+
+                            {/* Selected Brand Badges */}
+                            {tempFilters.brands.length > 0 && (
+                                <div className="flex flex-wrap gap-2 pt-1">
+                                  {tempFilters.brands.map((brand) => (
+                                      <span
+                                          key={brand}
+                                          className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#FFD700] text-[#001F3F] text-xs font-bold uppercase tracking-wide rounded"
+                                      >
+                    {brand}
+                                        <button
+                                            type="button"
+                                            onClick={() => setTempFilters(prev => ({ ...prev, brands: prev.brands.filter(b => b !== brand) }))}
+                                            className="hover:text-red-700 focus:outline-none"
+                                        >
+                      ×
+                    </button>
+                  </span>
+                                  ))}
+                                </div>
+                            )}
+                          </div>
+                      )}
+                    </div>
+
+                    {/* Price Range */}
+                    <div className="space-y-4">
+                      <h3 className="text-sm md:text-base font-semibold text-slate-900 border-b-2 border-slate-200 pb-2 md:pb-3 uppercase tracking-wide">Price Range</h3>
+                      <div className="space-y-4">
+                        <div className="space-y-3">
+                          <div className="flex justify-between items-center">
+                            <label className="text-xs md:text-sm font-medium text-slate-700">Min: ₵{tempFilters.priceRange[0].toLocaleString()}</label>
+                            <label className="text-xs md:text-sm font-medium text-slate-700">Max: ₵{tempFilters.priceRange[1].toLocaleString()}</label>
+                          </div>
+                          <Slider
+                              value={tempFilters.priceRange}
+                              onValueChange={(value) => {
+                                setTempFilters(prev => ({ ...prev, priceRange: [value[0], value[1]] }));
+                                setMinPriceInput(value[0].toString());
+                                setMaxPriceInput(value[1].toString());
+                              }}
+                              min={0}
+                              max={500000}
+                              step={1000}
+                              className="w-full"
+                          />
+                        </div>
                       </div>
-                    ) : (
-                      <div className="flex flex-wrap gap-3">
-                        {availableBrands.map((brand) => {
-                          const isSelected = tempFilters.brands.includes(brand);
-                          return (
-                            <button
-                              key={brand}
-                              onClick={() => {
-                                if (isSelected) {
-                                  setTempFilters(prev => ({ ...prev, brands: prev.brands.filter(b => b !== brand) }));
-                                } else {
-                                  setTempFilters(prev => ({ ...prev, brands: [...prev.brands, brand] }));
+
+                      {/* Price Input Fields */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-xs md:text-sm font-medium text-slate-700 mb-2 block">Min Price</label>
+                          <Input
+                              type="number"
+                              placeholder="0"
+                              value={minPriceInput}
+                              onChange={(e) => {
+                                setMinPriceInput(e.target.value);
+                                const minPrice = parseInt(e.target.value) || 0;
+                                const maxPrice = parseInt(maxPriceInput) || 500000;
+                                if (minPrice <= maxPrice) {
+                                  setTempFilters(prev => ({ ...prev, priceRange: [minPrice, maxPrice] }));
                                 }
                               }}
-                              className={`px-4 py-2 border-2 font-medium transition-all uppercase tracking-wide text-sm ${
-                                isSelected 
-                                  ? 'bg-[#FFD700] text-[#001F3F] border-[#FFD700]' 
-                                  : 'bg-white text-slate-900 border-slate-300 hover:border-[#FFD700] hover:shadow-md'
-                              }`}
-                            >
-                              {brand}
-                            </button>
+                              className="border border-slate-300 focus:border-[#FFD700] focus:ring-1 focus:ring-[#FFD700]/30 transition-colors text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs md:text-sm font-medium text-slate-700 mb-2 block">Max Price</label>
+                          <Input
+                              type="number"
+                              placeholder="500000"
+                              value={maxPriceInput}
+                              onChange={(e) => {
+                                setMaxPriceInput(e.target.value);
+                                const minPrice = parseInt(minPriceInput) || 0;
+                                const maxPrice = parseInt(e.target.value) || 500000;
+                                if (maxPrice >= minPrice) {
+                                  setTempFilters(prev => ({ ...prev, priceRange: [minPrice, maxPrice] }));
+                                }
+                              }}
+                              className="border border-slate-300 focus:border-[#FFD700] focus:ring-1 focus:ring-[#FFD700]/30 transition-colors text-sm"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Condition */}
+                    <div className="space-y-4">
+                      <h3 className="text-sm md:text-base font-semibold text-slate-900 border-b-2 border-slate-200 pb-2 md:pb-3 uppercase tracking-wide">Condition</h3>
+                      <div className="flex gap-3">
+                        {conditionOptions.map((condition) => {
+                          const isSelected = tempFilters.condition.includes(condition as 'New' | 'Used');
+                          return (
+                              <button
+                                  key={condition}
+                                  onClick={() => {
+                                    if (isSelected) {
+                                      setTempFilters(prev => ({ ...prev, condition: prev.condition.filter(c => c !== condition) }));
+                                    } else {
+                                      setTempFilters(prev => ({ ...prev, condition: [...prev.condition, condition as 'New' | 'Used'] }));
+                                    }
+                                  }}
+                                  className={`px-4 py-2 border-2 font-medium transition-all uppercase tracking-wide text-sm ${
+                                      isSelected
+                                          ? 'bg-[#FFD700] text-[#001F3F] border-[#FFD700]'
+                                          : 'bg-white text-slate-900 border-slate-300 hover:border-[#FFD700] hover:shadow-md'
+                                  }`}
+                              >
+                                {condition}
+                              </button>
                           );
                         })}
                       </div>
-                    )}
-                  </div>
+                    </div>
 
-                  {/* Price Range */}
-                  <div className="space-y-4">
-                    <h3 className="text-sm md:text-base font-semibold text-slate-900 border-b-2 border-slate-200 pb-2 md:pb-3 uppercase tracking-wide">Price Range</h3>
-                    
-                    {/* Single Range Slider with Two Handles */}
+                    {/* Model Year */}
                     <div className="space-y-4">
-                      <div className="space-y-3">
-                        <div className="flex justify-between items-center">
-                          <label className="text-xs md:text-sm font-medium text-slate-700">Min: ₵{tempFilters.priceRange[0].toLocaleString()}</label>
-                          <label className="text-xs md:text-sm font-medium text-slate-700">Max: ₵{tempFilters.priceRange[1].toLocaleString()}</label>
+                      <h3 className="text-sm md:text-base font-semibold text-slate-900 border-b-2 border-slate-200 pb-2 md:pb-3 uppercase tracking-wide">Model Year</h3>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-xs md:text-sm font-medium text-slate-700 mb-2 block">From Year</label>
+                          <Select
+                              value={tempFilters.yearRange[0].toString()}
+                              onValueChange={(value) => {
+                                const fromYear = parseInt(value);
+                                setTempFilters(prev => ({ ...prev, yearRange: [fromYear, prev.yearRange[1]] }));
+                              }}
+                          >
+                            <SelectTrigger className="border-2 border-slate-300 focus:border-[#FFD700] focus:ring-1 focus:ring-[#FFD700]/30 transition-colors">
+                              <SelectValue placeholder="Select year" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <div className="p-2">
+                                <Input
+                                    placeholder="Search year..."
+                                    value={yearSearch}
+                                    onChange={(e) => setYearSearch(e.target.value)}
+                                    className="mb-2 border border-slate-300"
+                                />
+                              </div>
+                              {Array.from({ length: new Date().getFullYear() - 2015 + 1 }, (_, i) => {
+                                const year = (new Date().getFullYear() - i).toString();
+                                if (yearSearch && !year.includes(yearSearch)) return null;
+                                return (
+                                    <SelectItem key={year} value={year}>
+                                      {year}
+                                    </SelectItem>
+                                );
+                              })}
+                            </SelectContent>
+                          </Select>
                         </div>
-                        <Slider
-                          value={tempFilters.priceRange}
-                          onValueChange={(value) => {
-                            setTempFilters(prev => ({ ...prev, priceRange: [value[0], value[1]] }));
-                            setMinPriceInput(value[0].toString());
-                            setMaxPriceInput(value[1].toString());
-                          }}
-                          min={0}
-                          max={500000}
-                          step={1000}
-                          className="w-full"
-                        />
-                      </div>
-                    </div>
-                    
-                    {/* Price Input Fields */}
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-xs md:text-sm font-medium text-slate-700 mb-2 block">Min Price</label>
-                        <Input
-                          type="number"
-                          placeholder="0"
-                          value={minPriceInput}
-                          onChange={(e) => {
-                            setMinPriceInput(e.target.value);
-                            const minPrice = parseInt(e.target.value) || 0;
-                            const maxPrice = parseInt(maxPriceInput) || 500000;
-                            if (minPrice <= maxPrice) {
-                              setTempFilters(prev => ({ ...prev, priceRange: [minPrice, maxPrice] }));
-                            }
-                          }}
-                          className="border border-slate-300 focus:border-[#FFD700] focus:ring-1 focus:ring-[#FFD700]/30 transition-colors text-sm"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs md:text-sm font-medium text-slate-700 mb-2 block">Max Price</label>
-                        <Input
-                          type="number"
-                          placeholder="500000"
-                          value={maxPriceInput}
-                          onChange={(e) => {
-                            setMaxPriceInput(e.target.value);
-                            const minPrice = parseInt(minPriceInput) || 0;
-                            const maxPrice = parseInt(e.target.value) || 500000;
-                            if (maxPrice >= minPrice) {
-                              setTempFilters(prev => ({ ...prev, priceRange: [minPrice, maxPrice] }));
-                            }
-                          }}
-                          className="border border-slate-300 focus:border-[#FFD700] focus:ring-1 focus:ring-[#FFD700]/30 transition-colors text-sm"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Condition */}
-                  <div className="space-y-4">
-                    <h3 className="text-sm md:text-base font-semibold text-slate-900 border-b-2 border-slate-200 pb-2 md:pb-3 uppercase tracking-wide">Condition</h3>
-                    <div className="flex gap-3">
-                      {conditionOptions.map((condition) => {
-                        const isSelected = tempFilters.condition.includes(condition as 'New' | 'Used');
-                        return (
-                          <button
-                            key={condition}
-                            onClick={() => {
-                              if (isSelected) {
-                                setTempFilters(prev => ({ ...prev, condition: prev.condition.filter(c => c !== condition) }));
-                              } else {
-                                setTempFilters(prev => ({ ...prev, condition: [...prev.condition, condition as 'New' | 'Used'] }));
-                              }
-                            }}
-                            className={`px-4 py-2 border-2 font-medium transition-all uppercase tracking-wide text-sm ${
-                              isSelected 
-                                ? 'bg-[#FFD700] text-[#001F3F] border-[#FFD700]' 
-                                : 'bg-white text-slate-900 border-slate-300 hover:border-[#FFD700] hover:shadow-md'
-                            }`}
+                        <div>
+                          <label className="text-xs md:text-sm font-medium text-slate-700 mb-2 block">To Year</label>
+                          <Select
+                              value={tempFilters.yearRange[1].toString()}
+                              onValueChange={(value) => {
+                                const toYear = parseInt(value);
+                                setTempFilters(prev => ({ ...prev, yearRange: [prev.yearRange[0], toYear] }));
+                              }}
                           >
-                            {condition}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Model Year */}
-                  <div className="space-y-4">
-                    <h3 className="text-sm md:text-base font-semibold text-slate-900 border-b-2 border-slate-200 pb-2 md:pb-3 uppercase tracking-wide">Model Year</h3>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-xs md:text-sm font-medium text-slate-700 mb-2 block">From Year</label>
-                        <Select
-                          value={tempFilters.yearRange[0].toString()}
-                          onValueChange={(value) => {
-                            const fromYear = parseInt(value);
-                            setTempFilters(prev => ({ ...prev, yearRange: [fromYear, prev.yearRange[1]] }));
-                          }}
-                        >
-                          <SelectTrigger className="border-2 border-slate-300 focus:border-[#FFD700] focus:ring-1 focus:ring-[#FFD700]/30 transition-colors">
-                            <SelectValue placeholder="Select year" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <div className="p-2">
-                              <Input
-                                placeholder="Search year..."
-                                value={yearSearch}
-                                onChange={(e) => setYearSearch(e.target.value)}
-                                className="mb-2 border border-slate-300"
-                              />
-                            </div>
-                            {Array.from({ length: new Date().getFullYear() - 2015 + 1 }, (_, i) => {
-                              const year = (new Date().getFullYear() - i).toString();
-                              if (yearSearch && !year.includes(yearSearch)) return null;
-                              return (
-                                <SelectItem key={year} value={year}>
-                                  {year}
-                                </SelectItem>
-                              );
-                            })}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <label className="text-xs md:text-sm font-medium text-slate-700 mb-2 block">To Year</label>
-                        <Select
-                          value={tempFilters.yearRange[1].toString()}
-                          onValueChange={(value) => {
-                            const toYear = parseInt(value);
-                            setTempFilters(prev => ({ ...prev, yearRange: [prev.yearRange[0], toYear] }));
-                          }}
-                        >
-                          <SelectTrigger className="border-2 border-slate-300 focus:border-[#FFD700] focus:ring-1 focus:ring-[#FFD700]/30 transition-colors">
-                            <SelectValue placeholder="Select year" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <div className="p-2">
-                              <Input
-                                placeholder="Search year..."
-                                value={yearSearch}
-                                onChange={(e) => setYearSearch(e.target.value)}
-                                className="mb-2 border border-slate-300"
-                              />
-                            </div>
-                            {Array.from({ length: new Date().getFullYear() - 2015 + 1 }, (_, i) => {
-                              const year = (new Date().getFullYear() - i).toString();
-                              if (yearSearch && !year.includes(yearSearch)) return null;
-                              return (
-                                <SelectItem key={year} value={year}>
-                                  {year}
-                                </SelectItem>
-                              );
-                            })}
-                          </SelectContent>
-                        </Select>
+                            <SelectTrigger className="border-2 border-slate-300 focus:border-[#FFD700] focus:ring-1 focus:ring-[#FFD700]/30 transition-colors">
+                              <SelectValue placeholder="Select year" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <div className="p-2">
+                                <Input
+                                    placeholder="Search year..."
+                                    value={yearSearch}
+                                    onChange={(e) => setYearSearch(e.target.value)}
+                                    className="mb-2 border border-slate-300"
+                                />
+                              </div>
+                              {Array.from({ length: new Date().getFullYear() - 2015 + 1 }, (_, i) => {
+                                const year = (new Date().getFullYear() - i).toString();
+                                if (yearSearch && !year.includes(yearSearch)) return null;
+                                return (
+                                    <SelectItem key={year} value={year}>
+                                      {year}
+                                    </SelectItem>
+                                );
+                              })}
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Transmission */}
-                  <div className="space-y-4">
-                    <h3 className="text-sm md:text-base font-semibold text-slate-900 border-b-2 border-slate-200 pb-2 md:pb-3 uppercase tracking-wide">Transmission</h3>
-                    <div className="flex gap-3">
-                      {transmissionOptions.map((transmission) => {
-                        const isSelected = tempFilters.transmission.includes(transmission);
-                        return (
-                          <button
-                            key={transmission}
-                            onClick={() => {
-                              if (isSelected) {
-                                setTempFilters(prev => ({ ...prev, transmission: prev.transmission.filter(t => t !== transmission) }));
-                              } else {
-                                setTempFilters(prev => ({ ...prev, transmission: [...prev.transmission, transmission] }));
-                              }
-                            }}
-                            className={`px-4 py-2 border-2 font-medium transition-all uppercase tracking-wide text-sm ${
-                              isSelected 
-                                ? 'bg-[#FFD700] text-[#001F3F] border-[#FFD700]' 
-                                : 'bg-white text-slate-900 border-slate-300 hover:border-[#FFD700] hover:shadow-md'
-                            }`}
-                          >
-                            {transmission}
-                          </button>
-                        );
-                      })}
+                    {/* Transmission */}
+                    <div className="space-y-4">
+                      <h3 className="text-sm md:text-base font-semibold text-slate-900 border-b-2 border-slate-200 pb-2 md:pb-3 uppercase tracking-wide">Transmission</h3>
+                      <div className="flex gap-3">
+                        {transmissionOptions.map((transmission) => {
+                          const isSelected = tempFilters.transmission.includes(transmission);
+                          return (
+                              <button
+                                  key={transmission}
+                                  onClick={() => {
+                                    if (isSelected) {
+                                      setTempFilters(prev => ({ ...prev, transmission: prev.transmission.filter(t => t !== transmission) }));
+                                    } else {
+                                      setTempFilters(prev => ({ ...prev, transmission: [...prev.transmission, transmission] }));
+                                    }
+                                  }}
+                                  className={`px-4 py-2 border-2 font-medium transition-all uppercase tracking-wide text-sm ${
+                                      isSelected
+                                          ? 'bg-[#FFD700] text-[#001F3F] border-[#FFD700]'
+                                          : 'bg-white text-slate-900 border-slate-300 hover:border-[#FFD700] hover:shadow-md'
+                                  }`}
+                              >
+                                {transmission}
+                              </button>
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Fuel Type */}
-                  <div className="space-y-4">
-                    <h3 className="text-sm md:text-base font-semibold text-slate-900 border-b-2 border-slate-200 pb-2 md:pb-3 uppercase tracking-wide">Fuel Type</h3>
-                    <div className="flex flex-wrap gap-3">
-                      {fuelTypeOptions.map((fuelType) => {
-                        const isSelected = tempFilters.fuelType.includes(fuelType);
-                        return (
-                          <button
-                            key={fuelType}
-                            onClick={() => {
-                              if (isSelected) {
-                                setTempFilters(prev => ({ ...prev, fuelType: prev.fuelType.filter(f => f !== fuelType) }));
-                              } else {
-                                setTempFilters(prev => ({ ...prev, fuelType: [...prev.fuelType, fuelType] }));
-                              }
-                            }}
-                            className={`px-4 py-2 border-2 font-medium transition-all uppercase tracking-wide text-sm ${
-                              isSelected 
-                                ? 'bg-[#FFD700] text-[#001F3F] border-[#FFD700]' 
-                                : 'bg-white text-slate-900 border-slate-300 hover:border-[#FFD700] hover:shadow-md'
-                            }`}
-                          >
-                            {fuelType}
-                          </button>
-                        );
-                      })}
+                    {/* Fuel Type */}
+                    <div className="space-y-4">
+                      <h3 className="text-sm md:text-base font-semibold text-slate-900 border-b-2 border-slate-200 pb-2 md:pb-3 uppercase tracking-wide">Fuel Type</h3>
+                      <div className="flex flex-wrap gap-3">
+                        {fuelTypeOptions.map((fuelType) => {
+                          const isSelected = tempFilters.fuelType.includes(fuelType);
+                          return (
+                              <button
+                                  key={fuelType}
+                                  onClick={() => {
+                                    if (isSelected) {
+                                      setTempFilters(prev => ({ ...prev, fuelType: prev.fuelType.filter(f => f !== fuelType) }));
+                                    } else {
+                                      setTempFilters(prev => ({ ...prev, fuelType: [...prev.fuelType, fuelType] }));
+                                    }
+                                  }}
+                                  className={`px-4 py-2 border-2 font-medium transition-all uppercase tracking-wide text-sm ${
+                                      isSelected
+                                          ? 'bg-[#FFD700] text-[#001F3F] border-[#FFD700]'
+                                          : 'bg-white text-slate-900 border-slate-300 hover:border-[#FFD700] hover:shadow-md'
+                                  }`}
+                              >
+                                {fuelType}
+                              </button>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Filter Actions */}
-                <div className="flex gap-4 pt-6 border-t border-slate-200">
-                  <Button 
-                    onClick={resetFilters} 
-                    variant="outline" 
-                    className="flex-1 border-2 border-slate-300 text-slate-900 hover:bg-slate-50 hover:border-[#FFD700] font-bold transition-all h-10"
+                {/* 3. Sticky Action Footer */}
+                <div className="shrink-0 bg-white border-t border-slate-200 p-4 md:px-6 flex gap-4">
+                  <Button
+                      onClick={resetFilters}
+                      className="flex-1 border-2 bg-white border-slate-300 text-slate-900 hover:bg-slate-50 hover:border-[#FFD700] font-bold transition-all h-10"
                   >
                     Reset
                   </Button>
-                  <Button 
-                    onClick={applyFilters} 
-                    className="flex-1 bg-[#FFD700] hover:bg-[#FFC700] text-[#001F3F] font-bold transition-all h-10 uppercase tracking-wide"
+                  <Button
+                      onClick={applyFilters}
+                      className="flex-1 bg-[#FFD700] hover:bg-[#FFC700] text-[#001F3F] font-bold transition-all h-10 uppercase tracking-wide"
                   >
                     Apply Filters
                   </Button>
-                </div>
                 </div>
               </DialogContent>
             </Dialog>
@@ -680,18 +703,6 @@ export function ExplorePage() {
                 aria-label="Grid view"
               >
                 <Grid3x3 className="h-5 w-5" />
-              </button>
-              <button
-                onClick={() => setViewMode('list')}
-                className={`p-2 border-2 transition-all h-12 w-12 flex items-center justify-center ${
-                  viewMode === 'list'
-                    ? 'bg-[#FFD700] text-[#001F3F] border-[#FFD700]'
-                    : 'bg-white text-slate-900 border-slate-300 hover:border-[#FFD700]'
-                }`}
-                title="List view"
-                aria-label="List view"
-              >
-                <List className="h-5 w-5" />
               </button>
             </div>
           </div>
@@ -876,29 +887,29 @@ export function ExplorePage() {
                 </Button>
               </div>
 
-              {/* Results Per Page - Bottom Right */}
-              <div className="flex justify-end">
-                <div className="flex items-center gap-2">
-                  <label className="text-sm font-medium text-slate-700">Show:</label>
-                  <Select 
-                    value={pageSize.toString()} 
-                    onValueChange={() => {
-                      setCurrentPage(1);
-                      setPageCursors([]);
-                    }}
-                  >
-                    <SelectTrigger className="border-2 border-slate-300 text-slate-900 whitespace-nowrap h-10 font-semibold hover:border-[#FFD700] transition-colors w-32">
-                      <SelectValue placeholder="Show" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="9">9</SelectItem>
-                      <SelectItem value="12">12</SelectItem>
-                      <SelectItem value="16">16</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <span className="text-sm text-slate-600 ml-2">per page</span>
-                </div>
-              </div>
+              {/*/!* Results Per Page - Bottom Right *!/*/}
+              {/*<div className="flex justify-end">*/}
+              {/*  <div className="flex items-center gap-2">*/}
+              {/*    <label className="text-sm font-medium text-slate-700">Show:</label>*/}
+              {/*    <Select */}
+              {/*      value={pageSize.toString()} */}
+              {/*      onValueChange={() => {*/}
+              {/*        setCurrentPage(1);*/}
+              {/*        setPageCursors([]);*/}
+              {/*      }}*/}
+              {/*    >*/}
+              {/*      <SelectTrigger className="border-2 border-slate-300 text-slate-900 whitespace-nowrap h-10 font-semibold hover:border-[#FFD700] transition-colors w-32">*/}
+              {/*        <SelectValue placeholder="Show" />*/}
+              {/*      </SelectTrigger>*/}
+              {/*      <SelectContent>*/}
+              {/*        <SelectItem value="9">9</SelectItem>*/}
+              {/*        <SelectItem value="12">12</SelectItem>*/}
+              {/*        <SelectItem value="16">16</SelectItem>*/}
+              {/*      </SelectContent>*/}
+              {/*    </Select>*/}
+              {/*    <span className="text-sm text-slate-600 ml-2">per page</span>*/}
+              {/*  </div>*/}
+              {/*</div>*/}
             </div>
           </>
         )}
