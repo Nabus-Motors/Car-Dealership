@@ -230,8 +230,6 @@ section {
   gap: 8px 16px;
   padding: 12px 0;
   border-top: 1px solid #F0F0F0;
-  border-bottom: 1px solid #F0F0F0;
-  margin-bottom: 12px;
 }
 .spec-item {
   display: flex;
@@ -378,7 +376,7 @@ section {
 @media (max-width: 768px) {
   .home-search-bar {
     width: calc(100% - 32px);
-    padding: 24px 20px;
+    padding: 20px 20px;
     margin-top: 0;
     border-radius: 0;
   }
@@ -3717,6 +3715,7 @@ html {
   border-right: 1px solid #E8E8E8;
   border-bottom: 1px solid #E8E8E8;
   text-align: center;
+  gap: 12px;
 }
 .dspec:nth-child(3n) {
   border-right: none;
@@ -3754,9 +3753,9 @@ html {
 /* Tabs */
 .detail-tabs {
   display: flex;
-  border-bottom: 2px solid #E8E8E8;
   margin-bottom: 24px;
   gap: 0;
+  padding-bottom: 12px;
 }
 .tab-btn {
   background: none;

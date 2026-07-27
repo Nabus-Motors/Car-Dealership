@@ -1,6 +1,5 @@
 import { useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronDown } from 'lucide-react';
 
 interface HomepageHeroProps {
   onReserve?: () => void;
@@ -64,10 +63,10 @@ export default function HomepageHero({
       {/* Content layer */}
       <div className="relative z-10 w-full min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8">
         {/* Top vehicle badge */}
-        <div className="absolute top-12 right-8 hidden xl:flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-full backdrop-blur-sm">
-          <div className="w-2 h-2 bg-[#C9A84C] rounded-full animate-pulse" />
-          <span className="text-xs font-medium text-white/70 uppercase tracking-[2px]">Featured Vehicles</span>
-        </div>
+        {/*<div className="absolute top-12 right-8 hidden xl:flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-full backdrop-blur-sm">*/}
+        {/*  <div className="w-2 h-2 bg-[#C9A84C] rounded-full animate-pulse" />*/}
+        {/*  <span className="text-xs font-medium text-white/70 uppercase tracking-[2px]">Featured Vehicles</span>*/}
+        {/*</div>*/}
 
         {/* Main content container */}
         <div className="w-full max-w-3xl text-center">
@@ -82,19 +81,18 @@ export default function HomepageHero({
 
           {/* Headline with mixed styling */}
           <div className="mb-6">
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black font-barlow text-white leading-tight mb-2">
-              Drive<span className="block" />
-              <span className="text-[#C9A84C]">Your</span>
-              <span className="block" />
-              <span 
-                className="text-white"
-                style={{
-                  WebkitTextStroke: '2px #C9A84C',
-                  paintOrder: 'stroke fill',
-                }}
+            <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-9xl xl:text-[120px] 2xl:text-[150px] font-black font-barlow text-white leading-tight mb-2 whitespace-nowrap">
+              Drive{" "}
+              <span className="text-[#C9A84C]">Your</span>{" "}
+              <span
+                  className="text-white"
+                  style={{
+                    WebkitTextStroke: '2px #C9A84C',
+                    paintOrder: 'stroke fill',
+                  }}
               >
-                Dream
-              </span>
+      Dream
+    </span>
             </h1>
           </div>
 
@@ -145,21 +143,6 @@ export default function HomepageHero({
             </div>
           </div>
         </div>
-
-        {/* Scroll indicator */}
-        <div
-          ref={scrollIndicatorRef}
-          className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex flex-col items-center gap-2 animate-bounce"
-          style={{
-            animation: 'pulse-gradient 2s ease-in-out infinite',
-          }}
-        >
-          <span className="text-xs uppercase text-white/40 tracking-[2px]">Scroll</span>
-          <ChevronDown className="w-5 h-5 text-white/40" />
-        </div>
-
-        {/* Bottom gold accent line */}
-        <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#C9A84C] to-transparent opacity-60" />
       </div>
     </section>
   );

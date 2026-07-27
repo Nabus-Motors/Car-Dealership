@@ -28,13 +28,21 @@ export function useProgressiveImage(src: string | null | undefined): UseProgress
     const img = new Image();
     img.src = src;
 
+    const timeout = setTimeout(() => {
+      setCurrentSrc(FALLBACK_SVG);
+      setIsLoading(false);
+      setIsError(true);
+    }, 8000);
+
     const handleLoad = () => {
+      clearTimeout(timeout); // <-- cancel the pending fallback
       setCurrentSrc(src);
       setIsLoading(false);
       setIsError(false);
     };
 
     const handleError = () => {
+      clearTimeout(timeout); // <-- cancel it here too
       setCurrentSrc(FALLBACK_SVG);
       setIsLoading(false);
       setIsError(true);
@@ -42,13 +50,6 @@ export function useProgressiveImage(src: string | null | undefined): UseProgress
 
     img.addEventListener('load', handleLoad);
     img.addEventListener('error', handleError);
-
-    // Timeout fallback for images that take too long
-    const timeout = setTimeout(() => {
-      setCurrentSrc(FALLBACK_SVG);
-      setIsLoading(false);
-      setIsError(true);
-    }, 8000);
 
     return () => {
       img.removeEventListener('load', handleLoad);
