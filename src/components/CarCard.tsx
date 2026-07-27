@@ -1,7 +1,8 @@
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { formatPrice, formatMileage } from "@/utils/format";
+import { useImagePreloader } from "@/hooks/useImagePreloader";
 import type { Car } from "@/types/car";
 
 interface CarCardProps {
@@ -14,6 +15,15 @@ export function CarCard({ car }: CarCardProps) {
 
   const images = car.imageUrls ?? [];
   const hasMultipleImages = images.length > 1;
+
+  // Preload next/previous images for smooth carousel experience
+  const nextImageIndex = (currentImageIndex + 1) % images.length;
+  const prevImageIndex = currentImageIndex === 0 ? images.length - 1 : currentImageIndex - 1;
+  
+  useImagePreloader(
+    [images[nextImageIndex], images[prevImageIndex]], 
+    { delay: 200, priority: 'low' }
+  );
 
   const handleCardClick = () => {
     navigate(`/car/${car.id}`);

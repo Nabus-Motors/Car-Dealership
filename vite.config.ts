@@ -22,8 +22,16 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: false,
+    // Optimize image assets
+    assetsInclude: ['**/*.svg', '**/*.webp', '**/*.png', '**/*.jpg', '**/*.jpeg'],
+    assetsInlineLimit: 4096, // Inline assets smaller than 4kb
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true, // Remove console logs in production
+      },
+    },
     rollupOptions: {
-      external: [],
       output: {
         manualChunks: {
           'vendor': [
@@ -31,8 +39,20 @@ export default defineConfig({
             'react-dom',
             'react-router-dom',
           ],
+          'ui': [
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-dropdown-menu',
+            '@radix-ui/react-select',
+          ],
         },
       },
     },
   },
+  // Performance optimizations
+  server: {
+    headers: {
+      'Cache-Control': 'public, max-age=31536000, immutable'
+    }
+  },
 })
+
