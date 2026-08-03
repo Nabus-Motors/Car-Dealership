@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Input } from '@components/ui/input';
 import { Button } from '@components/ui/button';
@@ -13,6 +13,7 @@ import { db, COLLECTIONS } from '@/firebase/firebase';
 import { Grid3x3 } from 'lucide-react';
 import type { Car } from '@/types/car';
 import { normalizeImageUrls } from '@utils/images';
+import { inferBodyStyle } from '@utils/inventory';
 import { CarCard } from '@components/CarCard';
 import { CarCardHorizontal } from '@components/CarCardHorizontal';
 import { HeroSection } from '@components/HeroSection';
@@ -26,7 +27,34 @@ interface Filters {
   yearRange: [number, number];
   transmission: string[];
   fuelType: string[];
+  model: string;
+  bodyStyle: string;
 }
+
+function filtersFromParams(search: string, base: Filters): Filters {
+  const params = new URLSearchParams(search);
+  const brand = params.get('brand') || params.get('make');
+  const model = params.get('model');
+  const bodyStyle = params.get('body_style') || params.get('bodyStyle');
+  const condition = params.get('condition');
+  const transmission = params.get('transmission');
+  const maxPrice = Number(params.get('max_price'));
+
+  return {
+    ...base,
+    brands: brand ? [brand] : base.brands,
+    model: model ?? '',
+    bodyStyle: bodyStyle ?? '',
+    condition: condition === 'New' || condition === 'Used' ? [condition] : base.condition,
+    transmission: transmission ? [transmission] : base.transmission,
+    priceRange: Number.isFinite(maxPrice) && maxPrice > 0
+      ? [base.priceRange[0], maxPrice]
+      : base.priceRange,
+  };
+}
+
+const MIN_YEAR = 2005;
+const MAX_PRICE = 2000000;
 
 const transmissionOptions = ['Automatic', 'Manual'];
 const fuelTypeOptions = ['Gasoline', 'Diesel', 'Electric', 'Hybrid'];
@@ -67,44 +95,44 @@ export function ExplorePage() {
   const [brandSearch, setBrandSearch] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState<'newest' | 'price-low' | 'price-high' | 'popular'>('newest');
+  const [totalResults, setTotalResults] = useState(0);
+  const allCarsRef = useRef<Car[] | null>(null);
   
   // Filter state
-  const [filters, setFilters] = useState<Filters>(() => {
-    const params = new URLSearchParams(location.search);
-    const brandParam = params.get('brand');
-    return {
+  const [filters, setFilters] = useState<Filters>(() =>
+    filtersFromParams(location.search, {
       search: '',
-      brands: brandParam ? [brandParam] : [],
-      priceRange: [0, 500000],
+      brands: [],
+      priceRange: [0, MAX_PRICE],
       condition: [],
-      yearRange: [2015, new Date().getFullYear()],
+      yearRange: [MIN_YEAR, new Date().getFullYear() + 1],
       transmission: [],
-      fuelType: []
-    };
-  });
+      fuelType: [],
+      model: '',
+      bodyStyle: '',
+    })
+  );
 
   useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const brandParam = params.get('brand');
-    if (brandParam) {
-      setFilters(prev => ({ ...prev, brands: [brandParam] }));
-    }
+    setFilters(prev => filtersFromParams(location.search, { ...prev, brands: [] }));
   }, [location.search]);
 
   // Temporary filter state for modal
   const [tempFilters, setTempFilters] = useState<Filters>({
     search: '',
     brands: [],
-    priceRange: [0, 500000],
+    priceRange: [0, MAX_PRICE],
     condition: [],
-    yearRange: [2015, new Date().getFullYear()],
+    yearRange: [MIN_YEAR, new Date().getFullYear() + 1],
     transmission: [],
-    fuelType: []
+    fuelType: [],
+    model: '',
+    bodyStyle: ''
   });
 
   // Price input state
   const [minPriceInput, setMinPriceInput] = useState('0');
-  const [maxPriceInput, setMaxPriceInput] = useState('500000');
+  const [maxPriceInput, setMaxPriceInput] = useState(String(MAX_PRICE));
   const [yearSearch, setYearSearch] = useState('');
 
   // Debounced search
@@ -143,29 +171,39 @@ export function ExplorePage() {
       setLoading(true);
       setError(null);
 
-      let q = query(collection(db, COLLECTIONS.CARS), orderBy('createdAt', 'desc'));
-
-      if (!resetPagination && page > 1) {
-        const cursor = pageCursors[page - 2];
-        if (cursor) {
-          q = query(q, startAfter(cursor));
+      if (!allCarsRef.current) {
+        let snapshot;
+        try {
+          snapshot = await getDocs(
+            query(collection(db, COLLECTIONS.CARS), orderBy('createdAt', 'desc'))
+          );
+        } catch {
+          snapshot = await getDocs(query(collection(db, COLLECTIONS.CARS)));
         }
+        allCarsRef.current = snapshot.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
+        })) as Car[];
       }
 
-      q = query(q, limit(pageSize));
+      let carList = allCarsRef.current;
 
-      const querySnapshot = await getDocs(q);
-      let carList = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data()
-      })) as Car[];
-      
       carList = carList.map(c => ({ ...c, imageUrls: normalizeImageUrls(c) }));
       carList = carList.filter(c => ['published','new','sold'].includes((c.status || 'draft') as string));
 
       // Apply all filters client-side
       if (filters.brands.length > 0) {
-        carList = carList.filter(car => filters.brands.includes(car.brand));
+        const wanted = filters.brands.map(b => b.trim().toLowerCase());
+        carList = carList.filter(car => wanted.includes((car.brand ?? '').trim().toLowerCase()));
+      }
+
+      if (filters.model.trim()) {
+        const wanted = filters.model.trim().toLowerCase();
+        carList = carList.filter(car => (car.model ?? '').trim().toLowerCase() === wanted);
+      }
+
+      if (filters.bodyStyle.trim()) {
+        carList = carList.filter(car => inferBodyStyle(car) === filters.bodyStyle.trim());
       }
 
       if (filters.condition.length > 0) {
@@ -196,24 +234,21 @@ export function ExplorePage() {
         car.year >= filters.yearRange[0] && car.year <= filters.yearRange[1]
       );
 
-      // Update pagination
-      const docs = querySnapshot.docs;
-      setHasMore(docs.length === pageSize);
-      if (docs.length > 0) {
-        setPageCursors(prev => {
-          const next = [...prev];
-          next[page - 1] = docs[docs.length - 1];
-          return next;
-        });
-      } else {
-        setPageCursors(prev => {
-          const next = [...prev];
-          next[page - 1] = null;
-          return next;
-        });
+      const sorted = [...carList];
+      if (sortBy === 'price-low') {
+        sorted.sort((a, b) => (a.price ?? 0) - (b.price ?? 0));
+      } else if (sortBy === 'price-high') {
+        sorted.sort((a, b) => (b.price ?? 0) - (a.price ?? 0));
+      } else if (sortBy === 'newest') {
+        sorted.sort((a, b) => (b.year ?? 0) - (a.year ?? 0));
       }
 
-      setCars(carList);
+      const targetPage = resetPagination ? 1 : page;
+      const start = (targetPage - 1) * pageSize;
+
+      setTotalResults(sorted.length);
+      setHasMore(sorted.length > start + pageSize);
+      setCars(sorted.slice(start, start + pageSize));
       if (resetPagination) {
         setCurrentPage(1);
       }
@@ -224,13 +259,12 @@ export function ExplorePage() {
     } finally {
       setLoading(false);
     }
-  }, [filters, debouncedSearch, pageCursors, pageSize]);
+  }, [filters, debouncedSearch, pageSize, sortBy]);
 
   useEffect(() => {
-    setPageCursors([]);
     fetchCars(1, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters, debouncedSearch]);
+  }, [filters, debouncedSearch, sortBy]);
 
   useEffect(() => {
     setPageCursors([]);
@@ -259,18 +293,20 @@ export function ExplorePage() {
   const getDefaultFilters = (): Filters => ({
     search: '',
     brands: [],
-    priceRange: [0, 500000],
+    priceRange: [0, MAX_PRICE],
     condition: [],
-    yearRange: [2015, new Date().getFullYear()],
+    yearRange: [MIN_YEAR, new Date().getFullYear() + 1],
     transmission: [],
-    fuelType: []
+    fuelType: [],
+    model: '',
+    bodyStyle: ''
   });
 
   const resetFilters = () => {
     const defaults = getDefaultFilters();
     setTempFilters(defaults);
     setMinPriceInput('0');
-    setMaxPriceInput('500000');
+    setMaxPriceInput(String(MAX_PRICE));
     setYearSearch('');
   };
 
@@ -309,7 +345,9 @@ export function ExplorePage() {
           {/* Results Count */}
           {!loading && cars.length > 0 && (
             <div className="text-sm text-slate-600 font-medium">
-              {`Showing ${cars.length} vehicle${cars.length !== 1 ? 's' : ''}`}
+              {totalResults > cars.length
+                ? `Showing ${cars.length} of ${totalResults} vehicles`
+                : `Showing ${totalResults} vehicle${totalResults !== 1 ? 's' : ''}`}
             </div>
           )}
           
@@ -464,7 +502,7 @@ export function ExplorePage() {
                                 setMaxPriceInput(value[1].toString());
                               }}
                               min={0}
-                              max={500000}
+                              max={MAX_PRICE}
                               step={1000}
                               className="w-full"
                           />
@@ -482,7 +520,7 @@ export function ExplorePage() {
                               onChange={(e) => {
                                 setMinPriceInput(e.target.value);
                                 const minPrice = parseInt(e.target.value) || 0;
-                                const maxPrice = parseInt(maxPriceInput) || 500000;
+                                const maxPrice = parseInt(maxPriceInput) || MAX_PRICE;
                                 if (minPrice <= maxPrice) {
                                   setTempFilters(prev => ({ ...prev, priceRange: [minPrice, maxPrice] }));
                                 }
@@ -494,12 +532,12 @@ export function ExplorePage() {
                           <label className="text-xs md:text-sm font-medium text-slate-700 mb-2 block">Max Price</label>
                           <Input
                               type="number"
-                              placeholder="500000"
+                              placeholder={String(MAX_PRICE)}
                               value={maxPriceInput}
                               onChange={(e) => {
                                 setMaxPriceInput(e.target.value);
                                 const minPrice = parseInt(minPriceInput) || 0;
-                                const maxPrice = parseInt(e.target.value) || 500000;
+                                const maxPrice = parseInt(e.target.value) || MAX_PRICE;
                                 if (maxPrice >= minPrice) {
                                   setTempFilters(prev => ({ ...prev, priceRange: [minPrice, maxPrice] }));
                                 }
@@ -564,7 +602,7 @@ export function ExplorePage() {
                                     className="mb-2 border border-slate-300"
                                 />
                               </div>
-                              {Array.from({ length: new Date().getFullYear() - 2015 + 1 }, (_, i) => {
+                              {Array.from({ length: new Date().getFullYear() - MIN_YEAR + 2 }, (_, i) => {
                                 const year = (new Date().getFullYear() - i).toString();
                                 if (yearSearch && !year.includes(yearSearch)) return null;
                                 return (
@@ -597,7 +635,7 @@ export function ExplorePage() {
                                     className="mb-2 border border-slate-300"
                                 />
                               </div>
-                              {Array.from({ length: new Date().getFullYear() - 2015 + 1 }, (_, i) => {
+                              {Array.from({ length: new Date().getFullYear() - MIN_YEAR + 2 }, (_, i) => {
                                 const year = (new Date().getFullYear() - i).toString();
                                 if (yearSearch && !year.includes(yearSearch)) return null;
                                 return (

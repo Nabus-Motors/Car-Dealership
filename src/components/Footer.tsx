@@ -1,99 +1,110 @@
-import { Facebook, Twitter, Instagram, MapPin, Phone, Mail } from 'lucide-react';
+import { Facebook, Twitter, Instagram, Youtube } from 'lucide-react';
 import { Link } from 'react-router-dom';
+
+const COLUMNS = [
+  {
+    title: 'Nabus Motors',
+    links: [
+      { label: 'Inventory', to: '/explore' },
+      { label: 'About Us', to: '/about' },
+      { label: 'Finance', to: '/contact' },
+      { label: 'Trade-In', to: '/contact' },
+    ],
+  },
+  {
+    title: 'Contact',
+    links: [
+      { label: 'Contact Us', to: '/contact' },
+      { label: 'Book a Test Drive', to: '/contact' },
+      { label: 'Find Us', to: '/contact' },
+      { label: 'Servicing', to: '/contact' },
+    ],
+  },
+];
+
+const SOCIALS = [
+  { Icon: Facebook, label: 'Facebook' },
+  { Icon: Instagram, label: 'Instagram' },
+  { Icon: Youtube, label: 'YouTube' },
+  { Icon: Twitter, label: 'X' },
+];
 
 export function Footer() {
   return (
-    <footer className="bg-[#001F3F] text-white">
-      <div className=" px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {/* Company Info */}
-          <div className="space-y-4">
-            <Link to="/" className="flex items-center gap-2">
-              <img src="/logo.png" alt="Nabus Motors" className="h-10 w-auto" />
-              <div>
-                <div className="text-sm tracking-wider font-semibold">Nabus</div>
-                <div className="text-xs text-[#FFD700]">Motors</div>
-              </div>
-            </Link>
-            <p className="text-gray-400">
-              Your trusted partner in finding the perfect vehicle. Quality cars, exceptional service.
-            </p>
-          </div>
+    <footer className="w-full bg-ink text-onDark">
+      <div className="shell py-16 md:py-20">
+        <p className="max-w-4xl text-[13px] leading-[1.8] text-onDark/70">
+          Nabus Motors is a licensed vehicle dealer operating in Accra, Ghana. Finance is
+          arranged through partner lenders; terms, rates and approval are subject to status.
+          Vehicle availability and pricing are confirmed at point of sale.
+        </p>
 
-          {/* Quick Links */}
-          <div className="space-y-4">
-            <h3 className="font-semibold text-lg">Quick Links</h3>
-            <div className="space-y-2">
-              <Link
-                to="/"
-                className="block text-gray-400 hover:text-[#FFD700] transition-colors duration-300"
-              >
-                Home
-              </Link>
-              <Link
-                to="/explore"
-                className="block text-gray-400 hover:text-[#FFD700] transition-colors duration-300"
-              >
-                Inventory
-              </Link>
-              <Link
-                to="/about"
-                className="block text-gray-400 hover:text-[#FFD700] transition-colors duration-300"
-              >
-                About Us
-              </Link>
-              <Link
-                to="/contact"
-                className="block text-gray-400 hover:text-[#FFD700] transition-colors duration-300"
-              >
-                Contact
-              </Link>
+        <div className="mt-14 grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+          {COLUMNS.map((column) => (
+            <div key={column.title}>
+              <h3 className="eyebrow text-white">{column.title}</h3>
+              <ul className="mt-5 space-y-3">
+                {column.links.map((link) => (
+                  <li key={link.label}>
+                    <Link
+                      to={link.to}
+                      className="text-sm text-onDark transition-colors hover:text-white"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             </div>
+          ))}
+
+          <div>
+            <h3 className="eyebrow text-white">Visit</h3>
+            <ul className="mt-5 space-y-3 text-sm">
+              <li>Olusegun Obasanjo Wy, Accra</li>
+              <li>
+                <a href="tel:0279940200" className="transition-colors hover:text-white">
+                  0279 940 200
+                </a>
+              </li>
+              <li>
+                <a
+                  href="mailto:sales@nabusmotors.com"
+                  className="transition-colors hover:text-white"
+                >
+                  sales@nabusmotors.com
+                </a>
+              </li>
+              <li className="pt-2 text-onDark/60">Mon–Fri 9:00–18:00</li>
+              <li className="text-onDark/60">Sat 9:00–16:00</li>
+            </ul>
           </div>
 
-          {/* Contact Info */}
-          <div className="space-y-4">
-            <h3 className="font-semibold text-lg">Contact</h3>
-            <div className="space-y-3 text-gray-400">
-              <div className="flex items-center gap-3">
-                <MapPin className="w-4 h-4 text-[#FFD700] flex-shrink-0" />
-                <span className="text-sm">Olusegun Obasanjo Wy, Accra</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <Phone className="w-4 h-4 text-[#FFD700] flex-shrink-0" />
-                <span className="text-sm">0279940200</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <Mail className="w-4 h-4 text-[#FFD700] flex-shrink-0" />
-                <span className="text-sm">sales@nabusmotors.com</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Hours */}
-          <div className="space-y-4">
-            <h3 className="font-semibold text-lg">Business Hours</h3>
-            <div className="space-y-2 text-gray-400 text-sm">
-              <p>Mon - Fri: 9:00 AM - 8:00 PM</p>
-              <p>Saturday: 9:00 AM - 6:00 PM</p>
-              <p>Sunday: 12:00 PM - 5:00 PM</p>
+          <div>
+            <h3 className="eyebrow text-white">Follow Us</h3>
+            <div className="mt-5 flex gap-3">
+              {SOCIALS.map(({ Icon, label }) => (
+                <a
+                  key={label}
+                  href="#"
+                  aria-label={label}
+                  className="flex h-10 w-10 items-center justify-center border border-white/15 transition-colors hover:border-[var(--accent-solid)] hover:text-[var(--accent-solid)]"
+                >
+                  <Icon className="h-4 w-4" />
+                </a>
+              ))}
             </div>
           </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="border-t border-[#1A3A52] mt-12 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-gray-400 text-sm">&copy; 2024 Nabus Motors. All rights reserved.</p>
-          <div className="flex gap-6">
-            <a href="#" className="text-gray-400 hover:text-[#FFD700] transition-colors duration-300">
-              <Facebook className="w-5 h-5" />
-            </a>
-            <a href="#" className="text-gray-400 hover:text-[#FFD700] transition-colors duration-300">
-              <Twitter className="w-5 h-5" />
-            </a>
-            <a href="#" className="text-gray-400 hover:text-[#FFD700] transition-colors duration-300">
-              <Instagram className="w-5 h-5" />
-            </a>
+        <div className="mt-16 flex flex-col gap-4 border-t border-white/10 pt-8 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-xs text-onDark/60">
+            © {new Date().getFullYear()} Nabus Motors. All rights reserved.
+          </p>
+          <div className="flex flex-wrap gap-x-8 gap-y-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-onDark/60">
+            <a href="#" className="transition-colors hover:text-white">Privacy Policy</a>
+            <a href="#" className="transition-colors hover:text-white">Terms &amp; Conditions</a>
+            <a href="#" className="transition-colors hover:text-white">Cookie Policy</a>
           </div>
         </div>
       </div>
