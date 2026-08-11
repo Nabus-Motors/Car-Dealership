@@ -129,11 +129,6 @@ export function Footer() {
             <p className="text-xs text-onDark/60">
               © {new Date().getFullYear()} Nabus Motors. All rights reserved.
             </p>
-            <div className="flex flex-wrap gap-x-8 gap-y-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-onDark/60">
-              <a href="#" className="transition-colors hover:text-white">Privacy Policy</a>
-              <a href="#" className="transition-colors hover:text-white">Terms &amp; Conditions</a>
-              <a href="#" className="transition-colors hover:text-white">Cookie Policy</a>
-            </div>
           </div>
         </div>
       </footer>
