@@ -156,11 +156,13 @@ export function HomePage() {
 
   return (
     <div className="w-full bg-white">
-      <HeroShowcase cars={cars} />
+      <div className="bg-charcoal-black">
+        <HeroShowcase />
+      </div>
 
       <SearchPanel facets={facets} loading={facetsLoading && !facetCars.length} />
 
-      <FullForceBand />
+      {/*<FullForceBand />*/}
 
       <FeaturedVehicles cars={withImages} loading={loading} />
 
@@ -181,7 +183,7 @@ export function HomePage() {
 
       <CategoryGrid />
 
-      <SubscribeBand />
+      {/*<SubscribeBand />*/}
     </div>
   );
 }
