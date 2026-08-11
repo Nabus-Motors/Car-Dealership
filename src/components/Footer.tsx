@@ -60,9 +60,7 @@ export function Footer() {
       <footer className="w-full bg-ink text-onDark">
         <div className="shell py-16 md:py-20">
           <p className="max-w-4xl text-[13px] leading-[1.8] text-onDark/70">
-            Nabus Motors is a licensed vehicle dealer operating in Accra, Ghana. Finance is
-            arranged through partner lenders; terms, rates and approval are subject to status.
-            Vehicle availability and pricing are confirmed at point of sale.
+            Nabus Motors is your trusted partner in finding the perfect vehicle. Quality cars, exceptional service.
           </p>
 
           <div className="mt-14 grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
