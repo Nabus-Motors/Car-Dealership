@@ -7,16 +7,13 @@ import { deriveFacets } from '@utils/inventory';
 
 import HeroShowcase from '../components/home/HeroShowcase';
 import SearchPanel from '../components/home/SearchPanel';
+import QuickActions from '../components/home/QuickActions';
 import FeaturedVehicles from '../components/home/FeaturedVehicles';
 import BrowseBy from '../components/home/BrowseBy';
 import OurServices from '../components/home/OurServices';
-import ModelShowcase from '../components/home/ModelShowcase';
+import StatsBand from '../components/home/StatsBand';
+import ExploreBand from '../components/home/ExploreBand';
 
-const SHOWCASE_TAGLINES = [
-  'Benchmarks exist to be beaten',
-  'Perfection. By design',
-  'Built for the long road',
-];
 
 const FETCH_LIMIT = 12;
 
@@ -147,7 +144,6 @@ export function HomePage() {
   );
 
   const withImages = useMemo(() => cars.filter((car) => car.imageUrls?.length), [cars]);
-  const showcaseCars = withImages.slice(6, 9);
 
   return (
     <div className="w-full bg-white">
@@ -155,19 +151,21 @@ export function HomePage() {
         <HeroShowcase />
       </div>
       <SearchPanel facets={facets} loading={facetsLoading && !facetCars.length} />
+      <QuickActions />
       <BrowseBy facets={facets} loading={facetsLoading && !facetCars.length} />
       <FeaturedVehicles cars={withImages} loading={loading} />
-
       <OurServices />
+      <StatsBand />
+      <ExploreBand />
 
-      {showcaseCars.map((car, index) => (
-        <ModelShowcase
-          key={car.id}
-          car={car}
-          tagline={SHOWCASE_TAGLINES[index % SHOWCASE_TAGLINES.length]}
-          align={index % 2 === 1 ? 'right' : 'left'}
-        />
-      ))}
+      {/*{showcaseCars.map((car, index) => (*/}
+      {/*  <ModelShowcase*/}
+      {/*    key={car.id}*/}
+      {/*    car={car}*/}
+      {/*    tagline={SHOWCASE_TAGLINES[index % SHOWCASE_TAGLINES.length]}*/}
+      {/*    align={index % 2 === 1 ? 'right' : 'left'}*/}
+      {/*  />*/}
+      {/*))}*/}
 
       {/*<EnquireBand />*/}
 
