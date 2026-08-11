@@ -7,14 +7,10 @@ import { deriveFacets } from '@utils/inventory';
 
 import HeroShowcase from '../components/home/HeroShowcase';
 import SearchPanel from '../components/home/SearchPanel';
-import FullForceBand from '../components/home/FullForceBand';
 import FeaturedVehicles from '../components/home/FeaturedVehicles';
 import BrowseBy from '../components/home/BrowseBy';
-import TileRow from '../components/home/TileRow';
+import OurServices from '../components/home/OurServices';
 import ModelShowcase from '../components/home/ModelShowcase';
-import EnquireBand from '../components/home/EnquireBand';
-import CategoryGrid from '../components/home/CategoryGrid';
-import SubscribeBand from '../components/home/SubscribeBand';
 
 const SHOWCASE_TAGLINES = [
   'Benchmarks exist to be beaten',
@@ -151,7 +147,6 @@ export function HomePage() {
   );
 
   const withImages = useMemo(() => cars.filter((car) => car.imageUrls?.length), [cars]);
-  const tileCars = withImages.slice(0, 3);
   const showcaseCars = withImages.slice(6, 9);
 
   return (
@@ -159,16 +154,11 @@ export function HomePage() {
       <div className="bg-charcoal-black">
         <HeroShowcase />
       </div>
-
       <SearchPanel facets={facets} loading={facetsLoading && !facetCars.length} />
-
-      {/*<FullForceBand />*/}
-
+      <BrowseBy facets={facets} loading={facetsLoading && !facetCars.length} />
       <FeaturedVehicles cars={withImages} loading={loading} />
 
-      <BrowseBy facets={facets} loading={facetsLoading && !facetCars.length} />
-
-      <TileRow cars={tileCars} />
+      <OurServices />
 
       {showcaseCars.map((car, index) => (
         <ModelShowcase
@@ -179,9 +169,9 @@ export function HomePage() {
         />
       ))}
 
-      <EnquireBand />
+      {/*<EnquireBand />*/}
 
-      <CategoryGrid />
+      {/*<CategoryGrid />*/}
 
       {/*<SubscribeBand />*/}
     </div>

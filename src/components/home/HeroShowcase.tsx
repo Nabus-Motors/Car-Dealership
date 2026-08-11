@@ -16,7 +16,7 @@ const SLIDES: HeroSlide[] = [
     eyebrow: 'Nabus Motors',
     title: 'Drive Your Dream',
     description:
-        'From city cruisers to rugged SUVs, discover a curated collection of quality vehicles built for the roads of Ghana.',
+        'From luxury vehicles to sedans to pickups to SUVs and off-road vehicles, discover a curated collection of quality vehicles built for the roads of Ghana.',
     image: '/hero1.jpg',
   },
   {
