@@ -3,6 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { ChevronDown, Search } from 'lucide-react';
 import type { InventoryFacets } from '@utils/inventory';
 
+const MIN_PRICE = 20_000;
+const MAX_PRICE = 2_000_000;
+
+const clampPrice = (value: number) => Math.min(Math.max(value, MIN_PRICE), MAX_PRICE);
+
 interface SearchPanelProps {
   facets: InventoryFacets;
   loading?: boolean;
@@ -48,11 +53,12 @@ export default function SearchPanel({ facets, loading = false }: SearchPanelProp
   const [bodyStyle, setBodyStyle] = useState('');
   const [condition, setCondition] = useState('');
   const [transmission, setTransmission] = useState('');
-  const [maxPrice, setMaxPrice] = useState(facets.maxPrice);
+  const [minPrice, setMinPrice] = useState(MIN_PRICE);
+  const [maxPrice, setMaxPrice] = useState(() => clampPrice(facets.maxPrice));
   const priceTouched = useRef(false);
 
   useEffect(() => {
-    if (!priceTouched.current) setMaxPrice(facets.maxPrice);
+    if (!priceTouched.current) setMaxPrice(clampPrice(facets.maxPrice));
   }, [facets.maxPrice]);
 
   const models = useMemo(
@@ -72,15 +78,20 @@ export default function SearchPanel({ facets, loading = false }: SearchPanelProp
     if (bodyStyle) params.set('body_style', bodyStyle);
     if (condition) params.set('condition', condition);
     if (transmission) params.set('transmission', transmission);
+    if (minPrice > MIN_PRICE) params.set('min_price', String(minPrice));
     if (maxPrice) params.set('max_price', String(maxPrice));
     navigate(`/explore?${params.toString()}`);
   };
 
-  const priceLabel = new Intl.NumberFormat('en-GH', {
-    style: 'currency',
-    currency: 'GHS',
-    maximumFractionDigits: 0,
-  }).format(maxPrice);
+  const formatPrice = (value: number) =>
+    new Intl.NumberFormat('en-GH', {
+      style: 'currency',
+      currency: 'GHS',
+      maximumFractionDigits: 0,
+    }).format(value);
+
+  const rangeThumbClass =
+    '[&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[var(--accent-solid)] [&::-webkit-slider-thumb]:shadow-[0_0_0_3px_rgba(17,17,17,0.45)] [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-[var(--accent-solid)] [&::-moz-range-thumb]:shadow-[0_0_0_3px_rgba(17,17,17,0.45)]';
 
   return (
     <section className="relative z-20 w-full ">
@@ -130,21 +141,46 @@ export default function SearchPanel({ facets, loading = false }: SearchPanelProp
 
             <label className="flex flex-col gap-2">
               <span className="eyebrow text-white/60">
-                Up To <span className="text-[var(--accent-light)]">{priceLabel}</span>
+                Price{' '}
+                <span className="text-[var(--accent-light)]">
+                  {formatPrice(minPrice)} – {formatPrice(maxPrice)}
+                </span>
               </span>
-              <span className="flex h-[46px] items-center">
+              <span className="relative flex h-[46px] items-center">
+                <span className="pointer-events-none absolute inset-x-0 h-[3px] w-full bg-white/20">
+                  <span
+                    className="absolute h-full bg-[var(--accent-solid)]"
+                    style={{
+                      left: `${((minPrice - MIN_PRICE) / (MAX_PRICE - MIN_PRICE)) * 100}%`,
+                      right: `${100 - ((maxPrice - MIN_PRICE) / (MAX_PRICE - MIN_PRICE)) * 100}%`,
+                    }}
+                  />
+                </span>
                 <input
                   type="range"
-                  min={50000}
-                  max={facets.maxPrice}
+                  min={MIN_PRICE}
+                  max={MAX_PRICE}
+                  step={10000}
+                  value={minPrice}
+                  onChange={(event) => {
+                    priceTouched.current = true;
+                    setMinPrice(Math.min(Number(event.target.value), maxPrice - 10000));
+                  }}
+                  aria-label="Minimum price"
+                  className={`pointer-events-none absolute inset-x-0 h-[3px] w-full cursor-pointer appearance-none bg-transparent ${rangeThumbClass}`}
+                />
+                <input
+                  type="range"
+                  min={MIN_PRICE}
+                  max={MAX_PRICE}
                   step={10000}
                   value={maxPrice}
                   onChange={(event) => {
                     priceTouched.current = true;
-                    setMaxPrice(Number(event.target.value));
+                    setMaxPrice(Math.max(Number(event.target.value), minPrice + 10000));
                   }}
                   aria-label="Maximum price"
-                  className="h-[3px] w-full cursor-pointer appearance-none bg-white/20 accent-[var(--accent-solid)]"
+                  className={`pointer-events-none absolute inset-x-0 z-10 h-[3px] w-full cursor-pointer appearance-none bg-transparent ${rangeThumbClass}`}
                 />
               </span>
             </label>

@@ -38,6 +38,7 @@ function filtersFromParams(search: string, base: Filters): Filters {
   const bodyStyle = params.get('body_style') || params.get('bodyStyle');
   const condition = params.get('condition');
   const transmission = params.get('transmission');
+  const minPrice = Number(params.get('min_price'));
   const maxPrice = Number(params.get('max_price'));
 
   return {
@@ -47,9 +48,10 @@ function filtersFromParams(search: string, base: Filters): Filters {
     bodyStyle: bodyStyle ?? '',
     condition: condition === 'New' || condition === 'Used' ? [condition] : base.condition,
     transmission: transmission ? [transmission] : base.transmission,
-    priceRange: Number.isFinite(maxPrice) && maxPrice > 0
-      ? [base.priceRange[0], maxPrice]
-      : base.priceRange,
+    priceRange: [
+      Number.isFinite(minPrice) && minPrice > 0 ? minPrice : base.priceRange[0],
+      Number.isFinite(maxPrice) && maxPrice > 0 ? maxPrice : base.priceRange[1],
+    ],
   };
 }
 
