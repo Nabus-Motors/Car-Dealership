@@ -592,7 +592,7 @@ export function ListingsManagement({ onNavigate }: ListingsManagementProps) {
                   handleDeleteCar(carToDelete);
                 }
               }}
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-red-600 hover:bg-red-700 text-white"
             >
               Delete
             </AlertDialogAction>
@@ -615,7 +615,7 @@ export function ListingsManagement({ onNavigate }: ListingsManagementProps) {
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleBulkDelete}
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-red-600 hover:bg-red-700 text-white"
             >
               Delete {selectedCars.size} Car(s)
             </AlertDialogAction>

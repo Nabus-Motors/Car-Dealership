@@ -116,7 +116,7 @@ export function AdminFloatingButton() {
               position: 'relative'
             }}
           >
-            <Card className="bg-white shadow-2xl border-0 rounded-lg">
+            <Card className="bg-white text-slate-900 shadow-2xl border-0 rounded-lg">
               <CardHeader className="pb-4">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-xl font-semibold text-gray-800">
