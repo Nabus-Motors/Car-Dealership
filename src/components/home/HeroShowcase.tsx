@@ -53,13 +53,18 @@ const SLIDES: HeroSlide[] = [
   },
 ];
 
-export default function HeroShowcase() {
+interface HeroShowcaseProps {
+  slides?: HeroSlide[];
+  height?: string;
+}
+
+export default function HeroShowcase({ slides = SLIDES, height = 'clamp(560px, 82vh, 900px)' }: HeroShowcaseProps) {
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
   const [mounted, setMounted] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const total = SLIDES.length;
+  const total = slides.length;
 
   const goTo = useCallback((index: number) => {
     setActive(((index % total) + total) % total);
@@ -81,17 +86,17 @@ export default function HeroShowcase() {
     };
   }, [paused, total]);
 
-  const current = SLIDES[active];
+  const current = slides[active];
 
   return (
       <section
           className="chamfer-tl relative w-full overflow-hidden bg-charcoal-black"
-          style={{ height: 'clamp(560px, 82vh, 900px)' }}
+          style={{ height }}
           onMouseEnter={() => setPaused(true)}
           onMouseLeave={() => setPaused(false)}
           aria-roledescription="carousel"
       >
-        {SLIDES.map((slide, index) => (
+        {slides.map((slide, index) => (
             <div
                 key={slide.id}
                 className={`absolute inset-0 ${
@@ -133,7 +138,7 @@ export default function HeroShowcase() {
             <div className="absolute inset-x-0 bottom-8 z-10 hidden md:block">
               <div className="shell">
                 <div className="flex justify-end gap-8">
-                  {SLIDES.map((slide, index) => (
+                  {slides.map((slide, index) => (
                       <button
                           key={slide.id}
                           onClick={() => goTo(index)}
@@ -174,7 +179,7 @@ export default function HeroShowcase() {
         {total > 1 && (
             <div className="absolute bottom-6 left-0 right-0 z-10 md:hidden">
               <div className="shell flex gap-2">
-                {SLIDES.map((slide, index) => (
+                {slides.map((slide, index) => (
                     <button
                         key={slide.id}
                         onClick={() => goTo(index)}

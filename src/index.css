@@ -241,6 +241,10 @@ html, html * {
   box-sizing: border-box;
 }
 
+html {
+  overflow-x: hidden;
+}
+
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 /* FIX 1: NAVBAR — STICKY & PROPERLY ATTACHED */
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */

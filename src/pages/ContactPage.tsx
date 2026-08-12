@@ -1,13 +1,23 @@
 import React, { useState } from 'react';
 import emailjs from '@emailjs/browser';
 import { MapPin, Phone, Mail } from 'lucide-react';
-import { HeroSection } from '../components/HeroSection';
+import HeroShowcase from '../components/home/HeroShowcase';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
 import { Label } from '../components/ui/label';
-import contactHeroImage from '../../public/contact-section.png'
+import contactHeroImage from '../../public/contact-us.jpg'
+
+const CONTACT_HERO_SLIDES = [
+  {
+    id: 'contact-nabus-motors',
+    eyebrow: 'Contact Us',
+    title: 'Get In Touch',
+    description: 'We are here to assist you with all your vehicle needs.',
+    image: contactHeroImage,
+  },
+];
 
 export function ContactPage() {
   const [formData, setFormData] = useState({
@@ -122,14 +132,9 @@ export function ContactPage() {
   ];
 
   return (
-    <div className="min-h-screen w-screen">
+    <div className="min-h-screen w-full">
       {/* Hero Section */}
-      <HeroSection
-        backgroundImage={contactHeroImage}
-        title="Get in Touch with Us"
-        subtitle="We are here to assist you with all your vehicle needs."
-        className="-mt-16 pt-16"
-      />
+      <HeroShowcase slides={CONTACT_HERO_SLIDES} height="clamp(420px, 55vh, 640px)" />
 
       {/* Contact Form and Info Section */}
       <section className="py-16 bg-gray-50 flex flex-col items-center">
