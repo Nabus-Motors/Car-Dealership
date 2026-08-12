@@ -83,7 +83,7 @@ export default function SearchPanel({ facets, loading = false }: SearchPanelProp
   }).format(maxPrice);
 
   return (
-    <section className="relative z-20 w-full bg-charcoal-black">
+    <section className="relative z-20 w-full ">
       <div className="shell -mt-16 md:-mt-20">
         <div className="chamfer-tl bg-[linear-gradient(105deg,#2E3438_0%,#22282B_55%,#191E21_100%)] p-6 shadow-[0_24px_60px_rgba(17,17,17,0.35)] md:p-10">
           <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">

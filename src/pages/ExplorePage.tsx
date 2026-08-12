@@ -8,7 +8,7 @@ import { Badge } from '@components/ui/badge';
 import { Icons } from '@components/ui/icons';
 import { useIsMobile } from '@components/ui/use-mobile';
 import { Slider } from '@components/ui/slider';
-import { collection, query, orderBy, limit, startAfter, getDocs, DocumentSnapshot } from 'firebase/firestore';
+import { collection, query, orderBy, getDocs, DocumentSnapshot } from 'firebase/firestore';
 import { db, COLLECTIONS } from '@/firebase/firebase';
 import { Grid3x3 } from 'lucide-react';
 import type { Car } from '@/types/car';
@@ -16,7 +16,7 @@ import { normalizeImageUrls } from '@utils/images';
 import { inferBodyStyle } from '@utils/inventory';
 import { CarCard } from '@components/CarCard';
 import { CarCardHorizontal } from '@components/CarCardHorizontal';
-import { HeroSection } from '@components/HeroSection';
+import HeroShowcase from '@components/home/HeroShowcase';
 
 // Filter types
 interface Filters {
@@ -76,6 +76,16 @@ function useDebounce<T>(value: T, delay: number): T {
 
   return debouncedValue;
 }
+
+const EXPLORE_HERO_SLIDES = [
+  {
+    id: 'explore-inventory',
+    eyebrow: 'Nabus Motors',
+    title: 'Our Inventory',
+    description: 'Find your perfect vehicle from our extensive collection of premium and affordable options.',
+    image: '/our-inventory.jpg',
+  },
+];
 
 export function ExplorePage() {
   const location = useLocation();
@@ -330,14 +340,9 @@ export function ExplorePage() {
   const activeFilterCount = filters.brands.length + filters.condition.length + filters.transmission.length + filters.fuelType.length;
 
   return (
-    <div className="min-h-screen w-screen bg-white flex flex-col items-center">
+    <div className="min-h-screen w-full bg-white flex flex-col items-center">
       {/* Hero Section */}
-      <HeroSection
-        backgroundImage="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=1200&q=80"
-        title="Our Inventory"
-        subtitle="Find your perfect vehicle from our extensive collection of premium and affordable options"
-        className="-mt-16 pt-16"
-      />
+      <HeroShowcase slides={EXPLORE_HERO_SLIDES} height="clamp(420px, 55vh, 640px)" />
 
       <div className="container mx-auto px-4 max-w-7xl py-8">
         {/* Results Info and Sort Row */}

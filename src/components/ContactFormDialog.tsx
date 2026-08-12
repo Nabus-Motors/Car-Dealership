@@ -78,7 +78,10 @@ export function ContactFormDialog({ open, onOpenChange, carTitle }: ContactFormD
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md p-0 overflow-hidden border-0 bg-white max-h-[90vh] flex flex-col">
+      <DialogContent
+        overlayClassName="backdrop-blur-sm"
+        className="max-w-md p-0 overflow-hidden border-0 bg-white max-h-[90vh] flex flex-col"
+      >
         {/* Header */}
         <div className="bg-gradient-to-r from-[#001F3F] to-[#002855] text-white px-6 py-8 flex-shrink-0">
           <div className="flex items-start justify-between mb-2">
@@ -135,7 +138,7 @@ export function ContactFormDialog({ open, onOpenChange, carTitle }: ContactFormD
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
-                placeholder="+1 (555) 000-0000"
+                placeholder="0*********"
                 className="border-0 bg-gray-100 text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-[#FFD700] focus:bg-white"
               />
             </div>
