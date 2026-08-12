@@ -142,7 +142,9 @@ export const AddEditListing: React.FC = () => {
           description: car.description || '',
           features: car.features || [],
           images: [],
-          existingImages: existing,          primaryImageIndex: 0,          status: car.status || 'draft',
+          existingImages: existing,
+          primaryImageIndex: 0,
+          status: car.status || 'draft',
           category: (car as any).category,
           technical: car.technical ? {
             engine: { ...(car.technical.engine || {}), cylinders: car.technical.engine?.cylinders || '', displacement: car.technical.engine?.displacement || '', driveLayout: car.technical.engine?.driveLayout || '', horsepower: car.technical.engine?.horsepower || '', rpm: car.technical.engine?.rpm || '', torque: car.technical.engine?.torque || '', compressionRatio: car.technical.engine?.compressionRatio || '', fuelType: car.technical.engine?.fuelType || '' },
@@ -192,14 +194,11 @@ export const AddEditListing: React.FC = () => {
     if (!formData.fuelType) newErrors.fuelType = 'Fuel type is required';
     if (!formData.condition) newErrors.condition = 'Condition is required';
     if (!formData.description.trim()) newErrors.description = 'Description is required';
-    if (formData.description.trim().split('\n').length < 3) {
-      newErrors.description = 'Description must be at least 3 lines';
-    }
 
     // Image validation - minimum 6 images
     const totalImages = formData.existingImages.length + formData.images.length;
     if (totalImages < 6) {
-      newErrors.images = `Minimum 6 images required (${totalImages}/6)`;
+      newErrors.images = `Minimum 6 images required (currently ${totalImages})`;
     }
 
     setErrors(newErrors);
@@ -213,15 +212,12 @@ export const AddEditListing: React.FC = () => {
     }
   };
 
+  const handleImageChange = (field: string, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    
-    // Check if adding these files would exceed 6 total
-    const totalAfterUpload = formData.existingImages.length + formData.images.length + files.length;
-    if (totalAfterUpload > 6) {
-      toast.error(`Maximum 6 images allowed. You would have ${totalAfterUpload} images.`);
-      return;
-    }
 
     if (files.length > 0) {
       // Validate and compress images
@@ -265,12 +261,14 @@ export const AddEditListing: React.FC = () => {
     if (isExisting) {
       setFormData(prev => ({
         ...prev,
-        existingImages: prev.existingImages.filter((_, i) => i !== index)
+        existingImages: prev.existingImages.filter((_, i) => i !== index),
+        primaryImageIndex: prev.primaryImageIndex >= index && prev.primaryImageIndex > 0 ? prev.primaryImageIndex - 1 : prev.primaryImageIndex
       }));
     } else {
       setFormData(prev => ({
         ...prev,
-        images: prev.images.filter((_, i) => i !== index)
+        images: prev.images.filter((_, i) => i !== index),
+        primaryImageIndex: prev.primaryImageIndex >= (prev.existingImages.length + index) && prev.primaryImageIndex > 0 ? prev.primaryImageIndex - 1 : prev.primaryImageIndex
       }));
     }
   };
@@ -292,35 +290,27 @@ export const AddEditListing: React.FC = () => {
     }));
   };
 
-  const handleSave = async () => {
+  const handleSave = async (targetStatus?: FormData['status']) => {
+    const statusToSave = targetStatus || formData.status;
+
     if (!validateForm()) {
       toast.error('Please fix the errors before saving');
       return;
     }
 
-    console.log('Starting save process with form data:', {
-      images: formData.images.length,
-      existingImages: formData.existingImages.length,
-      status: formData.status
-    });
-
     setIsSaving(true);
-    const status = formData.status;
     const toastId = toast.loading(
-      status === 'published' ? 'Publishing listing...' : 
-      status === 'sold' ? 'Marking as sold...' :
-      status === 'new' ? 'Marking as new...' : 'Saving draft...'
+        statusToSave === 'published' ? 'Publishing listing...' :
+            statusToSave === 'sold' ? 'Marking as sold...' :
+                statusToSave === 'new' ? 'Marking as new...' : 'Saving draft...'
     );
 
     try {
       let imageUrls = [...formData.existingImages];
-      console.log('Initial imageUrls:', imageUrls);
 
-      // For new cars, we need to create the document first to get an ID for image upload
+      // Create doc first for ID if not editing
       let carId = id;
       if (!isEditing) {
-        console.log('Creating new car document...');
-        // Create car without images first
         const tempCarData: Omit<Car, 'id'> = {
           brand: formData.make,
           model: formData.model,
@@ -333,7 +323,7 @@ export const AddEditListing: React.FC = () => {
           description: formData.description,
           features: formData.features,
           imageUrls: [],
-          status: formData.status,
+          status: statusToSave,
           category: formData.category,
           technical: formData.technical,
           location: formData.location,
@@ -341,22 +331,21 @@ export const AddEditListing: React.FC = () => {
           updatedAt: serverTimestamp()
         };
         carId = await createCar(tempCarData);
-        console.log('Created car with ID:', carId);
       }
 
-      // Now upload images with the carId
+      // Upload new images
       if (formData.images.length > 0 && carId) {
-        console.log(`Uploading ${formData.images.length} new images...`);
         const uploadedUrls = await uploadImages(formData.images, carId);
-        console.log('Upload completed, URLs received:', uploadedUrls);
         imageUrls = [...imageUrls, ...uploadedUrls];
-      } else {
-        console.log('No new images to upload');
       }
 
-      console.log('Final imageUrls for database:', imageUrls);
+      // Place primary image first if index is valid
+      if (formData.primaryImageIndex > 0 && formData.primaryImageIndex < imageUrls.length) {
+        const primaryUrl = imageUrls.splice(formData.primaryImageIndex, 1)[0];
+        imageUrls.unshift(primaryUrl);
+      }
 
-      // Update the car with the final image URLs
+      // Update document
       const finalCarData: Partial<Car> = {
         brand: formData.make,
         model: formData.model,
@@ -369,7 +358,7 @@ export const AddEditListing: React.FC = () => {
         description: formData.description,
         features: formData.features,
         imageUrls: imageUrls,
-        status: formData.status,
+        status: statusToSave,
         category: formData.category,
         technical: formData.technical,
         location: formData.location,
@@ -377,17 +366,15 @@ export const AddEditListing: React.FC = () => {
       };
 
       if (carId) {
-        console.log('Updating car document with final data:', finalCarData);
         await updateCar(carId, finalCarData);
-        console.log('Car updated successfully');
       }
 
       toast.success(
-        formData.status === 'published' ? 'Listing published successfully!' :
-        formData.status === 'sold' ? 'Listing marked as sold successfully!' :
-        formData.status === 'new' ? 'Listing marked as new successfully!' :
-        'Draft saved successfully!',
-        { id: toastId }
+          statusToSave === 'published' ? 'Listing published successfully!' :
+              statusToSave === 'sold' ? 'Listing marked as sold successfully!' :
+                  statusToSave === 'new' ? 'Listing marked as new successfully!' :
+                      'Draft saved successfully!',
+          { id: toastId }
       );
 
       navigate('/admin/listings');
@@ -404,44 +391,39 @@ export const AddEditListing: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
-      <div className="flex items-center gap-4 mb-6">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => navigate('/admin/listings')}
-          className="flex items-center gap-2"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Listings
-        </Button>
-        <h1 className="text-3xl font-bold text-[#001F3F]">
-          {isEditing ? 'Edit Listing' : 'Add New Car'}
-        </h1>
-      </div>
+      <div className="w-full max-w-6xl mx-auto px-4 py-8">
+        <div className="flex items-center gap-4 mb-6">
+          <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate('/admin/listings')}
+              className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Listings
+          </Button>
+          <h1 className="text-3xl font-bold text-[#001F3F]">
+            {isEditing ? 'Edit Listing' : 'Add New Car'}
+          </h1>
+        </div>
 
-      <AddEditListingForm
-        formData={formData}
-        errors={errors}
-        isSaving={isSaving}
-        featureInput={featureInput}
-        onInputChange={handleInputChange}
-        onFeatureInputChange={setFeatureInput}
-        onAddFeature={addFeature}
-        onRemoveFeature={removeFeature}
-        onImageUpload={handleImageUpload}
-        onRemoveImage={removeImage}
-        onSaveDraft={async () => { 
-          setFormData(prev => ({ ...prev, status: 'draft' })); 
-          await handleSave(); 
-        }}
-        onPublish={async () => { 
-          setFormData(prev => ({ ...prev, status: 'published' })); 
-          await handleSave(); 
-        }}
-        onNavigateBack={() => navigate('/admin/listings')}
-      />
-    </div>
+        <AddEditListingForm
+            formData={formData}
+            errors={errors}
+            isSaving={isSaving}
+            featureInput={featureInput}
+            onInputChange={handleInputChange}
+            onImageChange={handleImageChange}
+            onFeatureInputChange={setFeatureInput}
+            onAddFeature={addFeature}
+            onRemoveFeature={removeFeature}
+            onImageUpload={handleImageUpload}
+            onRemoveImage={removeImage}
+            onSaveDraft={async () => handleSave('draft')}
+            onPublish={async () => handleSave('published')}
+            onNavigateBack={() => navigate('/admin/listings')}
+        />
+      </div>
   );
 };
 
