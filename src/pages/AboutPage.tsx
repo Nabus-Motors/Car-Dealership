@@ -1,3 +1,5 @@
+import { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Target, Sparkles, Star, Trophy, MapPin } from 'lucide-react';
 import { Card, CardContent } from '../components/ui/card';
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
@@ -15,6 +17,17 @@ const ABOUT_HERO_SLIDES = [
 ];
 
 export function AboutPage() {
+  const location = useLocation();
+
+  useEffect(() => {
+    if (!location.hash) return;
+    const id = location.hash.slice(1);
+    const timer = setTimeout(() => {
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [location.hash]);
+
   const values = [
     {
       icon: Target,
@@ -186,7 +199,7 @@ export function AboutPage() {
       </section>
 
       {/* Services Section */}
-      <section className="py-20 bg-[#F9F9F7] flex flex-col items-center">
+      <section id="services" className="scroll-mt-24 py-20 bg-[#F9F9F7] flex flex-col items-center">
         <div className="container mx-auto px-4 max-w-5xl">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-[#0A0A0A] mb-4">
