@@ -93,10 +93,10 @@ export function Footer() {
                 </li>
                 <li>
                   <a
-                      href="mailto:sales@nabusmotors.com"
+                      href="mailto:nabusmotors1@gmail.com"
                       className="transition-colors hover:text-white"
                   >
-                    sales@nabusmotors.com
+                    nabusmotors1@gmail.com
                   </a>
                 </li>
                 <li className="pt-2 text-onDark/60">Mon–Fri 9:00–18:00</li>

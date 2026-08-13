@@ -14,7 +14,8 @@ import { ListingsManagement } from './pages/admin/ListingsManagement';
 import { AddEditListing } from './pages/admin/AddEditListing';
 import { ActivityList } from './pages/admin/ActivityList';
 import { AdminSettings } from './pages/admin/AdminSettings';
-import { Toaster } from 'react-hot-toast';
+import toast, { Toaster, ToastBar } from 'react-hot-toast';
+import { X } from 'lucide-react';
 // import { useAuth } from './context/AuthContext'; // Temporarily commented for testing
 
 // Protected route component
@@ -144,7 +145,7 @@ function App() {
         {!isAdminRoute && <AdminFloatingButton />}
         
         {/* Toast notifications */}
-        <Toaster 
+        <Toaster
           position="top-center"
           toastOptions={{
             duration: 4000,
@@ -164,7 +165,26 @@ function App() {
               },
             },
           }}
-        />
+        >
+          {(t) => (
+            <ToastBar toast={t}>
+              {({ message }) => (
+                <>
+                  {message}
+                  {t.type !== 'loading' && (
+                    <button
+                      onClick={() => toast.dismiss(t.id)}
+                      aria-label="Dismiss notification"
+                      className="ml-2 inline-flex shrink-0 items-center justify-center rounded-full p-1 text-current/70 transition-colors hover:bg-black/10 hover:text-current"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </>
+              )}
+            </ToastBar>
+          )}
+        </Toaster>
       </div>
     </AuthProvider>
   );

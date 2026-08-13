@@ -7,10 +7,10 @@ import { X, Send } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getTodayDateString, getHoursForDate, isTimeWithinHours, isClosedOn, formatHoursLabel, DEFAULT_HOURS } from '@/utils/businessHours';
 
-interface TestDriveDialogProps {
+interface AppointmentDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  carTitle?: string;
+  topic?: string;
 }
 
 const INITIAL_FORM_DATA = {
@@ -22,7 +22,7 @@ const INITIAL_FORM_DATA = {
   additionalInfo: '',
 };
 
-export function TestDriveDialog({ open, onOpenChange, carTitle }: TestDriveDialogProps) {
+export function AppointmentDialog({ open, onOpenChange, topic }: AppointmentDialogProps) {
   const [formData, setFormData] = useState(INITIAL_FORM_DATA);
   const [loading, setLoading] = useState(false);
   const [dateError, setDateError] = useState<string | null>(null);
@@ -63,7 +63,7 @@ export function TestDriveDialog({ open, onOpenChange, carTitle }: TestDriveDialo
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.name || !formData.email || !formData.phone || !formData.preferredDate || !formData.preferredTime) {
       toast.error('Please fill in all required fields');
       return;
@@ -90,8 +90,8 @@ export function TestDriveDialog({ open, onOpenChange, carTitle }: TestDriveDialo
         from_name: formData.name,
         from_email: formData.email,
         phone: formData.phone,
-        message: `Test Drive Request\n\nPreferred Date: ${formData.preferredDate}\nPreferred Time: ${formData.preferredTime}\n\nAdditional Info:\n${formData.additionalInfo}`,
-        car_title: carTitle ? `Test Drive: ${carTitle}` : 'Test Drive Request',
+        message: `Appointment Request\n\nI'm interested in scheduling an appointment${topic ? ` regarding ${topic}` : ''}.\n\nPreferred Date: ${formData.preferredDate}\nPreferred Time: ${formData.preferredTime}\n\nAdditional Info:\n${formData.additionalInfo}`,
+        car_title: topic ? `Appointment: ${topic}` : 'Appointment Request',
         to_email: 'kelvindespartan@gmail.com',
         reply_to: formData.email,
       };
@@ -100,13 +100,13 @@ export function TestDriveDialog({ open, onOpenChange, carTitle }: TestDriveDialo
       emailjs.init(publicKey);
 
       const result = await emailjs.send(serviceId, templateId, templateParams, publicKey);
-      
+
       if (result.status === 200) {
-        toast.success('Test drive request sent! We\'ll confirm your appointment soon.');
+        toast.success('Appointment request sent! We\'ll confirm with you soon.');
         handleOpenChange(false);
       }
     } catch (error) {
-      console.error('Error sending test drive request:', error);
+      console.error('Error sending appointment request:', error);
       toast.error('Failed to send request. Please try again.');
     } finally {
       setLoading(false);
@@ -120,8 +120,8 @@ export function TestDriveDialog({ open, onOpenChange, carTitle }: TestDriveDialo
         <div className="bg-ink text-white px-6 py-8 flex-shrink-0">
           <div className="flex items-start justify-between mb-2">
             <div>
-              <DialogTitle className="text-2xl font-bold">Schedule Test Drive</DialogTitle>
-              <p className="text-onDark text-sm mt-1">Book your appointment now</p>
+              <DialogTitle className="text-2xl font-bold">Schedule Appointment</DialogTitle>
+              <p className="text-onDark text-sm mt-1">Pick a date and time that works for you</p>
             </div>
             <button
               onClick={() => handleOpenChange(false)}
@@ -172,7 +172,7 @@ export function TestDriveDialog({ open, onOpenChange, carTitle }: TestDriveDialo
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
-                placeholder="+1 (555) 000-0000"
+                placeholder="0*********"
                 className="border-0 bg-gray-100 text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-[#C9A84C] focus:bg-white"
               />
             </div>
@@ -247,7 +247,7 @@ export function TestDriveDialog({ open, onOpenChange, carTitle }: TestDriveDialo
               className="flex-1 bg-[#C9A84C] hover:bg-[#E5C263] text-ink font-bold uppercase tracking-[0.14em] text-[13px] flex items-center justify-center gap-2"
             >
               <Send className="w-4 h-4" />
-              {loading ? 'Booking...' : 'Book Now'}
+              {loading ? 'Booking...' : 'Book Appointment'}
             </Button>
           </div>
         </form>
