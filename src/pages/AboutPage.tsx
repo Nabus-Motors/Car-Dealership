@@ -39,10 +39,10 @@ export function AboutPage() {
   ];
 
   const services = [
-    { title: "Vehicle Sales", description: "Extensive inventory of luxury and family vehicles" },
+    { title: "Vehicle Sales", description: "Extensive inventory of luxury and family vehicles, sedans, pickups, SUVs and off-road vehicles" },
     { title: "Vehicle Imports", description: "International sourcing with complete documentation" },
     { title: "Car Rentals", description: "Flexible rental options for short and long-term needs" },
-    { title: "Motor Insurance", description: "Comprehensive coverage and easy claim processes" },
+    { title: "Motor Insurance", description: "Assistance in obtaining comprehensive coverage, 3rd party and easy claim processes as well as road worthy" },
     { title: "Car Registration", description: "Hassle-free registration and compliance services" },
     { title: "Vehicle Services", description: "Full servicing, diagnostics, and mechanical work" }
   ];
