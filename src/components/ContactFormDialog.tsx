@@ -12,13 +12,15 @@ interface ContactFormDialogProps {
   carTitle?: string;
 }
 
+const getInitialFormData = (carTitle?: string) => ({
+  name: '',
+  email: '',
+  phone: '',
+  message: carTitle ? `I'm interested in the ${carTitle}` : '',
+});
+
 export function ContactFormDialog({ open, onOpenChange, carTitle }: ContactFormDialogProps) {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    message: carTitle ? `I'm interested in the ${carTitle}` : '',
-  });
+  const [formData, setFormData] = useState(() => getInitialFormData(carTitle));
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -26,6 +28,13 @@ export function ContactFormDialog({ open, onOpenChange, carTitle }: ContactFormD
       ...formData,
       [e.target.name]: e.target.value,
     });
+  };
+
+  const handleOpenChange = (next: boolean) => {
+    if (!next) {
+      setFormData(getInitialFormData(carTitle));
+    }
+    onOpenChange(next);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -60,13 +69,7 @@ export function ContactFormDialog({ open, onOpenChange, carTitle }: ContactFormD
       
       if (result.status === 200) {
         toast.success('Message sent successfully! We\'ll be in touch soon.');
-        setFormData({
-          name: '',
-          email: '',
-          phone: '',
-          message: carTitle ? `I'm interested in the ${carTitle}` : '',
-        });
-        onOpenChange(false);
+        handleOpenChange(false);
       }
     } catch (error) {
       console.error('Error sending message:', error);
@@ -77,7 +80,7 @@ export function ContactFormDialog({ open, onOpenChange, carTitle }: ContactFormD
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
         overlayClassName="backdrop-blur-sm"
         className="max-w-md p-0 overflow-hidden border-0 rounded-none bg-white max-h-[90vh] flex flex-col"
@@ -90,7 +93,7 @@ export function ContactFormDialog({ open, onOpenChange, carTitle }: ContactFormD
               <p className="text-onDark text-sm mt-1">We'd love to hear from you</p>
             </div>
             <button
-              onClick={() => onOpenChange(false)}
+              onClick={() => handleOpenChange(false)}
               className="text-white/70 hover:text-white transition-colors"
             >
               <X className="w-5 h-5" />
@@ -163,7 +166,7 @@ export function ContactFormDialog({ open, onOpenChange, carTitle }: ContactFormD
             <Button
               type="button"
               variant="outline"
-              onClick={() => onOpenChange(false)}
+              onClick={() => handleOpenChange(false)}
               className="flex-1 border-ink text-ink hover:bg-ink hover:text-white font-bold uppercase tracking-[0.14em] text-[13px]"
               disabled={loading}
             >

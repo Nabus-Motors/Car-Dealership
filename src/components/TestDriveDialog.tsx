@@ -5,6 +5,7 @@ import { Button } from '@components/ui/button';
 import { Input } from '@components/ui/input';
 import { X, Send } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { getTodayDateString, getHoursForDate, isTimeWithinHours, isClosedOn, formatHoursLabel, DEFAULT_HOURS } from '@/utils/businessHours';
 
 interface TestDriveDialogProps {
   open: boolean;
@@ -12,16 +13,22 @@ interface TestDriveDialogProps {
   carTitle?: string;
 }
 
+const INITIAL_FORM_DATA = {
+  name: '',
+  email: '',
+  phone: '',
+  preferredDate: '',
+  preferredTime: '',
+  additionalInfo: '',
+};
+
 export function TestDriveDialog({ open, onOpenChange, carTitle }: TestDriveDialogProps) {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    preferredDate: '',
-    preferredTime: '',
-    additionalInfo: '',
-  });
+  const [formData, setFormData] = useState(INITIAL_FORM_DATA);
   const [loading, setLoading] = useState(false);
+  const [dateError, setDateError] = useState<string | null>(null);
+
+  const todayStr = getTodayDateString();
+  const hoursForDate = getHoursForDate(formData.preferredDate) ?? DEFAULT_HOURS;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
@@ -30,11 +37,45 @@ export function TestDriveDialog({ open, onOpenChange, carTitle }: TestDriveDialo
     });
   };
 
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const preferredDate = e.target.value;
+
+    if (isClosedOn(preferredDate)) {
+      setDateError("We're closed on Sundays. Please choose another date.");
+      return;
+    }
+
+    setDateError(null);
+    setFormData((prev) => ({
+      ...prev,
+      preferredDate,
+      preferredTime: isTimeWithinHours(preferredDate, prev.preferredTime) ? prev.preferredTime : '',
+    }));
+  };
+
+  const handleOpenChange = (next: boolean) => {
+    if (!next) {
+      setFormData(INITIAL_FORM_DATA);
+      setDateError(null);
+    }
+    onOpenChange(next);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.name || !formData.email || !formData.phone || !formData.preferredDate || !formData.preferredTime) {
       toast.error('Please fill in all required fields');
+      return;
+    }
+
+    if (formData.preferredDate < todayStr) {
+      toast.error('Please choose a date that is today or later');
+      return;
+    }
+
+    if (!isTimeWithinHours(formData.preferredDate, formData.preferredTime)) {
+      toast.error(`Please choose a time within our working hours (${formatHoursLabel(formData.preferredDate)})`);
       return;
     }
 
@@ -62,15 +103,7 @@ export function TestDriveDialog({ open, onOpenChange, carTitle }: TestDriveDialo
       
       if (result.status === 200) {
         toast.success('Test drive request sent! We\'ll confirm your appointment soon.');
-        setFormData({
-          name: '',
-          email: '',
-          phone: '',
-          preferredDate: '',
-          preferredTime: '',
-          additionalInfo: '',
-        });
-        onOpenChange(false);
+        handleOpenChange(false);
       }
     } catch (error) {
       console.error('Error sending test drive request:', error);
@@ -81,7 +114,7 @@ export function TestDriveDialog({ open, onOpenChange, carTitle }: TestDriveDialo
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-md p-0 overflow-hidden border-0 rounded-none bg-white max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="bg-ink text-white px-6 py-8 flex-shrink-0">
@@ -91,7 +124,7 @@ export function TestDriveDialog({ open, onOpenChange, carTitle }: TestDriveDialo
               <p className="text-onDark text-sm mt-1">Book your appointment now</p>
             </div>
             <button
-              onClick={() => onOpenChange(false)}
+              onClick={() => handleOpenChange(false)}
               className="text-white/70 hover:text-white transition-colors"
             >
               <X className="w-5 h-5" />
@@ -153,9 +186,13 @@ export function TestDriveDialog({ open, onOpenChange, carTitle }: TestDriveDialo
                   type="date"
                   name="preferredDate"
                   value={formData.preferredDate}
-                  onChange={handleChange}
+                  onChange={handleDateChange}
+                  min={todayStr}
                   className="border-0 bg-gray-100 text-gray-900 focus:ring-2 focus:ring-[#C9A84C] focus:bg-white"
                 />
+                {dateError && (
+                  <p className="mt-1 text-sm text-red-500">{dateError}</p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-900 mb-2">
@@ -166,10 +203,17 @@ export function TestDriveDialog({ open, onOpenChange, carTitle }: TestDriveDialo
                   name="preferredTime"
                   value={formData.preferredTime}
                   onChange={handleChange}
+                  min={hoursForDate.open}
+                  max={hoursForDate.close}
                   className="border-0 bg-gray-100 text-gray-900 focus:ring-2 focus:ring-[#C9A84C] focus:bg-white"
                 />
               </div>
             </div>
+            {formData.preferredDate && (
+              <p className="-mt-2 text-xs text-gray-500">
+                Working hours for this date: {formatHoursLabel(formData.preferredDate)}
+              </p>
+            )}
 
             <div>
               <label className="block text-sm font-semibold text-gray-900 mb-2">
@@ -191,7 +235,7 @@ export function TestDriveDialog({ open, onOpenChange, carTitle }: TestDriveDialo
             <Button
               type="button"
               variant="outline"
-              onClick={() => onOpenChange(false)}
+              onClick={() => handleOpenChange(false)}
               className="flex-1 border-ink text-ink hover:bg-ink hover:text-white font-bold uppercase tracking-[0.14em] text-[13px]"
               disabled={loading}
             >
