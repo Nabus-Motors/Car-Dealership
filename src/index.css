@@ -184,6 +184,32 @@
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* ANIMATIONS - Car detail page loading state */
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+@keyframes carBounce {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-4px); }
+}
+.loading-car {
+  animation: carBounce 0.6s ease-in-out infinite;
+}
+
+@keyframes roadDashes {
+  from { background-position-x: 0; }
+  to   { background-position-x: -32px; }
+}
+.loading-road {
+  background-image: repeating-linear-gradient(
+    90deg,
+    var(--accent-solid) 0,
+    var(--accent-solid) 16px,
+    transparent 16px,
+    transparent 32px
+  );
+  animation: roadDashes 0.6s linear infinite;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 /* ANIMATIONS - Shimmer for progressive image loading */
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 @keyframes shimmer {

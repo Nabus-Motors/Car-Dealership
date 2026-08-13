@@ -9,6 +9,7 @@ import OptimizedImage from "@/components/OptimizedImage";
 import { ContactFormDialog } from "@/components/ContactFormDialog";
 import { TestDriveDialog } from "@/components/TestDriveDialog";
 import type { Car } from "@/types/car";
+import {FaCarSide} from "react-icons/fa6";
 
 const PRIMARY_BTN =
   "flex w-full items-center justify-center bg-[var(--accent-solid)] px-6 py-3 text-[13px] font-bold uppercase tracking-[0.14em] text-ink transition-colors duration-300 hover:bg-[var(--accent-light)]";
@@ -71,11 +72,12 @@ export default function CarDetailsPage() {
 
   if (loading) {
     return (
-        <div className="flex min-h-screen min-w-screen items-center justify-center bg-white pt-20">
-          <div className="text-center">
-            <div className="mx-auto h-12 w-12 animate-spin border-4 border-ink border-t-transparent"></div>
-            <p className="mt-4 font-bold text-ink/60">Loading car details...</p>
+        <div className="flex min-h-screen min-w-screen flex-col items-center justify-center gap-6 bg-white pt-20">
+          <div className="flex h-14 w-56 flex-col items-center justify-end">
+            <FaCarSide className="loading-car h-9 w-9 text-ink" strokeWidth={1.5} />
+            <div className="loading-road h-1.5 w-full" />
           </div>
+          <p className="eyebrow text-[var(--accent-deep)]">Loading Vehicle Details</p>
         </div>
     );
   }
