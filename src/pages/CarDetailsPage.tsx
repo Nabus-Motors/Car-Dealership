@@ -1,13 +1,19 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { Fuel, Gauge, Cog, BadgeCheck, Calendar, Wrench, MapPin } from "lucide-react";
 import { formatPrice, formatMileage } from "@/utils/format";
 import { db, COLLECTIONS } from "@/firebase/firebase";
 import { doc, getDoc, collection, query, where, limit, getDocs } from "firebase/firestore";
-import { CarCard } from "@/components/CarCard";
+import { VehicleCard } from "@/components/VehicleCard";
 import OptimizedImage from "@/components/OptimizedImage";
 import { ContactFormDialog } from "@/components/ContactFormDialog";
 import { TestDriveDialog } from "@/components/TestDriveDialog";
 import type { Car } from "@/types/car";
+
+const PRIMARY_BTN =
+  "flex w-full items-center justify-center bg-[var(--accent-solid)] px-6 py-3 text-[13px] font-bold uppercase tracking-[0.14em] text-ink transition-colors duration-300 hover:bg-[var(--accent-light)]";
+const SECONDARY_BTN =
+  "flex w-full items-center justify-center border border-ink px-6 py-3 text-[13px] font-bold uppercase tracking-[0.14em] text-ink transition-colors duration-300 hover:bg-ink hover:text-white";
 
 export default function CarDetailsPage() {
   const { carId } = useParams<{ carId: string }>();
@@ -65,10 +71,10 @@ export default function CarDetailsPage() {
 
   if (loading) {
     return (
-        <div className="pt-20 min-h-screen  flex items-center justify-center min-w-screen bg-white ">
+        <div className="flex min-h-screen min-w-screen items-center justify-center bg-white pt-20">
           <div className="text-center">
-            <div className="w-12 h-12 border-4 border-[#0A0A0A] border-t-transparent animate-spin mx-auto"></div>
-            <p className="text-gray-600 mt-4 font-bold">Loading car details...</p>
+            <div className="mx-auto h-12 w-12 animate-spin border-4 border-ink border-t-transparent"></div>
+            <p className="mt-4 font-bold text-ink/60">Loading car details...</p>
           </div>
         </div>
     );
@@ -76,12 +82,12 @@ export default function CarDetailsPage() {
 
   if (!car) {
     return (
-        <div className="pt-20 min-h-screen bg-white flex items-center justify-center">
+        <div className="flex min-h-screen items-center justify-center bg-white pt-20">
           <div className="text-center">
-            <p className="text-gray-600 font-bold mb-4">Car not found</p>
+            <p className="mb-4 font-bold text-ink/60">Car not found</p>
             <button
                 onClick={() => navigate("/explore")}
-                className="bg-[#0A0A0A] text-white px-6 py-2 rounded font-semibold hover:bg-gray-800"
+                className="bg-ink px-6 py-2.5 text-[13px] font-bold uppercase tracking-[0.14em] text-white transition-colors hover:bg-charcoal"
             >
               Back to Inventory
             </button>
@@ -92,35 +98,50 @@ export default function CarDetailsPage() {
 
   const images = car.imageUrls ?? [];
 
+  const specs = [
+    { Icon: Calendar, label: "Year", value: String(car.year) },
+    { Icon: Gauge, label: "Mileage", value: `${formatMileage(car.mileage)} km` },
+    { Icon: Fuel, label: "Fuel Type", value: car.fuelType ?? "Petrol" },
+    { Icon: Wrench, label: "Engine", value: car.transmission ?? "Auto" },
+    { Icon: BadgeCheck, label: "Car Type", value: car.condition },
+    { Icon: Cog, label: "Transmission", value: car.transmission ?? "Auto" },
+  ];
+
+  const locationLabel =
+      typeof car.location === "string"
+          ? car.location
+          : car.location?.name ?? "Accra, Ghana";
+
   return (
-      <div className="min-h-screen  bg-white">
-        {/* Page Hero */}
-        <section className="pt-20 pb-12 bg-gradient-to-b from-[#F9F9F7] to-white border-b border-[#E8E8E8]">
-          <div className="container mx-auto px-4 md:px-6 lg:px-8">
-            <div className="text-center mb-8">
-              <p className="text-sm font-bold text-[#888] uppercase tracking-[2px] mb-2">
-                Vehicle Details
-              </p>
-              <h1 className="text-4xl md:text-5xl font-900 text-[#1C1C1E] mb-3">
-                {car.year} {car.brand} {car.model}
-              </h1>
-              <p className="text-sm text-[#888]">
-                Stock: {car.id?.slice(0, 8).toUpperCase()}
-              </p>
-            </div>
+      <div className="min-h-screen bg-white">
+        {/* Page Header */}
+        <section className="border-b border-[var(--hairline)] bg-white py-8">
+          <div className="shell">
+            <p className="eyebrow text-[var(--accent-deep)]">Vehicle Details</p>
+            <h1 className="mt-3 font-display display-lead uppercase text-ink">
+              {car.year} {car.brand} {car.model}
+            </h1>
+            <p className="mt-2 text-xs uppercase tracking-[0.12em] text-ink/45">
+              Stock: {car.id?.slice(0, 8).toUpperCase()}
+            </p>
           </div>
         </section>
 
         {/* Main Content */}
-        <div className="container mx-auto px-4 md:px-6 lg:px-8 py-12">
-          <div className="car-detail-grid">
+        <div className="shell py-12">
+          <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[1fr_360px]">
             {/* LEFT: Images */}
-            <div className="detail-left">
-              {/* Main Gallery */}
-              <div className="gallery-main">
-                <div className="gallery-ribbon">
-                  {car.condition === "New" ? "NEW" : "USED"}
-                </div>
+            <div>
+              {/* Main Image */}
+              <div className="relative border border-[var(--hairline)] bg-[#F0EFE9]">
+                <span className="absolute left-0 top-4 z-10 bg-ink px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-white">
+                  {car.condition === "New" ? "New" : "Used"}
+                </span>
+                {images.length > 1 && (
+                    <span className="absolute right-3 top-3 z-10 bg-ink/75 px-2.5 py-1 text-[11px] font-semibold text-white">
+                      {imageIndex + 1} / {images.length}
+                    </span>
+                )}
                 <OptimizedImage
                     src={images[imageIndex]}
                     alt={`${car.year} ${car.brand} ${car.model}`}
@@ -131,13 +152,17 @@ export default function CarDetailsPage() {
               </div>
 
               {/* Thumbnail Gallery */}
-              <div className="gallery-thumbs">
-                {images.length > 0 ? (
-                    images.map((img, idx) => (
+              {images.length > 0 ? (
+                  <div className="mt-4 grid grid-cols-4 gap-3">
+                    {images.map((img, idx) => (
                         <button
                             key={idx}
                             onClick={() => setImageIndex(idx)}
-                            className={`thumb-img-container ${idx === imageIndex ? "active" : ""}`}
+                            className={`relative aspect-square overflow-hidden border transition-colors ${
+                                idx === imageIndex
+                                    ? "border-[var(--accent-solid)]"
+                                    : "border-[var(--hairline)] hover:border-ink/30"
+                            }`}
                         >
                           <OptimizedImage
                               src={img}
@@ -147,256 +172,119 @@ export default function CarDetailsPage() {
                               className="w-full h-full"
                           />
                         </button>
-                    ))
-                ) : (
-                    <div className="col-span-4 h-20 bg-gray-100 rounded flex items-center justify-center text-gray-500">
-                      No images
-                    </div>
-                )}
-              </div>
+                    ))}
+                  </div>
+              ) : (
+                  <div className="mt-4 flex h-20 items-center justify-center border border-[var(--hairline)] text-sm text-ink/45">
+                    No images
+                  </div>
+              )}
             </div>
 
-            {/* RIGHT: Sticky Sidebar */}
-            <div className="detail-sidebar">
+            {/* RIGHT: Sidebar */}
+            <div className="lg:sticky lg:top-24">
               {/* Price Card */}
-              <div className="sidebar-price-card">
-                <div className="sidebar-msrp">ASKING PRICE</div>
-                <div className="sidebar-price">{formatPrice(car.price ?? 0)}</div>
-                <div className="sidebar-price-note">Included Taxes & Fees</div>
+              <div className="border border-[var(--hairline)] p-6">
+                <p className="eyebrow text-ink/40">Asking Price</p>
+                <div className="mt-2 bg-ink px-4 py-3 font-display text-2xl font-medium text-white">
+                  {formatPrice(car.price ?? 0)}
+                </div>
+                <p className="mt-2 text-xs text-ink/45">Included Taxes &amp; Fees</p>
               </div>
 
               {/* Action Buttons */}
-              <div className="sidebar-actions">
-                <button
-                    className="sidebar-btn primary"
-                    onClick={() => setContactFormOpen(true)}
-                >
+              <div className="mt-4 flex flex-col gap-3">
+                <button className={PRIMARY_BTN} onClick={() => setContactFormOpen(true)}>
                   Get a Quote
                 </button>
-                <button
-                    className="sidebar-btn secondary"
-                    onClick={() => setTestDriveOpen(true)}
-                >
+                <button className={SECONDARY_BTN} onClick={() => setTestDriveOpen(true)}>
                   Book Test Drive
                 </button>
-                <button
-                    className="sidebar-btn secondary"
-                    onClick={() => setContactFormOpen(true)}
-                >
+                <button className={SECONDARY_BTN} onClick={() => setContactFormOpen(true)}>
                   Make an Offer
                 </button>
-                <button
-                    className="sidebar-btn secondary"
-                    onClick={() => setContactFormOpen(true)}
-                >
+                <button className={SECONDARY_BTN} onClick={() => setContactFormOpen(true)}>
                   Confirm Availability
                 </button>
               </div>
             </div>
           </div>
 
-          {/* Specs, Dealer Note & Tabs — centered below the gallery/sidebar row */}
-          <div className="detail-info-below mx-auto max-w-3xl text-center">
+          {/* Specs, Dealer Note & Tabs */}
+          <div className="mx-auto mt-14 max-w-3xl">
             {/* Specs Strip */}
-            <div className="detail-specs-strip">
-              <div className="dspec">
-                <span className="dspec-icon">
-                   <svg
-                       className="dspec-icon"
-                       viewBox="0 0 24 24"
-                       fill="none"
-                       stroke="currentColor"
-                       strokeWidth="1.5"
-                       width="16"
-                       height="16"
-                   >
-              <path d="M3 22V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v17" />
-              <path d="M15 9h2a2 2 0 0 1 2 2v5a1.5 1.5 0 0 0 3 0V9a2 2 0 0 0-2-2h-1" />
-              <path d="M3 22h12" />
-              <path d="M7 9h4" />
-            </svg>
-                </span>
-                <span className="dspec-label">FUEL TYPE</span>
-                <span className="dspec-val">{car.fuelType ?? "Petrol"}</span>
-              </div>
-              <div className="dspec">
-                <span className="dspec-icon">
-                  <svg
-                      className="dspec-icon"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      width="16"
-                      height="16"
-                  >
-              <circle cx="12" cy="12" r="10" />
-              <path d="M12 8v4l3 3" />
-            </svg>
-                </span>
-                <span className="dspec-label">MILEAGE</span>
-                <span className="dspec-val">{formatMileage(car.mileage)} km</span>
-              </div>
-              <div className="dspec">
-                  <span className="dspec-icon">
-                      <svg
-                          className="dspec-icon"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          width="20"
-                          height="20"
-                      >
-                          <path d="M4 10h3l1-3h8l1 3h3v8H4v-8z" />
-                          <circle cx="10" cy="7" r="1" fill="currentColor" />
-                        <circle cx="14" cy="7" r="1" fill="currentColor" />
-                          <path d="M8 14h8" />
-                      </svg>
+            <div className="grid grid-cols-2 gap-px border border-[var(--hairline)] bg-[var(--hairline)] sm:grid-cols-3">
+              {specs.map(({ Icon, label, value }) => (
+                  <div key={label} className="flex flex-col items-center gap-2 bg-white px-3 py-6 text-center">
+                    <Icon className="h-5 w-5 text-[var(--accent-deep)]" />
+                    <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-ink/40">
+                      {label}
                     </span>
-                  <span className="dspec-label">ENGINE</span>
-                <span className="dspec-val">{car.transmission ?? "Auto"}</span>
-              </div>
-              <div className="dspec">
-               <span className="dspec-icon">
-                  <svg
-                      className="dspec-icon"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      width="16"
-                      height="16"
-                  >
-                      <path d="M12.5 3H6a3 3 0 0 0-3 3v6.5a2 2 0 0 0 .58 1.42l7.5 7.5a2 2 0 0 0 2.83 0l5.17-5.17a2 2 0 0 0 0-2.83l-7.5-7.5A2 2 0 0 0 10.17 3H12.5z" />
-                      <circle cx="7.5" cy="7.5" r="1.25" fill="currentColor" />
-                  </svg>
-                </span>
-                <span className="dspec-label">CAR TYPE</span>
-                <span className="dspec-val">{car.condition}</span>
-              </div>
-              <div className="dspec">
-                <span className="dspec-icon">
-                  <svg
-                      className="dspec-icon"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      width="16"
-                      height="16"
-                  >
-              <circle cx="12" cy="5" r="3" fill="currentColor" />
-                    <path d="M12 8v8" />
-                    <path d="M7 20l2.5-4h5l2.5 4a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1z" />
-             </svg>
-                </span>
-                <span className="dspec-label">TRANSMISSION</span>
-                <span className="dspec-val">{car.transmission ?? "Auto"}</span>
-              </div>
-              <div className="dspec">
-                <span className="dspec-icon"><svg
-                    className="dspec-icon"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    width="16"
-                    height="16"
-                >
-                  <rect x="3" y="4" width="18" height="17" rx="2" />
-
-                  <path d="M3 9h18" />
-
-                  <circle cx="8" cy="3" r="1" fill="currentColor" />
-                  <circle cx="16" cy="3" r="1" fill="currentColor" />
-
-                  <circle cx="8" cy="13" r="0.75" fill="currentColor" />
-                  <circle cx="12" cy="13" r="0.75" fill="currentColor" />
-                  <circle cx="16" cy="13" r="0.75" fill="currentColor" />
-                  <circle cx="8" cy="17" r="0.75" fill="currentColor" />
-                  <circle cx="12" cy="17" r="0.75" fill="currentColor" />
-                  <circle cx="16" cy="17" r="0.75" fill="currentColor" />
-                  </svg>
-                </span>
-                <span className="dspec-label">YEAR</span>
-                <span className="dspec-val">{car.year}</span>
-              </div>
+                    <span className="text-sm font-semibold text-ink">{value}</span>
+                  </div>
+              ))}
             </div>
 
             {/* Dealer Note */}
-            <div className="dealer-note">
-              <strong>Dealer Note:</strong> {car.description ?? "Premium vehicle in excellent condition. Well-maintained with full service history."}
+            <div className="mt-8 border-l-2 border-[var(--accent-solid)] bg-[#F9F9F7] px-5 py-4 text-sm leading-7 text-ink/70">
+              <strong className="text-ink">Dealer Note:</strong>{" "}
+              {car.description ?? "Premium vehicle in excellent condition. Well-maintained with full service history."}
             </div>
 
             {/* Tabs */}
-            <div className="detail-tabs">
-              <button
-                  className={`tab-btn ${activeTab === "overview" ? "active" : ""}`}
-                  onClick={() => setActiveTab("overview")}
-              >
-                Overview
-              </button>
-              <button
-                  className={`tab-btn ${activeTab === "technical" ? "active" : ""}`}
-                  onClick={() => setActiveTab("technical")}
-              >
-                Technical
-              </button>
-              <button
-                  className={`tab-btn ${activeTab === "location" ? "active" : ""}`}
-                  onClick={() => setActiveTab("location")}
-              >
-                Location
-              </button>
+            <div className="mt-10 flex gap-8 border-b border-[var(--hairline)]">
+              {(["overview", "technical", "location"] as const).map((tab) => (
+                  <button
+                      key={tab}
+                      onClick={() => setActiveTab(tab)}
+                      className={`-mb-px border-b-2 pb-3 text-[13px] font-bold uppercase tracking-[0.14em] transition-colors ${
+                          activeTab === tab
+                              ? "border-[var(--accent-solid)] text-ink"
+                              : "border-transparent text-ink/40 hover:text-ink/70"
+                      }`}
+                  >
+                    {tab}
+                  </button>
+              ))}
             </div>
 
-            <div className="tab-content" style={{ display: activeTab === "overview" ? "block" : "none" }}>
-              <p>{car.description || "This is a premium vehicle in excellent condition."}</p>
-            </div>
-            <div className="tab-content" style={{ display: activeTab === "technical" ? "block" : "none" }}>
-              <div className="space-y-2">
-                <p><strong>Fuel Type:</strong> {car.fuelType}</p>
-                <p><strong>Transmission:</strong> {car.transmission}</p>
-                <p><strong>Condition:</strong> {car.condition}</p>
-                <p><strong>Mileage:</strong> {formatMileage(car.mileage)} km</p>
-              </div>
-            </div>
-            <div className="tab-content" style={{ display: activeTab === "location" ? "block" : "none" }}>
-              <p>
-                Located in{" "}
-                {typeof car.location === "string"
-                    ? car.location
-                    : car.location?.name ?? "Accra, Ghana"}
-              </p>
+            <div className="mt-6 text-sm leading-7 text-ink/70">
+              {activeTab === "overview" && (
+                  <p>{car.description || "This is a premium vehicle in excellent condition."}</p>
+              )}
+              {activeTab === "technical" && (
+                  <div className="space-y-2">
+                    <p><strong className="text-ink">Fuel Type:</strong> {car.fuelType}</p>
+                    <p><strong className="text-ink">Transmission:</strong> {car.transmission}</p>
+                    <p><strong className="text-ink">Condition:</strong> {car.condition}</p>
+                    <p><strong className="text-ink">Mileage:</strong> {formatMileage(car.mileage)} km</p>
+                  </div>
+              )}
+              {activeTab === "location" && (
+                  <p className="flex items-center justify-center gap-1.5">
+                    <MapPin className="h-4 w-4 text-ink/45" />
+                    Located in {locationLabel}
+                  </p>
+              )}
             </div>
           </div>
         </div>
 
         {/* Similar Vehicles */}
         {similarCars.length > 0 && (
-            <div className="container mx-auto px-4 md:px-6 lg:px-8 py-20">
-              <div className="similar-section">
-                <div className="section-label">
-                  <span className="section-label-text">Related Listings</span>
-                  <div className="section-label-line"></div>
-                </div>
-                <h2 className="section-title">
-                  You May Also Like <span className="gold">Vehicles</span>
+            <section className="border-t border-[var(--hairline)] bg-white py-16 md:py-24">
+              <div className="shell">
+                <p className="eyebrow text-[var(--accent-deep)]">Related Listings</p>
+                <h2 className="mt-4 font-display display-lead uppercase text-ink">
+                  You May Also Like These Vehicles
                 </h2>
-                <div className="cars-grid">
-                  {similarCars.map((car) => (
-                      <CarCard key={car.id} car={car} />
+                <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                  {similarCars.map((similar) => (
+                      <VehicleCard key={similar.id} car={similar} />
                   ))}
                 </div>
               </div>
-            </div>
+            </section>
         )}
 
         {/* Dialogs */}

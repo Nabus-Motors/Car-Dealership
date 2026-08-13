@@ -80,7 +80,7 @@ export function AboutPage() {
               </div>
               
               {/* Location Card */}
-              <div className="mt-8 p-6 bg-[#F9F9F7] rounded-lg border border-[#E8E8E8]">
+              <div className="mt-8 p-6 bg-[#F9F9F7] rounded-none border border-[#E8E8E8]">
                 <div className="flex items-start gap-3">
                   <MapPin className="w-5 h-5 text-[#C9A84C] mt-1 shrink-0" />
                   <div>
@@ -98,7 +98,7 @@ export function AboutPage() {
               <ImageWithFallback
                 src="https://images.unsplash.com/photo-1705747401901-28363172fe7e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxsdXh1cnklMjBjYXIlMjBzaG93cm9vbXxlbnwxfHx8fDE3NTg3MTYyMTl8MA&ixlib=rb-4.1.0&q=80&w=1080"
                 alt="Nabus Motors showroom"
-                className="w-full h-96 object-cover rounded-xl shadow-lg"
+                className="w-full h-96 object-cover rounded-none"
               />
             </div>
           </div>
@@ -119,10 +119,10 @@ export function AboutPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 px-2">
             {values.map((value, index) => (
-              <Card key={index} className="border-2 border-[#C9A84C]/30 rounded-xl shadow-md hover:shadow-lg transition-all hover:-translate-y-1">
+              <Card key={index} className="border-2 border-[#C9A84C]/30 rounded-none shadow-none transition-all hover:-translate-y-1">
                 <CardContent className="p-8">
                   <div className="mb-4">
-                    <div className="w-14 h-14 bg-[#C9A84C]/20 rounded-lg flex items-center justify-center">
+                    <div className="w-14 h-14 bg-[#C9A84C]/20 rounded-none flex items-center justify-center">
                       <value.icon className="w-7 h-7 text-[#C9A84C]" />
                     </div>
                   </div>
@@ -154,7 +154,7 @@ export function AboutPage() {
                   demonstrating our commitment to financial inclusion and customer empowerment.
                 </p>
               </div>
-              <div className="p-8 bg-[#C9A84C]/10 rounded-xl border-2 border-[#C9A84C]/30">
+              <div className="p-8 bg-[#C9A84C]/10 rounded-none border-2 border-[#C9A84C]/30">
                 <p className="text-2xl font-bold text-[#C9A84C] italic">
                   "It has taken great effort to see this buoyant auto industry in Ghana grow with technology."
                 </p>
@@ -164,7 +164,7 @@ export function AboutPage() {
 
             {/* Vision */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-              <div className="p-8 bg-[#0A0A0A]/5 rounded-xl border-2 border-[#0A0A0A]/20 order-2 md:order-1">
+              <div className="p-8 bg-[#0A0A0A]/5 rounded-none border-2 border-[#0A0A0A]/20 order-2 md:order-1">
                 <p className="text-lg text-slate-700 leading-relaxed italic">
                   "As the world transitions into a new era of sustainable mobility, digital innovation, 
                   and integrated logistics, Ghana's transport sector must continue to evolve."
@@ -199,9 +199,9 @@ export function AboutPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-2">
             {services.map((service, index) => (
-              <Card key={index} className="border-2 border-[#E8E8E8] rounded-xl hover:border-[#C9A84C] transition-colors">
+              <Card key={index} className="border-2 border-[#E8E8E8] rounded-none shadow-none hover:border-[#C9A84C] transition-colors">
                 <CardContent className="p-8">
-                  <div className="w-12 h-12 bg-[#C9A84C] rounded-lg mb-4 flex items-center justify-center">
+                  <div className="w-12 h-12 bg-[#C9A84C] rounded-none mb-4 flex items-center justify-center">
                     <span className="text-white font-bold text-lg">{index + 1}</span>
                   </div>
                   <h3 className="text-xl font-bold text-[#0A0A0A] mb-3">
@@ -222,11 +222,11 @@ export function AboutPage() {
         <div className="container mx-auto px-4 max-w-5xl">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="relative">
-              <div className="absolute inset-0 bg-[#C9A84C]/20 rounded-xl" />
+              <div className="absolute inset-0 bg-[#C9A84C]/20 rounded-none" />
               <ImageWithFallback
                 src={ceoPic}
                 alt="Nana Adu Bonsu Agyekum Prempeh"
-                className="w-full h-96 object-cover rounded-xl relative z-10"
+                className="w-full h-96 object-cover rounded-none relative z-10"
               />
             </div>
 
@@ -335,10 +335,10 @@ export function AboutPage() {
             Discover our extensive inventory and experience automotive excellence
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center px-2">
-            <a href="/explore" className="px-8 py-4 bg-[#C9A84C] text-[#0A0A0A] font-bold rounded-lg hover:bg-[#E5C263] transition-colors">
+            <a href="/explore" className="px-8 py-4 bg-[#C9A84C] text-ink font-bold uppercase tracking-[0.14em] text-[13px] hover:bg-[#E5C263] transition-colors">
               Browse Inventory
             </a>
-            <a href="/contact" className="px-8 py-4 border-2 border-[#C9A84C] text-[#C9A84C] font-bold rounded-lg hover:bg-[#C9A84C]/10 transition-colors">
+            <a href="/contact" className="px-8 py-4 border border-ink text-ink font-bold uppercase tracking-[0.14em] text-[13px] hover:bg-ink hover:text-white transition-colors">
               Contact Us
             </a>
           </div>

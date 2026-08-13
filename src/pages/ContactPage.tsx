@@ -143,7 +143,7 @@ export function ContactPage() {
             {/* Left Column: Contact Form and Map */}
             <div className="space-y-8">
               {/* Contact Form */}
-              <Card className="border-2 border-slate-200 rounded-xl shadow-md">
+              <Card className="border-2 border-slate-200 rounded-none shadow-none">
                 <CardContent className="p-8">
                   <h2 className="text-2xl font-bold text-[#001F3F] mb-6">
                     Send Us a Message
@@ -198,10 +198,11 @@ export function ContactPage() {
                         onChange={handleInputChange}
                         placeholder="How can we help you?"
                         rows={5}
+                        className="rounded-none"
                       />
                     </div>
                     
-                    <Button type="submit" className="w-full bg-[#FFD700] hover:bg-[#FFC700] text-[#001F3F] font-bold uppercase tracking-wide transition-all h-12" disabled={isSubmitting}>
+                    <Button type="submit" className="w-full bg-[#C9A84C] hover:bg-[#E5C263] text-ink font-bold uppercase tracking-wide transition-all h-12" disabled={isSubmitting}>
                       {isSubmitting ? 'Sending...' : 'Send Message'}
                     </Button>
                   </form>
@@ -209,7 +210,7 @@ export function ContactPage() {
               </Card>
 
               {/* Map Location */}
-              <Card className="overflow-hidden mt-6 border-2 border-slate-200 shadow-md rounded-xl px-2">
+              <Card className="overflow-hidden mt-6 border-2 border-slate-200 rounded-none shadow-none px-2">
                 <CardHeader className="pb-0">
                   <CardTitle className="text-2xl font-bold text-[#001F3F]">Our Location</CardTitle>
                 </CardHeader>
@@ -243,11 +244,11 @@ export function ContactPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-6">
                 {contactInfo.map((info, index) => (
-                  <Card key={index} className="border-2 border-slate-200 rounded-xl shadow-md">
+                  <Card key={index} className="border-2 border-slate-200 rounded-none shadow-none">
                     <CardContent className="p-6">
                       <div className="flex items-start space-x-4">
-                        <div className="p-3 bg-[#FFD700]/20 rounded-lg">
-                          <info.icon className="w-6 h-6 text-[#FFD700]" />
+                        <div className="p-3 bg-[#C9A84C]/20 rounded-none">
+                          <info.icon className="w-6 h-6 text-[#C9A84C]" />
                         </div>
                         <div>
                           <h3 className="font-semibold text-[#001F3F]">
@@ -260,7 +261,7 @@ export function ContactPage() {
                           </div>
                           <Button
                             variant="link"
-                            className="mt-2 h-auto p-0 text-[#FFD700] hover:text-[#FFC700]"
+                            className="mt-2 h-auto p-0 text-[#C9A84C] hover:text-[#E5C263] font-bold uppercase tracking-wide text-xs"
                           >
                             {info.action} →
                           </Button>
@@ -272,7 +273,7 @@ export function ContactPage() {
               </div>
 
               {/* Business Hours */}
-              <Card className="border-2 border-slate-200 rounded-xl shadow-md">
+              <Card className="border-2 border-slate-200 rounded-none shadow-none">
                 <CardContent className="p-6">
                   <h3 className="font-semibold text-[#001F3F] mb-4">
                     Business Hours
