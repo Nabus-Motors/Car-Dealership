@@ -63,10 +63,15 @@ export function Navbar() {
               ))}
             </nav>
 
-            <Link to="/contact" className="btn-pill hidden shrink-0 md:inline-flex">
+            <a
+                href="https://www.google.com/maps?q=NABUS%20MOTORS"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-pill hidden shrink-0 md:inline-flex"
+            >
               <MapPin className="h-3.5 w-3.5" />
               Find Us
-            </Link>
+            </a>
 
             <button
                 onClick={() => setMobileOpen((prev) => !prev)}
@@ -107,10 +112,15 @@ export function Navbar() {
                     {label}
                   </Link>
               ))}
-              <Link to="/contact" className="btn-pill mt-5 justify-center">
+              <a
+                  href="https://www.google.com/maps?q=NABUS%20MOTORS"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-pill mt-5 justify-center"
+              >
                 <MapPin className="h-3.5 w-3.5" />
                 Find Us
-              </Link>
+              </a>
             </div>
           </div>
         </header>

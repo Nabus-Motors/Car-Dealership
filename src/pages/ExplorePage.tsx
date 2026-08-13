@@ -10,12 +10,10 @@ import { useIsMobile } from '@components/ui/use-mobile';
 import { Slider } from '@components/ui/slider';
 import { collection, query, orderBy, getDocs, DocumentSnapshot } from 'firebase/firestore';
 import { db, COLLECTIONS } from '@/firebase/firebase';
-import { Grid3x3 } from 'lucide-react';
 import type { Car } from '@/types/car';
 import { normalizeImageUrls } from '@utils/images';
 import { inferBodyStyle } from '@utils/inventory';
-import { CarCard } from '@components/CarCard';
-import { CarCardHorizontal } from '@components/CarCardHorizontal';
+import { VehicleCard } from '@components/VehicleCard';
 import HeroShowcase from '@components/home/HeroShowcase';
 
 // Filter types
@@ -105,7 +103,6 @@ export function ExplorePage() {
   const [hasMore, setHasMore] = useState(true);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [brandSearch, setBrandSearch] = useState('');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState<'newest' | 'price-low' | 'price-high' | 'popular'>('newest');
   const [totalResults, setTotalResults] = useState(0);
   const allCarsRef = useRef<Car[] | null>(null);
@@ -157,15 +154,19 @@ export function ExplorePage() {
       const q = query(collection(db, COLLECTIONS.CARS));
       const querySnapshot = await getDocs(q);
       
-      const brands = new Set<string>();
+      const brands = new Map<string, string>();
       querySnapshot.docs.forEach((doc) => {
         const data = doc.data();
-        if (data.brand) {
-          brands.add(data.brand);
+        const brand = typeof data.brand === 'string' ? data.brand.trim() : '';
+        if (brand) {
+          const key = brand.toLowerCase();
+          if (!brands.has(key)) {
+            brands.set(key, brand);
+          }
         }
       });
-      
-      setAvailableBrands(Array.from(brands).sort());
+
+      setAvailableBrands(Array.from(brands.values()).sort());
     } catch (err) {
       console.error('Error fetching brands:', err);
     } finally {
@@ -361,7 +362,7 @@ export function ExplorePage() {
           {/* Sort By */}
           {!loading && cars.length > 0 && (
             <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
-              <SelectTrigger className="border-2 border-slate-300 text-slate-900 whitespace-nowrap h-10 font-semibold hover:border-[#FFD700] transition-colors w-40">
+              <SelectTrigger className="border-2 border-slate-300 text-slate-900 whitespace-nowrap h-10 font-semibold hover:border-[#C9A84C] transition-colors w-40">
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
               <SelectContent>
@@ -383,7 +384,7 @@ export function ExplorePage() {
               placeholder="Search by brand or model..."
               value={filters.search}
               onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
-              className="w-full border-2 border-slate-200 focus:border-[#FFD700] focus:ring-0 bg-white h-12 text-base transition-all shadow-sm hover:border-slate-300"
+              className="w-full border-2 border-slate-200 focus:border-[#C9A84C] focus:ring-0 bg-white h-12 text-base transition-all shadow-sm hover:border-slate-300"
             />
           </div>
 
@@ -392,25 +393,25 @@ export function ExplorePage() {
             {/* Filter Button */}
             <Dialog open={isFilterModalOpen} onOpenChange={setIsFilterModalOpen}>
               <DialogTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  className="border-2 border-slate-300 text-slate-900 hover:bg-slate-50 hover:border-[#FFD700] font-semibold whitespace-nowrap transition-all h-12 px-3 sm:px-4"
+                <Button
+                  variant="outline"
+                  className="border-2 border-ink text-ink hover:bg-ink hover:text-white font-bold uppercase tracking-wide whitespace-nowrap transition-all h-12 px-3 sm:px-4"
                   onClick={openFilterModal}
                 >
                   <Icons.filter className="h-5 w-5 mr-1 sm:mr-2" />
                   <span className="hidden sm:inline">Filter</span>
                   {activeFilterCount > 0 && (
-                    <Badge variant="secondary" className="ml-1 sm:ml-2 bg-[#FFD700] text-[#001F3F] rounded font-bold text-xs">
+                    <Badge variant="secondary" className="ml-1 sm:ml-2 bg-[#C9A84C] text-ink rounded-none font-bold text-xs">
                       {activeFilterCount}
                     </Badge>
                   )}
                 </Button>
               </DialogTrigger>
 
-              <DialogContent onOpenAutoFocus={(e) => e.preventDefault()} className="max-w-2xl md:max-w-4xl max-h-[90vh] overflow-hidden bg-white flex flex-col p-0 gap-0">
+              <DialogContent onOpenAutoFocus={(e) => e.preventDefault()} className="max-w-2xl md:max-w-4xl max-h-[90vh] overflow-hidden bg-white flex flex-col p-0 gap-0 rounded-none">
                 {/* 1. Sticky Header */}
-                <div className="shrink-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
-                  <h2 className="text-xl md:text-2xl font-bold text-slate-900">Filter Vehicles</h2>
+                <div className="shrink-0 bg-ink border-b border-ink px-6 py-4 flex items-center justify-between">
+                  <h2 className="text-xl md:text-2xl font-bold text-white">Filter Vehicles</h2>
                   <button
                       aria-label="Close modal"
                       onClick={(e) => {
@@ -418,7 +419,7 @@ export function ExplorePage() {
                         e.stopPropagation();
                         setIsFilterModalOpen(false);
                       }}
-                      className="inline-flex h-8 w-8 items-center justify-center bg-slate-100 border border-slate-200 text-slate-900 hover:bg-slate-200 hover:border-slate-300 focus:outline-none cursor-pointer transition-colors rounded"
+                      className="inline-flex h-8 w-8 items-center justify-center bg-white/10 border border-white/20 text-white hover:bg-white/20 hover:border-white/30 focus:outline-none cursor-pointer transition-colors"
                       type="button"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -436,7 +437,7 @@ export function ExplorePage() {
                       <h3 className="text-sm md:text-base font-semibold text-slate-900 border-b-2 border-slate-200 pb-2 md:pb-3 uppercase tracking-wide">Brand</h3>
 
                       {brandsLoading ? (
-                          <div className="h-10 w-full bg-gray-200 animate-pulse rounded" />
+                          <div className="h-10 w-full bg-gray-200 animate-pulse" />
                       ) : (
                           <div className="space-y-3">
                             <Select
@@ -446,7 +447,7 @@ export function ExplorePage() {
                                   }
                                 }}
                             >
-                              <SelectTrigger className="w-full border-2 border-slate-300 focus:border-[#FFD700] focus:ring-1 focus:ring-[#FFD700]/30 transition-colors h-11">
+                              <SelectTrigger className="w-full border border-slate-300 focus:border-[#C9A84C] focus:ring-1 focus:ring-[#C9A84C]/30 transition-colors h-11">
                                 <SelectValue placeholder="Select a brand..." />
                               </SelectTrigger>
                               <SelectContent>
@@ -474,7 +475,7 @@ export function ExplorePage() {
                                   {tempFilters.brands.map((brand) => (
                                       <span
                                           key={brand}
-                                          className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#FFD700] text-[#001F3F] text-xs font-bold uppercase tracking-wide rounded"
+                                          className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#C9A84C] text-ink text-xs font-bold uppercase tracking-wide"
                                       >
                     {brand}
                                         <button
@@ -532,7 +533,7 @@ export function ExplorePage() {
                                   setTempFilters(prev => ({ ...prev, priceRange: [minPrice, maxPrice] }));
                                 }
                               }}
-                              className="border border-slate-300 focus:border-[#FFD700] focus:ring-1 focus:ring-[#FFD700]/30 transition-colors text-sm"
+                              className="border border-slate-300 focus:border-[#C9A84C] focus:ring-1 focus:ring-[#C9A84C]/30 transition-colors text-sm"
                           />
                         </div>
                         <div>
@@ -549,7 +550,7 @@ export function ExplorePage() {
                                   setTempFilters(prev => ({ ...prev, priceRange: [minPrice, maxPrice] }));
                                 }
                               }}
-                              className="border border-slate-300 focus:border-[#FFD700] focus:ring-1 focus:ring-[#FFD700]/30 transition-colors text-sm"
+                              className="border border-slate-300 focus:border-[#C9A84C] focus:ring-1 focus:ring-[#C9A84C]/30 transition-colors text-sm"
                           />
                         </div>
                       </div>
@@ -573,8 +574,8 @@ export function ExplorePage() {
                                   }}
                                   className={`px-4 py-2 border-2 font-medium transition-all uppercase tracking-wide text-sm ${
                                       isSelected
-                                          ? 'bg-[#FFD700] text-[#001F3F] border-[#FFD700]'
-                                          : 'bg-white text-slate-900 border-slate-300 hover:border-[#FFD700] hover:shadow-md'
+                                          ? 'bg-[#C9A84C] text-ink border-[#C9A84C]'
+                                          : 'bg-white text-slate-900 border-slate-300 hover:border-[#C9A84C] hover:shadow-md'
                                   }`}
                               >
                                 {condition}
@@ -594,10 +595,10 @@ export function ExplorePage() {
                               value={tempFilters.yearRange[0].toString()}
                               onValueChange={(value) => {
                                 const fromYear = parseInt(value);
-                                setTempFilters(prev => ({ ...prev, yearRange: [fromYear, prev.yearRange[1]] }));
+                                setTempFilters(prev => ({ ...prev, yearRange: [fromYear, Math.max(fromYear, prev.yearRange[1])] }));
                               }}
                           >
-                            <SelectTrigger className="border-2 border-slate-300 focus:border-[#FFD700] focus:ring-1 focus:ring-[#FFD700]/30 transition-colors">
+                            <SelectTrigger className="border border-slate-300 focus:border-[#C9A84C] focus:ring-1 focus:ring-[#C9A84C]/30 transition-colors">
                               <SelectValue placeholder="Select year" />
                             </SelectTrigger>
                             <SelectContent>
@@ -630,7 +631,7 @@ export function ExplorePage() {
                                 setTempFilters(prev => ({ ...prev, yearRange: [prev.yearRange[0], toYear] }));
                               }}
                           >
-                            <SelectTrigger className="border-2 border-slate-300 focus:border-[#FFD700] focus:ring-1 focus:ring-[#FFD700]/30 transition-colors">
+                            <SelectTrigger className="border border-slate-300 focus:border-[#C9A84C] focus:ring-1 focus:ring-[#C9A84C]/30 transition-colors">
                               <SelectValue placeholder="Select year" />
                             </SelectTrigger>
                             <SelectContent>
@@ -645,6 +646,7 @@ export function ExplorePage() {
                               {Array.from({ length: new Date().getFullYear() - MIN_YEAR + 2 }, (_, i) => {
                                 const year = (new Date().getFullYear() - i).toString();
                                 if (yearSearch && !year.includes(yearSearch)) return null;
+                                if (parseInt(year) < tempFilters.yearRange[0]) return null;
                                 return (
                                     <SelectItem key={year} value={year}>
                                       {year}
@@ -675,8 +677,8 @@ export function ExplorePage() {
                                   }}
                                   className={`px-4 py-2 border-2 font-medium transition-all uppercase tracking-wide text-sm ${
                                       isSelected
-                                          ? 'bg-[#FFD700] text-[#001F3F] border-[#FFD700]'
-                                          : 'bg-white text-slate-900 border-slate-300 hover:border-[#FFD700] hover:shadow-md'
+                                          ? 'bg-[#C9A84C] text-ink border-[#C9A84C]'
+                                          : 'bg-white text-slate-900 border-slate-300 hover:border-[#C9A84C] hover:shadow-md'
                                   }`}
                               >
                                 {transmission}
@@ -704,8 +706,8 @@ export function ExplorePage() {
                                   }}
                                   className={`px-4 py-2 border-2 font-medium transition-all uppercase tracking-wide text-sm ${
                                       isSelected
-                                          ? 'bg-[#FFD700] text-[#001F3F] border-[#FFD700]'
-                                          : 'bg-white text-slate-900 border-slate-300 hover:border-[#FFD700] hover:shadow-md'
+                                          ? 'bg-[#C9A84C] text-ink border-[#C9A84C]'
+                                          : 'bg-white text-slate-900 border-slate-300 hover:border-[#C9A84C] hover:shadow-md'
                                   }`}
                               >
                                 {fuelType}
@@ -721,48 +723,32 @@ export function ExplorePage() {
                 <div className="shrink-0 bg-white border-t border-slate-200 p-4 md:px-6 flex gap-4">
                   <Button
                       onClick={resetFilters}
-                      className="flex-1 border-2 bg-white border-slate-300 text-slate-900 hover:bg-slate-50 hover:border-[#FFD700] font-bold transition-all h-10"
+                      className="flex-1 border-2 bg-white border-ink text-ink hover:bg-ink hover:text-white font-bold uppercase tracking-wide transition-all h-10"
                   >
                     Reset
                   </Button>
                   <Button
                       onClick={applyFilters}
-                      className="flex-1 bg-[#FFD700] hover:bg-[#FFC700] text-[#001F3F] font-bold transition-all h-10 uppercase tracking-wide"
+                      className="flex-1 bg-[#C9A84C] hover:bg-[#E5C263] text-ink font-bold transition-all h-10 uppercase tracking-wide"
                   >
                     Apply Filters
                   </Button>
                 </div>
               </DialogContent>
             </Dialog>
-
-            {/* View Mode Toggle */}
-            <div className="flex gap-2">
-              <button
-                onClick={() => setViewMode('grid')}
-                className={`p-2 border-2 transition-all h-12 w-12 flex items-center justify-center ${
-                  viewMode === 'grid'
-                    ? 'bg-[#FFD700] text-[#001F3F] border-[#FFD700]'
-                    : 'bg-white text-slate-900 border-slate-300 hover:border-[#FFD700]'
-                }`}
-                title="Grid view"
-                aria-label="Grid view"
-              >
-                <Grid3x3 className="h-5 w-5" />
-              </button>
-            </div>
           </div>
         </div>
 
         {/* Active Filters Display */}
         {activeFilterCount > 0 && (
-          <div className="mb-6 p-4 bg-slate-50 border-2 border-slate-200 rounded-lg">
+          <div className="mb-6 p-4 bg-slate-50 border-2 border-slate-200">
             <div className="flex flex-wrap gap-2 items-center">
               <span className="text-sm font-bold text-slate-700 uppercase tracking-wide">Active filters:</span>
               {filters.brands.map(brand => (
                 <Badge 
                   key={`brand-${brand}`} 
                   variant="outline" 
-                  className="bg-[#FFD700] border-[#FFD700] text-[#001F3F] font-bold"
+                  className="bg-[#C9A84C] border-[#C9A84C] text-ink font-bold rounded-none"
                 >
                   {brand}
                   <button
@@ -782,7 +768,7 @@ export function ExplorePage() {
                 <Badge 
                   key={`condition-${condition}`} 
                   variant="outline" 
-                  className="bg-[#FFD700] border-[#FFD700] text-[#001F3F] font-bold"
+                  className="bg-[#C9A84C] border-[#C9A84C] text-ink font-bold rounded-none"
                 >
                   {condition}
                   <button
@@ -802,7 +788,7 @@ export function ExplorePage() {
                 <Badge 
                   key={`transmission-${transmission}`} 
                   variant="outline" 
-                  className="bg-[#FFD700] border-[#FFD700] text-[#001F3F] font-bold"
+                  className="bg-[#C9A84C] border-[#C9A84C] text-ink font-bold rounded-none"
                 >
                   {transmission}
                   <button
@@ -822,7 +808,7 @@ export function ExplorePage() {
                 <Badge 
                   key={`fuel-${fuelType}`} 
                   variant="outline" 
-                  className="bg-[#FFD700] border-[#FFD700] text-[#001F3F] font-bold"
+                  className="bg-[#C9A84C] border-[#C9A84C] text-ink font-bold rounded-none"
                 >
                   {fuelType}
                   <button
@@ -842,7 +828,7 @@ export function ExplorePage() {
                 variant="ghost" 
                 size="sm" 
                 onClick={clearAllFilters} 
-                className="text-[#FFD700] hover:text-[#001F3F] hover:bg-[#FFD700] ml-2 font-bold"
+                className="text-[#C9A84C] hover:text-ink hover:bg-[#C9A84C] ml-2 font-bold"
               >
                 Clear all
               </Button>
@@ -882,29 +868,21 @@ export function ExplorePage() {
             </p>
             <Button 
               onClick={clearAllFilters} 
-              className="bg-[#FFD700] hover:bg-[#FFC700] text-[#001F3F] font-bold uppercase tracking-wide"
+              className="bg-[#C9A84C] hover:bg-[#E5C263] text-ink font-bold uppercase tracking-wide"
             >
               Clear All Filters
             </Button>
           </div>
         )}
 
-        {/* Cars Grid/List */}
+        {/* Cars Grid */}
         {!loading && !error && cars.length > 0 && (
           <>
-            {viewMode === 'grid' ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-                {cars.map((car) => (
-                  <CarCard key={car.id} car={car} />
-                ))}
-              </div>
-            ) : (
-              <div className="space-y-4 mb-12">
-                {cars.map((car) => (
-                  <CarCardHorizontal key={car.id} car={car} />
-                ))}
-              </div>
-            )}
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 mb-12">
+              {cars.map((car) => (
+                <VehicleCard key={car.id} car={car} />
+              ))}
+            </div>
 
             {/* Pagination */}
             <div className="flex flex-col gap-4 pb-8">
@@ -913,19 +891,19 @@ export function ExplorePage() {
                   onClick={handlePrevPage}
                   disabled={currentPage === 1}
                   variant="outline"
-                  className="border-2 border-slate-300 text-slate-900 hover:bg-slate-50 hover:border-[#FFD700] disabled:opacity-50 disabled:cursor-not-allowed font-bold transition-all"
+                  className="border-2 border-slate-300 text-slate-900 hover:bg-slate-50 hover:border-[#C9A84C] disabled:opacity-50 disabled:cursor-not-allowed font-bold transition-all"
                 >
                   <Icons.chevronLeft className="h-5 w-5 mr-2" />
                   Previous
                 </Button>
 
-                <span className="text-sm font-bold text-slate-900 px-4 py-2 bg-slate-50 rounded border-2 border-slate-200">Page {currentPage}</span>
+                <span className="text-sm font-bold text-slate-900 px-4 py-2 bg-slate-50 border-2 border-slate-200">Page {currentPage}</span>
 
                 <Button
                   onClick={handleNextPage}
                   disabled={!hasMore}
                   variant="outline"
-                  className="border-2 border-slate-300 text-slate-900 hover:bg-slate-50 hover:border-[#FFD700] disabled:opacity-50 disabled:cursor-not-allowed font-bold transition-all"
+                  className="border-2 border-slate-300 text-slate-900 hover:bg-slate-50 hover:border-[#C9A84C] disabled:opacity-50 disabled:cursor-not-allowed font-bold transition-all"
                 >
                   Next
                   <Icons.chevronRight className="h-5 w-5 ml-2" />

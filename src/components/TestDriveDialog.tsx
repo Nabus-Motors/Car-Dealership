@@ -82,13 +82,13 @@ export function TestDriveDialog({ open, onOpenChange, carTitle }: TestDriveDialo
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md p-0 overflow-hidden border-0 bg-white max-h-[90vh] flex flex-col">
+      <DialogContent className="max-w-md p-0 overflow-hidden border-0 rounded-none bg-white max-h-[90vh] flex flex-col">
         {/* Header */}
-        <div className="bg-gradient-to-r from-[#001F3F] to-[#002855] text-white px-6 py-8 flex-shrink-0">
+        <div className="bg-ink text-white px-6 py-8 flex-shrink-0">
           <div className="flex items-start justify-between mb-2">
             <div>
               <DialogTitle className="text-2xl font-bold">Schedule Test Drive</DialogTitle>
-              <p className="text-gray-300 text-sm mt-1">Book your appointment now</p>
+              <p className="text-onDark text-sm mt-1">Book your appointment now</p>
             </div>
             <button
               onClick={() => onOpenChange(false)}
@@ -112,7 +112,7 @@ export function TestDriveDialog({ open, onOpenChange, carTitle }: TestDriveDialo
                 value={formData.name}
                 onChange={handleChange}
                 placeholder="John Doe"
-                className="border-0 bg-gray-100 text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-[#FFD700] focus:bg-white"
+                className="border-0 bg-gray-100 text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-[#C9A84C] focus:bg-white"
               />
             </div>
 
@@ -126,7 +126,7 @@ export function TestDriveDialog({ open, onOpenChange, carTitle }: TestDriveDialo
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="john@example.com"
-                className="border-0 bg-gray-100 text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-[#FFD700] focus:bg-white"
+                className="border-0 bg-gray-100 text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-[#C9A84C] focus:bg-white"
               />
             </div>
 
@@ -140,7 +140,7 @@ export function TestDriveDialog({ open, onOpenChange, carTitle }: TestDriveDialo
                 value={formData.phone}
                 onChange={handleChange}
                 placeholder="+1 (555) 000-0000"
-                className="border-0 bg-gray-100 text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-[#FFD700] focus:bg-white"
+                className="border-0 bg-gray-100 text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-[#C9A84C] focus:bg-white"
               />
             </div>
 
@@ -154,7 +154,7 @@ export function TestDriveDialog({ open, onOpenChange, carTitle }: TestDriveDialo
                   name="preferredDate"
                   value={formData.preferredDate}
                   onChange={handleChange}
-                  className="border-0 bg-gray-100 text-gray-900 focus:ring-2 focus:ring-[#FFD700] focus:bg-white"
+                  className="border-0 bg-gray-100 text-gray-900 focus:ring-2 focus:ring-[#C9A84C] focus:bg-white"
                 />
               </div>
               <div>
@@ -166,7 +166,7 @@ export function TestDriveDialog({ open, onOpenChange, carTitle }: TestDriveDialo
                   name="preferredTime"
                   value={formData.preferredTime}
                   onChange={handleChange}
-                  className="border-0 bg-gray-100 text-gray-900 focus:ring-2 focus:ring-[#FFD700] focus:bg-white"
+                  className="border-0 bg-gray-100 text-gray-900 focus:ring-2 focus:ring-[#C9A84C] focus:bg-white"
                 />
               </div>
             </div>
@@ -181,7 +181,7 @@ export function TestDriveDialog({ open, onOpenChange, carTitle }: TestDriveDialo
                 onChange={handleChange}
                 placeholder="Any questions or special requests..."
                 rows={3}
-                className="w-full px-4 py-3 border-0 bg-gray-100 text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-[#FFD700] focus:bg-white resize-none"
+                className="w-full px-4 py-3 border-0 bg-gray-100 text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-[#C9A84C] focus:bg-white resize-none"
               />
             </div>
           </div>
@@ -192,7 +192,7 @@ export function TestDriveDialog({ open, onOpenChange, carTitle }: TestDriveDialo
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
-              className="flex-1 border-gray-300 text-gray-900 hover:bg-gray-50"
+              className="flex-1 border-ink text-ink hover:bg-ink hover:text-white font-bold uppercase tracking-[0.14em] text-[13px]"
               disabled={loading}
             >
               Cancel
@@ -200,7 +200,7 @@ export function TestDriveDialog({ open, onOpenChange, carTitle }: TestDriveDialo
             <Button
               type="submit"
               disabled={loading}
-              className="flex-1 bg-[#FFD700] hover:bg-[#FFC700] text-[#001F3F] font-semibold flex items-center justify-center gap-2"
+              className="flex-1 bg-[#C9A84C] hover:bg-[#E5C263] text-ink font-bold uppercase tracking-[0.14em] text-[13px] flex items-center justify-center gap-2"
             >
               <Send className="w-4 h-4" />
               {loading ? 'Booking...' : 'Book Now'}

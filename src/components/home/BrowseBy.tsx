@@ -46,18 +46,30 @@ export default function BrowseBy({ facets, loading = false }: BrowseByProps) {
             </Link>
           </div>
 
-          <div className="mt-8 flex flex-wrap gap-3">
+          <div className="mt-8 grid grid-cols-2 border-l border-t border-[var(--hairline)] sm:grid-cols-3 lg:grid-cols-5">
             {loading && !facets.brands.length
               ? Array.from({ length: 10 }).map((_, index) => (
-                  <div key={index} className="h-11 w-28 animate-pulse bg-[#F4F5F6]" />
+                  <div
+                    key={index}
+                    className="h-[104px] animate-pulse border-b border-r border-[var(--hairline)] bg-[#F4F5F6]"
+                  />
                 ))
               : facets.brands.map((brand) => (
                   <Link
                     key={brand}
                     to={`/explore?brand=${encodeURIComponent(brand)}`}
-                    className="border border-[var(--hairline)] px-6 py-3 text-[12px] font-semibold uppercase tracking-[0.12em] text-ink/75 transition-all duration-300 hover:border-[var(--accent-solid)] hover:bg-[#FAFAFA] hover:text-ink"
+                    className="group relative flex h-[104px] items-center justify-center overflow-hidden border-b border-r border-[var(--hairline)] px-4 text-center transition-colors duration-300 hover:bg-[#FAFAFA]"
                   >
-                    {brand}
+                    <span
+                      aria-hidden
+                      className="pointer-events-none absolute -bottom-4 left-1 select-none font-display text-[72px] leading-none text-ink/[0.045] transition-colors duration-300 group-hover:text-[var(--accent-solid)]/15"
+                    >
+                      {brand.charAt(0)}
+                    </span>
+                    <span className="relative font-display text-base uppercase tracking-[0.06em] text-ink/80 transition-colors duration-300 group-hover:text-ink">
+                      {brand}
+                    </span>
+                    <span className="absolute inset-x-0 bottom-0 h-[2px] origin-left scale-x-0 bg-[var(--accent-solid)] transition-transform duration-300 ease-out group-hover:scale-x-100" />
                   </Link>
                 ))}
           </div>

@@ -192,19 +192,6 @@ export default function CarDetailsPage() {
                   Confirm Availability
                 </button>
               </div>
-
-              {/* Utility Buttons */}
-              <div className="sidebar-utility">
-                <button className="utility-btn">
-                  <span>?</span> Share
-                </button>
-                <button className="utility-btn">
-                  <span>??</span> Print
-                </button>
-                <button className="utility-btn">
-                  <span>??</span> Sticker
-                </button>
-              </div>
             </div>
           </div>
 

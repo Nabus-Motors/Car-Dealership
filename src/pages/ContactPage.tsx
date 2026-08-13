@@ -126,7 +126,7 @@ export function ContactPage() {
     {
       icon: Mail,
       title: "Email Us",
-      details: ["kelvindespartan@gmail.com", "sales@nabusmotors.com"],
+      details: ["nabusmotors1@gmail.com"],
       action: "Send Email"
     }
   ];
