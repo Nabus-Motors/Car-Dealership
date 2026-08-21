@@ -4,7 +4,7 @@ import { Target, Sparkles, Star, Trophy, MapPin } from 'lucide-react';
 import { Card, CardContent } from '../components/ui/card';
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 import HeroShowcase from '../components/home/HeroShowcase';
-import ceoPic from "../../public/ceo-pic.jpeg";
+import ceoPic from "../../public/ceo-pic.png";
 
 const ABOUT_HERO_SLIDES = [
   {
@@ -12,7 +12,7 @@ const ABOUT_HERO_SLIDES = [
     eyebrow: 'Nabus Motors',
     title: 'About Us',
     description: "Drive Your Dream Car — Ghana's Premier Automotive Partner.",
-    image: '/about-us.jpg',
+    image: '/about-us.webp',
   },
 ];
 
@@ -109,7 +109,7 @@ export function AboutPage() {
 
             <div className="relative">
               <ImageWithFallback
-                src="https://images.unsplash.com/photo-1705747401901-28363172fe7e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxsdXh1cnklMjBjYXIlMjBzaG93cm9vbXxlbnwxfHx8fDE3NTg3MTYyMTl8MA&ixlib=rb-4.1.0&q=80&w=1080"
+                src="/one-stop-hero.jpg"
                 alt="Nabus Motors showroom"
                 className="w-full h-96 object-cover rounded-none"
               />

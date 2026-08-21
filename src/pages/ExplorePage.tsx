@@ -83,7 +83,7 @@ const EXPLORE_HERO_SLIDES = [
     eyebrow: 'Nabus Motors',
     title: 'Our Inventory',
     description: 'Find your perfect vehicle from our extensive collection of premium and affordable options.',
-    image: '/our-inventory.jpg',
+    image: '/our-inventory.webp',
   },
 ];
 

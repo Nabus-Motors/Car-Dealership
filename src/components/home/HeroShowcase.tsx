@@ -17,7 +17,7 @@ const SLIDES: HeroSlide[] = [
     title: 'Drive Your Dream',
     description:
         'From luxury vehicles to sedans to pickups to SUVs and off-road vehicles, discover a curated collection of quality vehicles built for the roads of Ghana.',
-    image: '/hero1.jpg',
+    image: '/hero1.webp',
   },
   {
     id: 'certified-inspected',
@@ -25,7 +25,7 @@ const SLIDES: HeroSlide[] = [
     title: 'Certified & Inspected',
     description:
         'Every vehicle passes a rigorous multi-point inspection, so you can drive away with total confidence.',
-    image: '/hero2.jpg',
+    image: '/hero2.webp',
   },
   {
     id: 'flexible-financing',
@@ -33,7 +33,7 @@ const SLIDES: HeroSlide[] = [
     title: 'Flexible Financing',
     description:
         'Tailored payment plans that fit your budget, making car ownership simpler and more accessible than ever.',
-    image: '/hero3.png',
+    image: '/hero3.webp',
   },
   {
     id: 'trade-in',
@@ -41,7 +41,7 @@ const SLIDES: HeroSlide[] = [
     title: 'Know Your Value',
     description:
         'Get a fair, transparent valuation for your current vehicle in under an hour, no obligations attached.',
-    image: '/hero6.jpg',
+    image: '/hero6.webp',
   },
   {
     id: 'after-sales',
@@ -49,7 +49,7 @@ const SLIDES: HeroSlide[] = [
     title: 'We Drive With You',
     description:
         'From delivery to after-sales care, our team is with you long after you leave the showroom.',
-    image: '/hero5.jpg',
+    image: '/hero5.webp',
   },
 ];
 
