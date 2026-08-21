@@ -40,11 +40,12 @@ export function Navbar() {
             }`}
         >
           <div className="shell flex h-[68px] items-center justify-between gap-6">
-            <Link to="/" className="shrink-0">
-            <span className="font-display text-[21px] font-bold uppercase tracking-[0.14em] text-ink">
-              Nabus
-              <span className="ml-[3px] font-light text-[var(--accent-solid)]">Motors</span>
-            </span>
+            <Link to="/" className="flex shrink-0 items-center gap-2.5">
+              <img src="/nabus-logo.png" alt="" className="h-[72px] w-auto bg-transparent" />
+              <span className="font-display text-[21px] font-bold uppercase tracking-[0.14em] text-ink">
+                Nabus
+                <span className="ml-[3px] font-light text-[var(--accent-solid)]">Motors</span>
+              </span>
             </Link>
 
             <nav className="hidden flex-1 items-center gap-7 lg:flex">

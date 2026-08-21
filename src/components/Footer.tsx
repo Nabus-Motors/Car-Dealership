@@ -59,7 +59,15 @@ export function Footer() {
   return (
       <footer className="w-full bg-ink text-onDark">
         <div className="shell py-16 md:py-20">
-          <p className="max-w-4xl text-[13px] leading-[1.8] text-onDark/70">
+          <div className="flex items-center gap-3">
+            <img src="/nabus-logo.png" alt="" className="h-16 w-auto bg-transparent" />
+            <span className="font-display text-[21px] font-bold uppercase tracking-[0.14em] text-white">
+              Nabus
+              <span className="ml-[3px] font-light text-[var(--accent-solid)]">Motors</span>
+            </span>
+          </div>
+
+          <p className="mt-6 max-w-4xl text-[13px] leading-[1.8] text-onDark/70">
             Nabus Motors is your trusted partner in finding the perfect vehicle. Quality cars, exceptional service.
           </p>
 
